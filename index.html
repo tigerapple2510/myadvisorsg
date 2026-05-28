@@ -301,6 +301,20 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 .order-pending{background:#451a03;color:#fcd34d}
 .order-cancelled{background:#1e293b;color:#94a3b8}
 
+/* ── Telegram Alerts ──────────────────────────────────────── */
+.alert-status{display:flex;align-items:center;gap:8px;padding:10px 14px;
+  border-radius:8px;font-size:12px;font-weight:600;margin-bottom:12px}
+.alert-status.connected{background:#064e3b;color:#6ee7b7;border:1px solid #10b981}
+.alert-status.disconnected{background:#1e293b;color:#64748b;border:1px solid var(--border)}
+.alert-status.error{background:#450a0a;color:#fca5a5;border:1px solid var(--red)}
+.alert-toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+@media(max-width:600px){.alert-toggle-grid{grid-template-columns:1fr}}
+.alert-toggle-item{background:var(--surface2);border-radius:8px;padding:12px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px}
+.alert-toggle-info{flex:1}
+.alert-toggle-title{font-size:12px;font-weight:700;margin-bottom:2px}
+.alert-toggle-desc{font-size:11px;color:var(--muted)}
+
 /* ── History Tab ──────────────────────────────────────────── */
 .history-stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px}
 .hist-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
@@ -637,6 +651,70 @@ main{max-width:1400px;margin:0 auto;padding:20px}
      AUTOMATION TAB
 ═══════════════════════════════════════════════════════════ -->
 <div class="panel" id="panel-auto">
+
+  <!-- Telegram Alerts -->
+  <div class="auto-section" style="border-color:#1d4ed8">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3>🔔 Telegram Alerts</h3>
+      <button class="btn btn-primary btn-sm" onclick="sendTestAlert()">⚡ Send Test Alert</button>
+    </div>
+
+    <div class="alert-status disconnected" id="telegram-status">
+      <span>●</span> <span id="telegram-status-text">Not tested yet — click Send Test Alert to verify</span>
+    </div>
+
+    <div class="alert-toggle-grid">
+      <div class="alert-toggle-item">
+        <div class="alert-toggle-info">
+          <div class="alert-toggle-title">🚨 Strong Buy Alerts</div>
+          <div class="alert-toggle-desc">Alert when Iconium Score ≥ 80</div>
+        </div>
+        <button class="toggle on" id="tgl-strong-buy-alert" onclick="toggleAlert('strong-buy-alert')"></button>
+      </div>
+      <div class="alert-toggle-item">
+        <div class="alert-toggle-info">
+          <div class="alert-toggle-title">📅 Earnings Reminders</div>
+          <div class="alert-toggle-desc">Day-before alert for upcoming earnings</div>
+        </div>
+        <button class="toggle on" id="tgl-earnings-alert" onclick="toggleAlert('earnings-alert')"></button>
+      </div>
+      <div class="alert-toggle-item">
+        <div class="alert-toggle-info">
+          <div class="alert-toggle-title">☀️ Morning Brief</div>
+          <div class="alert-toggle-desc">Daily summary at 9am SGT</div>
+        </div>
+        <button class="toggle on" id="tgl-morning-brief" onclick="toggleAlert('morning-brief')"></button>
+      </div>
+      <div class="alert-toggle-item">
+        <div class="alert-toggle-info">
+          <div class="alert-toggle-title">🔴 Trade Confirmations</div>
+          <div class="alert-toggle-desc">Alert when a trade is executed</div>
+        </div>
+        <button class="toggle on" id="tgl-trade-confirm" onclick="toggleAlert('trade-confirm')"></button>
+      </div>
+    </div>
+
+    <div style="background:var(--surface2);border-radius:8px;padding:12px;margin-top:8px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Alert Threshold</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:12px;color:var(--muted)">Min Score to Alert:</span>
+        <input type="number" id="alert-threshold" value="78" min="50" max="100"
+          style="background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 8px;width:70px;font-size:13px">
+        <span style="font-size:12px;color:var(--muted)">/100</span>
+        <button class="btn btn-secondary btn-sm" onclick="saveAlertSettings()">Save</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <button class="btn btn-primary" style="width:100%" onclick="sendSignalsSummary()">
+        📊 Send Signals Summary Now
+      </button>
+    </div>
+
+    <div style="margin-top:10px;font-size:11px;color:var(--muted)">
+      Alerts are sent via your Iconium Telegram bot. Bot token and chat ID are stored securely in Vercel — never in this page.
+    </div>
+  </div>
 
   <!-- Quick Start -->
   <div class="auto-section" style="border-color:#1d4ed8">
@@ -1045,6 +1123,10 @@ async function refreshAllData(forceRefresh = true) {
   document.getElementById('s-updated').textContent = new Date().toLocaleTimeString();
   toast('All 25 instruments loaded ⚡', 'success');
 
+  // Check and send Telegram alerts for high-scoring signals
+  checkAndSendSignalAlerts(state.signals);
+  checkEarningsAlerts();
+
   // Auto-schedule next refresh in 30 min
   clearTimeout(window._autoRefreshTimer);
   window._autoRefreshTimer = setTimeout(() => refreshAllData(true), CACHE_TTL);
@@ -1298,6 +1380,17 @@ async function placeOrder(symbol, notional, score) {
       toast(`✓ ${symbol} order placed ($${notional})`, 'success');
       // Log to signal performance tracker
       logSignalPerformance(symbol, score, notional);
+      // Send Telegram trade confirmation
+      if (alertSettings['trade-confirm']) {
+        sendAlert('signal_alert', {
+          symbol, score,
+          signal: state.signals[symbol]?.signal || 'buy',
+          price: fmt(state.signals[symbol]?.price),
+          rsi: Math.round(state.signals[symbol]?.rsi || 0),
+          momentum: fmt(state.signals[symbol]?.momentum),
+          reason: `✅ Trade executed · $${notional} · ${state.mode.toUpperCase()} mode`,
+        });
+      }
     } else {
       toast(`⚠️ ${symbol}: ${order.message || 'Order failed'}`, 'error');
     }
@@ -1690,6 +1783,180 @@ function toast(msg, type='') {
   el._t = setTimeout(() => el.className = 'toast', 3500);
 }
 
+// ── Telegram Alerts ────────────────────────────────────────────────────────
+
+const alertSettings = {
+  'strong-buy-alert': true,
+  'earnings-alert': true,
+  'morning-brief': true,
+  'trade-confirm': true,
+  threshold: 78,
+};
+
+function toggleAlert(key) {
+  alertSettings[key] = !alertSettings[key];
+  const btn = document.getElementById('tgl-' + key);
+  btn.classList.toggle('on', alertSettings[key]);
+  saveAlertSettings();
+}
+
+function saveAlertSettings() {
+  alertSettings.threshold = parseInt(document.getElementById('alert-threshold').value) || 78;
+  localStorage.setItem('iconium_alert_settings', JSON.stringify(alertSettings));
+  toast('Alert settings saved ✓', 'success');
+}
+
+function loadAlertSettings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('iconium_alert_settings') || '{}');
+    Object.assign(alertSettings, saved);
+    Object.keys(alertSettings).forEach(key => {
+      if (key === 'threshold') {
+        const el = document.getElementById('alert-threshold');
+        if (el) el.value = alertSettings.threshold;
+      } else {
+        const btn = document.getElementById('tgl-' + key);
+        if (btn) btn.classList.toggle('on', alertSettings[key]);
+      }
+    });
+  } catch(e) {}
+}
+
+async function sendAlert(type, data) {
+  try {
+    const res = await fetch('/api/alerts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, data }),
+    });
+    const result = await res.json();
+    return result.ok === true;
+  } catch(e) {
+    console.warn('Alert send failed:', e);
+    return false;
+  }
+}
+
+async function sendTestAlert() {
+  const statusEl = document.getElementById('telegram-status');
+  const statusText = document.getElementById('telegram-status-text');
+  statusEl.className = 'alert-status disconnected';
+  statusText.textContent = 'Sending test alert...';
+
+  const ok = await sendAlert('test', {});
+
+  if (ok) {
+    statusEl.className = 'alert-status connected';
+    statusText.textContent = '✓ Connected — check your Telegram for the test message';
+    toast('✅ Telegram alert sent! Check your phone.', 'success');
+  } else {
+    statusEl.className = 'alert-status error';
+    statusText.textContent = '✗ Failed — check Vercel env vars (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)';
+    toast('Telegram alert failed — check Vercel env vars', 'error');
+  }
+}
+
+async function sendSignalsSummary() {
+  const signals = Object.values(state.signals)
+    .filter(s => s.signal === 'strong-buy' || s.signal === 'buy')
+    .sort((a, b) => b.score - a.score);
+
+  if (!signals.length) { toast('No buy signals loaded — refresh data first', 'error'); return; }
+
+  const fg = document.getElementById('fg-value')?.textContent || '—';
+  const ok = await sendAlert('bulk_alert', {
+    signals: signals.map(s => ({ symbol: s.symbol, score: s.score, price: fmt(s.price) })),
+    fearGreed: fg,
+    mode: state.mode,
+  });
+
+  if (ok) toast(`Signal summary sent to Telegram ✓`, 'success');
+  else toast('Failed to send — check connection', 'error');
+}
+
+// Auto-check signals after refresh and send alerts for score >= threshold
+async function checkAndSendSignalAlerts(newSignals) {
+  if (!alertSettings['strong-buy-alert']) return;
+  const threshold = alertSettings.threshold || 78;
+
+  for (const s of Object.values(newSignals)) {
+    if (s.score >= threshold && (s.signal === 'strong-buy' || s.signal === 'buy')) {
+      const lastAlerted = parseInt(localStorage.getItem(`iconium_alerted_${s.symbol}`) || '0');
+      const hoursSince = (Date.now() - lastAlerted) / 3600000;
+      if (hoursSince > 4) { // Don't re-alert same stock within 4 hours
+        await sendAlert('signal_alert', {
+          symbol: s.symbol,
+          score: s.score,
+          signal: s.signal,
+          price: fmt(s.price),
+          rsi: Math.round(s.rsi || 0),
+          momentum: fmt(s.momentum),
+          reason: s.reasons?.[0] || 'Iconium Score threshold crossed',
+        });
+        localStorage.setItem(`iconium_alerted_${s.symbol}`, Date.now().toString());
+        await new Promise(r => setTimeout(r, 500)); // rate limit
+      }
+    }
+  }
+}
+
+// Check earnings and send day-before reminders
+async function checkEarningsAlerts() {
+  if (!alertSettings['earnings-alert']) return;
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+  for (const e of earningsData) {
+    if (e.date === tomorrowStr) {
+      const alerted = localStorage.getItem(`iconium_earnings_alerted_${e.symbol}_${e.date}`);
+      if (!alerted) {
+        await sendAlert('earnings_alert', {
+          symbol: e.symbol,
+          date: e.date,
+          time: e.time,
+          expectedMove: e.expectedMove,
+          score: e.score,
+          price: e.price ? fmt(e.price) : '—',
+          epsEstimate: e.epsEstimate ? fmt(e.epsEstimate) : '—',
+        });
+        localStorage.setItem(`iconium_earnings_alerted_${e.symbol}_${e.date}`, '1');
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+  }
+}
+
+// Schedule morning brief at 9am SGT
+function scheduleMorningBrief() {
+  if (!alertSettings['morning-brief']) return;
+  const now = new Date();
+  const sgt = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Singapore' }));
+  const next9am = new Date(sgt);
+  next9am.setHours(9, 0, 0, 0);
+  if (sgt >= next9am) next9am.setDate(next9am.getDate() + 1);
+  const msUntil = next9am - sgt;
+  setTimeout(async () => {
+    await sendMorningBrief();
+    scheduleMorningBrief(); // reschedule for next day
+  }, msUntil);
+}
+
+async function sendMorningBrief() {
+  const signals = Object.values(state.signals).filter(s => s.signal === 'strong-buy' || s.signal === 'buy');
+  if (!signals.length) return;
+  const topSignal = [...signals].sort((a, b) => b.score - a.score)[0];
+  const fg = document.getElementById('s-fg')?.textContent || '—';
+  const date = new Date().toLocaleDateString('en-SG', { timeZone: 'Asia/Singapore', weekday:'long', month:'long', day:'numeric' });
+
+  await sendAlert('morning_brief', {
+    strongBuys: signals.filter(s => s.signal === 'strong-buy').length,
+    buys: signals.filter(s => s.signal === 'buy').length,
+    topSignal: { symbol: topSignal.symbol, score: topSignal.score, price: fmt(topSignal.price), rsi: Math.round(topSignal.rsi || 0) },
+    fearGreed: fg,
+    date,
+  });
+}
+
 // ── Earnings Calendar ──────────────────────────────────────────────────────
 
 // Historical average expected moves per instrument (% up or down on earnings day)
@@ -2033,6 +2300,10 @@ function init() {
       setTimeout(() => refreshAllData(true), 2000);
     }
   }
+
+  // Load alert settings
+  loadAlertSettings();
+  scheduleMorningBrief();
 
   // Load intelligence data
   loadFearGreed();
