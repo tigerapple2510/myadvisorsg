@@ -1862,10 +1862,14 @@ async function generateIntelReport() {
       })
     });
     const data = await res.json();
-    el.textContent = data.content?.[0]?.text || 'Could not generate report';
-    el.style.color = 'var(--text)';
+    if (data.error) {
+      el.textContent = 'API Error: ' + (data.error.message || data.error);
+    } else {
+      el.textContent = data.content?.[0]?.text || 'Could not generate report';
+      el.style.color = 'var(--text)';
+    }
   } catch(e) {
-    el.textContent = 'Could not connect to AI — check your connection.';
+    el.textContent = 'Connection error: ' + e.message;
   }
 }
 
