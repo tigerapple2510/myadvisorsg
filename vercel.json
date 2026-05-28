@@ -1,0 +1,12 @@
+{
+  "functions": {
+    "api/market-data.js": {
+      "memory": 128,
+      "maxDuration": 10
+    },
+    "api/trade.js": {
+      "memory": 128,
+      "maxDuration": 10
+    }
+  }
+}
