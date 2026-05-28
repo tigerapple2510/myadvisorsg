@@ -7,6 +7,14 @@
     "api/trade.js": {
       "memory": 128,
       "maxDuration": 10
+    },
+    "api/alerts.js": {
+      "memory": 128,
+      "maxDuration": 10
+    },
+    "api/ai.js": {
+      "memory": 128,
+      "maxDuration": 30
     }
   }
 }
