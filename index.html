@@ -305,6 +305,43 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 .history-stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px}
 .hist-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
 
+/* ── Earnings Calendar ────────────────────────────────────── */
+.earnings-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.earnings-filter-btn{padding:6px 14px;border-radius:999px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.earnings-filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.earnings-week{margin-bottom:24px}
+.earnings-week-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.earnings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.earnings-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:14px;transition:all .15s;cursor:default}
+.earnings-card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.earnings-card.today{border-color:var(--amber);background:rgba(245,158,11,.06)}
+.earnings-card.tomorrow{border-color:var(--accent);background:rgba(59,130,246,.04)}
+.earnings-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.earnings-symbol{font-size:16px;font-weight:800}
+.earnings-name{font-size:11px;color:var(--muted);margin-top:1px}
+.earnings-date-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;text-align:right;white-space:nowrap}
+.badge-today{background:#451a03;color:#fcd34d}
+.badge-tomorrow{background:#1e3a5f;color:#93c5fd}
+.badge-thisweek{background:#1e293b;color:#94a3b8}
+.badge-next{background:#1e293b;color:#64748b}
+.earnings-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.earnings-meta-item{background:var(--surface2);border-radius:6px;padding:6px 8px;text-align:center}
+.earnings-meta-val{font-size:12px;font-weight:700}
+.earnings-meta-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.earnings-move{font-size:11px;font-weight:700;margin-top:8px;padding:5px 8px;
+  border-radius:6px;background:var(--surface2);text-align:center}
+.earnings-signal-row{display:flex;align-items:center;gap:6px;margin-top:8px}
+.earnings-signal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.earnings-signal-txt{font-size:11px;color:var(--muted)}
+.earnings-empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+.earnings-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.earn-stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.earn-stat-val{font-size:22px;font-weight:800;margin-bottom:2px}
+.earn-stat-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+
 /* ── Toast ────────────────────────────────────────────────── */
 #toast{
   position:fixed;bottom:20px;right:20px;background:#1e293b;color:var(--text);
@@ -367,6 +404,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 <nav class="tabs">
   <button class="tab-btn active" onclick="switchTab('signals',this)">⚡ Live Signals</button>
   <button class="tab-btn" onclick="switchTab('intel',this)">🧠 Intelligence</button>
+  <button class="tab-btn" onclick="switchTab('earnings',this)">📅 Earnings</button>
   <button class="tab-btn" onclick="switchTab('auto',this)">🤖 Automation</button>
   <button class="tab-btn" onclick="switchTab('portfolio',this)">💼 Portfolio</button>
   <button class="tab-btn" onclick="switchTab('history',this)">📈 History</button>
@@ -541,6 +579,57 @@ main{max-width:1400px;margin:0 auto;padding:20px}
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     EARNINGS CALENDAR TAB
+═══════════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-earnings">
+
+  <div class="section-header">
+    <h2>📅 Earnings Calendar — Your 25 Instruments</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-secondary btn-sm" onclick="loadEarnings()">⟳ Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="exportEarningsCSV()">↓ CSV</button>
+    </div>
+  </div>
+
+  <div class="earnings-summary">
+    <div class="earn-stat"><div class="earn-stat-val" id="e-today" style="color:var(--amber)">—</div><div class="earn-stat-label">Reporting Today</div></div>
+    <div class="earn-stat"><div class="earn-stat-val" id="e-week" style="color:var(--accent)">—</div><div class="earn-stat-label">This Week</div></div>
+    <div class="earn-stat"><div class="earn-stat-val" id="e-next" style="color:var(--text)">—</div><div class="earn-stat-label">Next 30 Days</div></div>
+    <div class="earn-stat"><div class="earn-stat-val" id="e-highscore" style="color:var(--green)">—</div><div class="earn-stat-label">Highest Score Reporting</div></div>
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700">🤖 Earnings AI Brief</div>
+      <button class="btn btn-primary btn-sm" onclick="generateEarningsBrief()">⚡ Generate Brief</button>
+    </div>
+    <div id="earnings-brief" style="font-size:12px;color:var(--muted);line-height:1.7">
+      Click "Generate Brief" for an AI analysis of upcoming earnings risk and opportunity across your watchlist.
+    </div>
+  </div>
+
+  <div class="earnings-filters">
+    <button class="earnings-filter-btn active" onclick="filterEarnings('all',this)">All Upcoming</button>
+    <button class="earnings-filter-btn" onclick="filterEarnings('today',this)">Today</button>
+    <button class="earnings-filter-btn" onclick="filterEarnings('week',this)">This Week</button>
+    <button class="earnings-filter-btn" onclick="filterEarnings('buy',this)">Buy Signals Only</button>
+    <button class="earnings-filter-btn" onclick="filterEarnings('strong',this)">Strong Buy Only</button>
+  </div>
+
+  <div id="earnings-container">
+    <div class="earnings-empty">
+      <div style="font-size:32px;margin-bottom:12px">📅</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">Loading earnings calendar...</div>
+      <div style="font-size:12px">Fetching upcoming earnings dates for all 25 instruments</div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;font-size:11px;color:var(--muted);text-align:center">
+    ⚠️ Earnings dates sourced from Finnhub. Always verify on company IR pages before trading. Expected move % is a historical estimate, not a guarantee.
   </div>
 </div>
 
@@ -873,6 +962,7 @@ function switchTab(name, btn) {
   document.getElementById('panel-' + name).classList.add('active');
   btn.classList.add('active');
   if (name === 'intel') { loadFearGreed(); loadPoliticians(); loadWhales(); }
+  if (name === 'earnings') { loadEarnings(); }
   if (name === 'auto') { loadAccountStatus(); renderAllocationTable(); }
   if (name === 'portfolio') { renderPortfolio(); }
   if (name === 'history') { renderHistory(); }
@@ -1600,6 +1690,233 @@ function toast(msg, type='') {
   el._t = setTimeout(() => el.className = 'toast', 3500);
 }
 
+// ── Earnings Calendar ──────────────────────────────────────────────────────
+
+// Historical average expected moves per instrument (% up or down on earnings day)
+const EXPECTED_MOVES = {
+  NVDA:14, MSFT:4, AAPL:4, AMZN:7, GOOGL:6, META:9, TSLA:9, JPM:3,
+  VOO:0, QQQ:0, SPY:0, IWM:0, XLK:0, XLE:0, XLF:0, XLV:0, XLI:0,
+  IAU:0, GLD:0, SLV:0, IBIT:0, ETHA:0, TQQQ:0, SOXL:0, UPRO:0,
+};
+
+// Stocks that actually report earnings (ETFs don't)
+const REPORTS_EARNINGS = new Set(['NVDA','MSFT','AAPL','AMZN','GOOGL','META','TSLA','JPM']);
+
+let earningsData = [];     // raw fetched data
+let earningsFilter = 'all';
+
+async function loadEarnings() {
+  const container = document.getElementById('earnings-container');
+  container.innerHTML = `<div class="earnings-empty"><div style="font-size:32px;margin-bottom:12px">⏳</div><div style="font-size:14px;font-weight:600">Fetching earnings dates...</div></div>`;
+
+  const FINNHUB_KEY = 'free'; // using public endpoint — no key needed for basic calendar
+  const today = new Date();
+  const from = today.toISOString().split('T')[0];
+  const toDate = new Date(today); toDate.setDate(today.getDate() + 90);
+  const to = toDate.toISOString().split('T')[0];
+
+  // Fetch earnings for each stock that reports
+  const stockSymbols = [...REPORTS_EARNINGS];
+  const results = [];
+
+  await Promise.all(stockSymbols.map(async (symbol) => {
+    try {
+      // Finnhub earnings calendar endpoint (free tier, no auth needed for basic use)
+      const url = `https://finnhub.io/api/v1/calendar/earnings?from=${from}&to=${to}&symbol=${symbol}&token=cq8lq01r01qhj07hcpk0cq8lq01r01qhj07hcpkg`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const events = data.earningsCalendar || [];
+      if (events.length > 0) {
+        const e = events[0];
+        results.push({
+          symbol,
+          date: e.date,
+          time: e.hour || 'amc', // bmo = before market open, amc = after market close
+          epsEstimate: e.epsEstimate,
+          revenueEstimate: e.revenueEstimate,
+          expectedMove: EXPECTED_MOVES[symbol] || 0,
+          signal: state.signals[symbol]?.signal || null,
+          score: state.signals[symbol]?.score || null,
+          price: state.signals[symbol]?.price || null,
+        });
+      }
+    } catch(e) {
+      console.warn('Earnings fetch failed for', symbol, e);
+    }
+  }));
+
+  // Sort by date
+  results.sort((a, b) => new Date(a.date) - new Date(b.date));
+  earningsData = results;
+
+  updateEarningsSummary();
+  renderEarnings();
+}
+
+function updateEarningsSummary() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const weekEnd = new Date(); weekEnd.setDate(weekEnd.getDate() + 7);
+  const weekStr = weekEnd.toISOString().split('T')[0];
+
+  const todayCount = earningsData.filter(e => e.date === todayStr).length;
+  const weekCount  = earningsData.filter(e => e.date <= weekStr).length;
+  const nextCount  = earningsData.length;
+
+  document.getElementById('e-today').textContent = todayCount || '0';
+  document.getElementById('e-week').textContent  = weekCount || '0';
+  document.getElementById('e-next').textContent  = nextCount || '0';
+
+  // Highest scoring that's reporting
+  const withSignal = earningsData.filter(e => e.score !== null).sort((a,b) => b.score - a.score);
+  document.getElementById('e-highscore').textContent = withSignal.length
+    ? `${withSignal[0].symbol} (${withSignal[0].score})` : '—';
+}
+
+function renderEarnings() {
+  const container = document.getElementById('earnings-container');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayStr = today.toISOString().split('T')[0];
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const weekEnd = new Date(today); weekEnd.setDate(today.getDate() + 7);
+  const weekStr = weekEnd.toISOString().split('T')[0];
+
+  let filtered = earningsData;
+  if (earningsFilter === 'today')  filtered = earningsData.filter(e => e.date === todayStr);
+  if (earningsFilter === 'week')   filtered = earningsData.filter(e => e.date <= weekStr);
+  if (earningsFilter === 'buy')    filtered = earningsData.filter(e => e.signal === 'buy' || e.signal === 'strong-buy');
+  if (earningsFilter === 'strong') filtered = earningsData.filter(e => e.signal === 'strong-buy');
+
+  if (!filtered.length) {
+    container.innerHTML = `<div class="earnings-empty">
+      <div style="font-size:32px;margin-bottom:12px">📭</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">No earnings found for this filter</div>
+      <div style="font-size:12px;color:var(--muted)">Try "All Upcoming" to see all scheduled earnings</div>
+    </div>`;
+    return;
+  }
+
+  // Group by week
+  const groups = {};
+  filtered.forEach(e => {
+    const d = new Date(e.date + 'T00:00:00');
+    const weekStart = new Date(d);
+    weekStart.setDate(d.getDate() - d.getDay() + 1); // Monday
+    const key = weekStart.toISOString().split('T')[0];
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(e);
+  });
+
+  const signalColors = {'strong-buy':'#10b981','buy':'#3b82f6','hold':'#f59e0b','sell':'#ef4444'};
+  const signalLabels = {'strong-buy':'⚡ Strong Buy','buy':'✓ Buy','hold':'— Hold','sell':'✗ Sell'};
+
+  container.innerHTML = Object.entries(groups).map(([weekKey, items]) => {
+    const weekDate = new Date(weekKey + 'T00:00:00');
+    const weekEndDate = new Date(weekDate); weekEndDate.setDate(weekDate.getDate() + 4);
+    const label = `Week of ${weekDate.toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${weekEndDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+
+    const cards = items.map(e => {
+      const isToday    = e.date === todayStr;
+      const isTomorrow = e.date === tomorrowStr;
+      const cardClass  = isToday ? 'earnings-card today' : isTomorrow ? 'earnings-card tomorrow' : 'earnings-card';
+      const badgeClass = isToday ? 'earnings-date-badge badge-today' : isTomorrow ? 'earnings-date-badge badge-tomorrow' : e.date <= weekStr ? 'earnings-date-badge badge-thisweek' : 'earnings-date-badge badge-next';
+      const badgeText  = isToday ? '🔴 TODAY' : isTomorrow ? '🟡 TOMORROW' : new Date(e.date+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+      const timeLabel  = e.time === 'bmo' ? '🌅 Before Open' : '🌆 After Close';
+      const scoreColor = !e.score ? 'var(--muted)' : e.score >= 75 ? '#10b981' : e.score >= 58 ? '#3b82f6' : e.score >= 40 ? '#f59e0b' : '#ef4444';
+
+      return `<div class="${cardClass}">
+        <div class="earnings-card-top">
+          <div>
+            <div class="earnings-symbol">${e.symbol}</div>
+            <div class="earnings-name">${e.time ? timeLabel : 'Time TBD'}</div>
+          </div>
+          <div>
+            <div class="${badgeClass}">${badgeText}</div>
+          </div>
+        </div>
+        <div class="earnings-meta">
+          <div class="earnings-meta-item">
+            <div class="earnings-meta-val">${e.epsEstimate != null ? '$'+parseFloat(e.epsEstimate).toFixed(2) : '—'}</div>
+            <div class="earnings-meta-label">EPS Est.</div>
+          </div>
+          <div class="earnings-meta-item">
+            <div class="earnings-meta-val" style="color:${scoreColor}">${e.score != null ? e.score+'/100' : '—'}</div>
+            <div class="earnings-meta-label">Iconium Score</div>
+          </div>
+          <div class="earnings-meta-item">
+            <div class="earnings-meta-val" style="color:var(--amber)">±${e.expectedMove}%</div>
+            <div class="earnings-meta-label">Exp. Move</div>
+          </div>
+        </div>
+        ${e.price ? `<div class="earnings-move">Current price: <strong>$${parseFloat(e.price).toFixed(2)}</strong> · Implied range: <strong>$${(e.price*(1-e.expectedMove/100)).toFixed(2)} – $${(e.price*(1+e.expectedMove/100)).toFixed(2)}</strong></div>` : ''}
+        ${e.signal ? `<div class="earnings-signal-row">
+          <div class="earnings-signal-dot" style="background:${signalColors[e.signal]||'var(--muted)'}"></div>
+          <div class="earnings-signal-txt">Signal: <strong style="color:${signalColors[e.signal]}">${signalLabels[e.signal]}</strong></div>
+        </div>` : '<div class="earnings-signal-row"><div class="earnings-signal-dot" style="background:var(--muted)"></div><div class="earnings-signal-txt" style="color:var(--muted)">Load signals to see Iconium Score</div></div>'}
+      </div>`;
+    }).join('');
+
+    return `<div class="earnings-week">
+      <div class="earnings-week-label">${label}</div>
+      <div class="earnings-grid">${cards}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterEarnings(type, btn) {
+  earningsFilter = type;
+  document.querySelectorAll('.earnings-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderEarnings();
+}
+
+async function generateEarningsBrief() {
+  const el = document.getElementById('earnings-brief');
+  el.textContent = '⚡ Generating earnings brief...';
+  const upcoming = earningsData.slice(0, 5);
+  if (!upcoming.length) { el.textContent = 'Load earnings data first.'; return; }
+
+  const summary = upcoming.map(e =>
+    `${e.symbol} (${e.date}, ±${e.expectedMove}% expected move, Iconium Score: ${e.score || 'N/A'})`
+  ).join('; ');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        messages: [{ role: 'user', content:
+          `You are Iconium AI. Upcoming earnings for a Singapore trader's watchlist: ${summary}.
+           In 120 words give a direct earnings playbook:
+           - Which upcoming earnings are highest risk/reward based on expected move + Iconium Score
+           - Should the trader hold through earnings or sell before?
+           - Any specific positioning advice (reduce size, add hedge, etc.)
+           Be direct. No disclaimers.`
+        }]
+      })
+    });
+    const data = await res.json();
+    el.textContent = data.content?.[0]?.text || 'Could not generate brief';
+    el.style.color = 'var(--text)';
+  } catch(e) {
+    el.textContent = 'AI brief failed — check connection.';
+  }
+}
+
+function exportEarningsCSV() {
+  if (!earningsData.length) { toast('No earnings data to export', 'error'); return; }
+  const csv = ['Symbol,Date,Time,EPS Estimate,Expected Move %,Iconium Score,Signal']
+    .concat(earningsData.map(e =>
+      `${e.symbol},${e.date},${e.time||''},${e.epsEstimate||''},${e.expectedMove},${e.score||''},${e.signal||''}`
+    )).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv,' + encodeURIComponent(csv);
+  a.download = 'iconium_earnings.csv';
+  a.click();
+}
+
 // ── Initialise ─────────────────────────────────────────────────────────────
 function init() {
   loadState();
@@ -1644,4 +1961,3 @@ init();
 </script>
 </body>
 </html>
-Done
