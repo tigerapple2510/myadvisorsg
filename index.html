@@ -393,7 +393,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 
 <!-- Alert Banner -->
 <div id="alert-banner">
-  <span>🚨 <strong>ALERT:</strong> Iconium Score 2.0 coming soon — five-layer intelligence upgrade</span>
+  <span>⚡ <strong>NEW:</strong> Iconium Score 2.0 is live — five-layer intelligence: Technical · Trend · Momentum · Sentiment · Relative Strength</span>
   <button onclick="document.getElementById('alert-banner').style.display='none'">✕</button>
 </div>
 
@@ -403,7 +403,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
     <div class="logo-icon">⚡</div>
     <div>
       <h1>IconiumTrade</h1>
-      <p>Proprietary AI · v2.0</p>
+      <p>Proprietary AI · v2.1</p>
     </div>
   </div>
   <div class="header-meta">
@@ -435,7 +435,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
     <div class="stat-card">
       <div class="stat-val" id="s-instruments">0 / 25</div>
       <div class="stat-label">Instruments Loaded</div>
-      <div class="stat-sub" id="s-source">Yahoo Finance · Fast</div>
+      <div class="stat-sub" id="s-source">Yahoo Finance · Score 2.0</div>
     </div>
     <div class="stat-card">
       <div class="stat-val" id="s-updated">—</div>
@@ -1132,53 +1132,161 @@ async function refreshAllData(forceRefresh = true) {
   window._autoRefreshTimer = setTimeout(() => refreshAllData(true), CACHE_TTL);
 }
 
-// ── Iconium Score Calculation ──────────────────────────────────────────────
+// ── Iconium Score 2.0 — Five-Layer Intelligence ────────────────────────────
+// Conservative mode: Strong Buy requires 80+, Buy requires 65+
+// Five layers × 20 points each = 100 total
+// All five layers must be broadly positive for Strong Buy
+
 function computeSignal(inst, data) {
-  const { rsi, sma50, sma200, momentum, price, change, changePct } = data;
+  const { rsi, sma50, sma200, momentum, price, changePct, volume,
+          fiftyTwoWeekHigh, fiftyTwoWeekLow } = data;
 
-  let score = 50; // baseline
-  let reasons = [];
+  const layers = { technical: 0, trend: 0, momentum: 0, sentiment: 0, relative: 0 };
+  const reasons = [];
+  const layerDetails = {};
 
-  // RSI component (0–25 points)
+  // ── LAYER 1: Technical (RSI + Bollinger Band position) — max 20pts ─────────
+  let techScore = 10; // neutral baseline
   if (rsi !== null) {
-    if (rsi < 30) { score += 25; reasons.push('RSI oversold ('+Math.round(rsi)+')'); }
-    else if (rsi < 45) { score += 15; reasons.push('RSI low ('+Math.round(rsi)+')'); }
-    else if (rsi > 70) { score -= 20; reasons.push('RSI overbought ('+Math.round(rsi)+')'); }
-    else if (rsi > 55) { score -= 5; }
-    else { score += 5; reasons.push('RSI neutral'); }
+    if      (rsi < 25) { techScore = 20; reasons.push('RSI deeply oversold ('+Math.round(rsi)+') — strong reversal signal'); }
+    else if (rsi < 35) { techScore = 17; reasons.push('RSI oversold ('+Math.round(rsi)+')'); }
+    else if (rsi < 45) { techScore = 14; reasons.push('RSI low — room to run'); }
+    else if (rsi < 55) { techScore = 10; } // neutral
+    else if (rsi < 65) { techScore = 7;  reasons.push('RSI elevated'); }
+    else if (rsi < 75) { techScore = 4;  reasons.push('RSI overbought ('+Math.round(rsi)+')'); }
+    else               { techScore = 1;  reasons.push('RSI extreme overbought ('+Math.round(rsi)+') — avoid'); }
   }
+  // 52-week position bonus/penalty (where in the range is price?)
+  if (price && fiftyTwoWeekHigh && fiftyTwoWeekLow) {
+    const range = fiftyTwoWeekHigh - fiftyTwoWeekLow;
+    const pos = range > 0 ? (price - fiftyTwoWeekLow) / range : 0.5; // 0=at low, 1=at high
+    if (pos < 0.25)      { techScore = Math.min(20, techScore + 3); reasons.push('Near 52-week low — contrarian entry'); }
+    else if (pos > 0.90) { techScore = Math.max(0,  techScore - 3); reasons.push('Near 52-week high — extended'); }
+  }
+  layers.technical = Math.max(0, Math.min(20, techScore));
+  layerDetails.technical = layers.technical;
 
-  // SMA trend (0–20 points)
+  // ── LAYER 2: Trend Strength (SMA alignment + Golden/Death cross) — max 20pts
+  let trendScore = 10;
   if (price && sma50 && sma200) {
-    if (price > sma50 && sma50 > sma200) { score += 20; reasons.push('Golden cross — bullish trend'); }
-    else if (price > sma50) { score += 10; reasons.push('Above SMA50'); }
-    else if (price < sma50 && sma50 < sma200) { score -= 15; reasons.push('Death cross — bearish'); }
-    else if (price < sma200) { score -= 10; reasons.push('Below SMA200'); }
-  }
+    const aboveSMA50  = price > sma50;
+    const aboveSMA200 = price > sma200;
+    const goldenCross = sma50 > sma200;
+    const pctAbove50  = ((price - sma50) / sma50) * 100;
 
-  // Momentum (0–15 points)
+    if (goldenCross && aboveSMA50 && aboveSMA200) {
+      trendScore = pctAbove50 < 15 ? 19 : 15; // golden cross but not too extended
+      reasons.push('Golden cross — all SMAs bullishly aligned');
+    } else if (!goldenCross && !aboveSMA50 && !aboveSMA200) {
+      trendScore = 2;
+      reasons.push('Death cross — bearish SMA alignment');
+    } else if (aboveSMA50 && !goldenCross) {
+      trendScore = 12;
+      reasons.push('Above SMA50, SMA200 lagging');
+    } else if (!aboveSMA50 && goldenCross) {
+      trendScore = 8;
+      reasons.push('Below SMA50 but golden cross intact');
+    } else if (aboveSMA200 && !aboveSMA50) {
+      trendScore = 9;
+    } else {
+      trendScore = 4;
+      reasons.push('Below key moving averages');
+    }
+  }
+  layers.trend = Math.max(0, Math.min(20, trendScore));
+  layerDetails.trend = layers.trend;
+
+  // ── LAYER 3: Momentum (price + volume momentum) — max 20pts ───────────────
+  let momScore = 10;
   if (momentum !== null) {
-    if (momentum > 10) { score += 15; reasons.push('Strong momentum +'+Math.round(momentum)+'%'); }
-    else if (momentum > 3) { score += 8; reasons.push('Positive momentum'); }
-    else if (momentum < -10) { score -= 15; reasons.push('Weak momentum'); }
-    else if (momentum < -3) { score -= 8; }
+    if      (momentum > 20)  { momScore = 19; reasons.push('Exceptional momentum +'+Math.round(momentum)+'%'); }
+    else if (momentum > 10)  { momScore = 16; reasons.push('Strong momentum +'+Math.round(momentum)+'%'); }
+    else if (momentum > 4)   { momScore = 13; reasons.push('Positive momentum +'+Math.round(momentum)+'%'); }
+    else if (momentum > 0)   { momScore = 11; }
+    else if (momentum > -4)  { momScore = 9;  }
+    else if (momentum > -10) { momScore = 6;  reasons.push('Negative momentum'); }
+    else if (momentum > -20) { momScore = 3;  reasons.push('Weak momentum '+Math.round(momentum)+'%'); }
+    else                     { momScore = 1;  reasons.push('Momentum collapse '+Math.round(momentum)+'%'); }
   }
-
-  // Daily change (0–10 points)
+  // Daily change context — dip on strong trend = opportunity
   if (changePct !== null) {
-    if (changePct < -3) { score += 10; reasons.push('Dip buy opportunity'); }
-    else if (changePct > 3) { score -= 5; reasons.push('Extended today'); }
+    if (changePct < -3 && layers.trend >= 14) {
+      momScore = Math.min(20, momScore + 3);
+      reasons.push('Dip within uptrend — buying opportunity');
+    } else if (changePct > 5) {
+      momScore = Math.max(0, momScore - 2);
+      reasons.push('Extended intraday — wait for pullback');
+    }
   }
+  layers.momentum = Math.max(0, Math.min(20, momScore));
+  layerDetails.momentum = layers.momentum;
 
-  score = Math.max(0, Math.min(100, Math.round(score)));
+  // ── LAYER 4: Market Sentiment (Fear & Greed) — max 20pts ──────────────────
+  // Pull live Fear & Greed from DOM (already loaded on Intelligence tab)
+  let sentScore = 10; // neutral default
+  const fgEl = document.getElementById('fg-value');
+  const fgNum = fgEl ? parseInt(fgEl.textContent) : null;
 
+  if (fgNum !== null && !isNaN(fgNum)) {
+    if      (fgNum < 15) { sentScore = 20; reasons.push('Extreme Fear ('+fgNum+') — historically best time to buy'); }
+    else if (fgNum < 30) { sentScore = 17; reasons.push('Fear sentiment ('+fgNum+') — contrarian bullish'); }
+    else if (fgNum < 45) { sentScore = 13; reasons.push('Cautious sentiment ('+fgNum+')'); }
+    else if (fgNum < 55) { sentScore = 10; } // neutral
+    else if (fgNum < 70) { sentScore = 8;  } // mild greed
+    else if (fgNum < 85) { sentScore = 5;  reasons.push('Greed territory ('+fgNum+') — reduce size'); }
+    else                 { sentScore = 2;  reasons.push('Extreme Greed ('+fgNum+') — high risk of reversal'); }
+  }
+  // ETFs get a sentiment bonus — they benefit more from broad market mood
+  const isETF = ['VOO','QQQ','SPY','IWM','XLK','XLE','XLF','XLV','XLI'].includes(inst.symbol);
+  if (isETF && fgNum !== null && fgNum < 45) sentScore = Math.min(20, sentScore + 2);
+  layers.sentiment = Math.max(0, Math.min(20, sentScore));
+  layerDetails.sentiment = layers.sentiment;
+
+  // ── LAYER 5: Relative Strength (vs SPY) — max 20pts ──────────────────────
+  // Compare this instrument's momentum to SPY's momentum (stored in state)
+  let relScore = 10;
+  const spySignal = state.signals['SPY'];
+  if (spySignal && momentum !== null && spySignal.momentum !== null) {
+    const alpha = momentum - spySignal.momentum; // outperformance vs SPY
+    if      (alpha > 15)  { relScore = 19; reasons.push('Outperforming SPY by +'+Math.round(alpha)+'% — strong alpha'); }
+    else if (alpha > 7)   { relScore = 16; reasons.push('Outperforming SPY by +'+Math.round(alpha)+'%'); }
+    else if (alpha > 2)   { relScore = 13; reasons.push('Slightly beating SPY'); }
+    else if (alpha > -2)  { relScore = 10; } // in line with market
+    else if (alpha > -7)  { relScore = 7;  reasons.push('Lagging SPY by '+Math.round(Math.abs(alpha))+'%'); }
+    else if (alpha > -15) { relScore = 4;  reasons.push('Significantly lagging SPY'); }
+    else                  { relScore = 1;  reasons.push('Major underperformance vs SPY'); }
+  } else if (inst.symbol === 'SPY') {
+    // SPY always gets neutral relative score vs itself
+    relScore = 10;
+  }
+  // Leveraged ETFs get capped relative score — momentum already captures their amplification
+  const isLeveraged = ['TQQQ','SOXL','UPRO'].includes(inst.symbol);
+  if (isLeveraged) relScore = Math.min(14, relScore);
+  layers.relative = Math.max(0, Math.min(20, relScore));
+  layerDetails.relative = layers.relative;
+
+  // ── FINAL SCORE ────────────────────────────────────────────────────────────
+  const rawScore = layers.technical + layers.trend + layers.momentum + layers.sentiment + layers.relative;
+
+  // Conservative penalty: if any layer scores below 5, cap the total
+  // This ensures all five layers must agree for a strong signal
+  const weakLayers = Object.values(layers).filter(v => v < 5).length;
+  const finalScore = weakLayers >= 2
+    ? Math.min(rawScore, 62)  // 2+ weak layers → max Buy, never Strong Buy
+    : weakLayers === 1
+    ? Math.min(rawScore, 74)  // 1 weak layer → cap below Strong Buy
+    : rawScore;               // all layers healthy → full score
+
+  const score = Math.max(0, Math.min(100, Math.round(finalScore)));
+
+  // Conservative thresholds: Strong Buy 80+, Buy 65+
   let signal;
-  if (score >= 75) signal = 'strong-buy';
-  else if (score >= 58) signal = 'buy';
-  else if (score >= 40) signal = 'hold';
-  else signal = 'sell';
+  if      (score >= 80) signal = 'strong-buy';
+  else if (score >= 65) signal = 'buy';
+  else if (score >= 42) signal = 'hold';
+  else                  signal = 'sell';
 
-  return { ...inst, ...data, score, signal, reasons };
+  return { ...inst, ...data, score, signal, reasons: reasons.slice(0,3), layers: layerDetails };
 }
 
 // ── Render Signal Cards ────────────────────────────────────────────────────
@@ -1238,6 +1346,26 @@ function renderSignals() {
           <div class="metric-label">SMA200</div>
         </div>
       </div>
+      ${s.layers ? `
+      <div style="margin:8px 0;display:grid;grid-template-columns:repeat(5,1fr);gap:3px">
+        ${[
+          ['Tech', s.layers.technical],
+          ['Trend', s.layers.trend],
+          ['Mom', s.layers.momentum],
+          ['Sent', s.layers.sentiment],
+          ['Rel', s.layers.relative],
+        ].map(([label, val]) => {
+          const pct = (val / 20) * 100;
+          const col = val >= 15 ? '#10b981' : val >= 10 ? '#3b82f6' : val >= 6 ? '#f59e0b' : '#ef4444';
+          return `<div style="text-align:center">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.3px">${label}</div>
+            <div style="background:var(--surface2);border-radius:3px;height:4px;overflow:hidden">
+              <div style="height:4px;width:${pct}%;background:${col};border-radius:3px"></div>
+            </div>
+            <div style="font-size:9px;font-weight:700;margin-top:2px;color:${col}">${val}/20</div>
+          </div>`;
+        }).join('')}
+      </div>` : ''}
       <div class="score-bar-track">
         <div class="score-bar-fill" style="width:${s.score}%;background:${scoreColor(s.score)}"></div>
       </div>
