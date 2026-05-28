@@ -1840,7 +1840,7 @@ async function generateIntelReport() {
   const summary = topBuys.map(s => `${s.symbol} (Score:${s.score}, RSI:${Math.round(s.rsi||0)}, Momentum:${fmt(s.momentum)}%)`).join(', ');
 
   try {
-    const res = await fetch('/api/ai', {
+    const res = await fetch('/api/market-data?type=ai', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -1873,7 +1873,7 @@ async function synthesiseIntel() {
   const el = document.getElementById('synthesis-result');
   el.textContent = '🔄 Synthesising...';
   try {
-    const res = await fetch('/api/ai', {
+    const res = await fetch('/api/market-data?type=ai', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -2361,7 +2361,7 @@ async function generateEarningsBrief() {
   ).join('; ');
 
   try {
-    const res = await fetch('/api/ai', {
+    const res = await fetch('/api/market-data?type=ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
