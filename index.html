@@ -796,7 +796,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
         <span style="display:flex;align-items:center;gap:5px;color:var(--muted)"><span style="width:18px;height:3px;background:var(--muted);display:inline-block;border-radius:2px"></span>Total invested</span>
       </div>
     </div>
-    <div style="position:relative;width:100%;height:280px"><canvas id="etf-chart"></canvas></div>
+    <div id="etf-chart-wrap" style="width:100%;height:280px;position:relative"></div>
 
     <!-- Milestone markers -->
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px" id="ep-milestones"></div>
@@ -1130,7 +1130,6 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 <!-- Toast -->
 <div id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
 // ICONIUM TRADE v2.0 — Secure, Fast, Cached
@@ -2624,7 +2623,6 @@ const ETF_FACTS = {
 let etpGoals = {income:40, growth:40, anchor:20};
 let etpIncomeMode = 'balanced'; // 'max' | 'balanced'
 let etpLegacy = false;
-let etpChart = null;
 
 function etpFmt(n){
   if(n==null||isNaN(n))return'—';
@@ -2725,6 +2723,112 @@ function etpProject(lump, monthly, ret, yld, exp, years, drip){
     else { const div=val*mYld; totalDiv+=div; val *= (1+mRet); }
   }
   return {value: val, totalDivPaid: totalDiv};
+}
+
+
+// ── SVG Chart Renderer ─────────────────────────────────────────────────────
+function renderSVGChart(containerId, labels, dripData, cashData, investedData, retireYear) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const W = 900, H = 260, PL = 64, PR = 16, PT = 10, PB = 36;
+  const IW = W - PL - PR, IH = H - PT - PB;
+
+  const allVals = [...dripData, ...cashData, ...investedData].filter(v => v > 0);
+  const maxVal = Math.max(...allVals, 1);
+  const minVal = 0;
+
+  const xScale = i => PL + (i / (labels.length - 1)) * IW;
+  const yScale = v => PT + IH - ((v - minVal) / (maxVal - minVal)) * IH;
+
+  const polyline = (data, color, dash='') => {
+    const pts = data.map((v, i) => `${xScale(i).toFixed(1)},${yScale(v).toFixed(1)}`).join(' ');
+    return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-dasharray="${dash}" stroke-linejoin="round" stroke-linecap="round"/>`;
+  };
+
+  const area = (data, color) => {
+    const pts = data.map((v, i) => `${xScale(i).toFixed(1)},${yScale(v).toFixed(1)}`).join(' ');
+    const base = `${xScale(data.length-1).toFixed(1)},${yScale(0).toFixed(1)} ${xScale(0).toFixed(1)},${yScale(0).toFixed(1)}`;
+    return `<polygon points="${pts} ${base}" fill="${color}" opacity="0.08"/>`;
+  };
+
+  // Y axis ticks
+  const yTicks = 5;
+  let yTicksHTML = '';
+  for (let i = 0; i <= yTicks; i++) {
+    const val = (maxVal / yTicks) * i;
+    const y = yScale(val);
+    const label = val >= 1000000 ? '$' + (val/1000000).toFixed(1) + 'M' : val >= 1000 ? '$' + Math.round(val/1000) + 'K' : '$' + Math.round(val);
+    yTicksHTML += `<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="#1e293b" stroke-width="1"/>`;
+    yTicksHTML += `<text x="${PL-6}" y="${(y+4).toFixed(1)}" text-anchor="end" fill="#475569" font-size="10" font-family="system-ui">${label}</text>`;
+  }
+
+  // X axis ticks — show every 5 years
+  let xTicksHTML = '';
+  labels.forEach((lbl, i) => {
+    if (i === 0 || i % 5 === 0 || i === labels.length - 1) {
+      const x = xScale(i);
+      xTicksHTML += `<text x="${x.toFixed(1)}" y="${(H - 8).toFixed(1)}" text-anchor="middle" fill="#475569" font-size="10" font-family="system-ui">${lbl}</text>`;
+    }
+  });
+
+  // Retirement line
+  let retireLineHTML = '';
+  if (retireYear > 0 && retireYear < labels.length) {
+    const rx = xScale(retireYear);
+    retireLineHTML = `
+      <line x1="${rx.toFixed(1)}" y1="${PT}" x2="${rx.toFixed(1)}" y2="${PT+IH}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="${(rx+4).toFixed(1)}" y="${(PT+14).toFixed(1)}" fill="#f59e0b" font-size="10" font-family="system-ui" font-weight="bold">Retire</text>`;
+  }
+
+  // Tooltip overlay rects (invisible, for hover)
+  let tooltipData = labels.map((lbl, i) => ({
+    lbl, drip: dripData[i], cash: cashData[i], inv: investedData[i], x: xScale(i)
+  }));
+
+  const svgId = 'etf-svg-' + Date.now();
+  const ttId  = 'etf-tt-' + Date.now();
+
+  container.innerHTML = `
+    <svg id="${svgId}" viewBox="0 0 ${W} ${H}" width="100%" height="100%" style="display:block;overflow:visible">
+      <defs>
+        <clipPath id="chartClip"><rect x="${PL}" y="${PT}" width="${IW}" height="${IH}"/></clipPath>
+      </defs>
+      ${yTicksHTML}
+      <g clip-path="url(#chartClip)">
+        ${area(dripData, '#3b82f6')}
+        ${area(cashData, '#10b981')}
+        ${polyline(investedData, '#475569', '4,3')}
+        ${polyline(cashData, '#10b981', '6,4')}
+        ${polyline(dripData, '#3b82f6')}
+        ${retireLineHTML}
+      </g>
+      <line x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT+IH}" stroke="#1e293b" stroke-width="1"/>
+      <line x1="${PL}" y1="${PT+IH}" x2="${W-PR}" y2="${PT+IH}" stroke="#1e293b" stroke-width="1"/>
+      ${xTicksHTML}
+    </svg>
+    <div id="${ttId}" style="position:absolute;display:none;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 12px;font-size:11px;color:#e2e8f0;pointer-events:none;white-space:nowrap;z-index:10;font-family:system-ui"></div>`;
+
+  // Hover interaction
+  const svg = document.getElementById(svgId);
+  const tt  = document.getElementById(ttId);
+  if (svg && tt) {
+    svg.addEventListener('mousemove', e => {
+      const rect = svg.getBoundingClientRect();
+      const svgX = (e.clientX - rect.left) * (W / rect.width);
+      const relX = svgX - PL;
+      const idx  = Math.max(0, Math.min(tooltipData.length - 1, Math.round(relX / IW * (tooltipData.length - 1))));
+      const d    = tooltipData[idx];
+      if (!d) return;
+      const fmt = v => v >= 1000000 ? '$'+(v/1000000).toFixed(2)+'M' : v >= 1000 ? '$'+Math.round(v/1000)+'K' : '$'+Math.round(v);
+      tt.innerHTML = `<strong>${d.lbl}</strong><br><span style="color:#3b82f6">DRIP: ${fmt(d.drip)}</span><br><span style="color:#10b981">Cash: ${fmt(d.cash)}</span><br><span style="color:#64748b">Invested: ${fmt(d.inv)}</span>`;
+      const ttLeft = Math.min(e.clientX - rect.left + 12, rect.width - 160);
+      tt.style.left = ttLeft + 'px';
+      tt.style.top  = (e.clientY - rect.top - 60) + 'px';
+      tt.style.display = 'block';
+    });
+    svg.addEventListener('mouseleave', () => { tt.style.display = 'none'; });
+  }
 }
 
 function etfUpdate(){
@@ -2845,35 +2949,8 @@ function etfUpdate(){
     investedData.push(Math.round(lump+monthly*12*y));
   }
 
-  if(etpChart){ try{ etpChart.destroy(); } catch(e){} etpChart=null; }
-  const ctx = document.getElementById('etf-chart');
-  if(!ctx) return;
-  if(typeof Chart === 'undefined') { setTimeout(etfUpdate, 300); return; }
-  // Ensure canvas is visible and has dimensions
-  if(ctx.offsetWidth === 0) { setTimeout(etfUpdate, 100); return; }
-
-  const datasets = [
-    {label:'DRIP (reinvest)',data:dripData,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.09)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.4},
-    {label:'Cash payouts',data:cashData,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.05)',borderWidth:2,pointRadius:0,fill:true,tension:0.4,borderDash:[6,4]},
-    {label:'Total invested',data:investedData,borderColor:'#475569',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,fill:false,tension:0,borderDash:[3,3]},
-  ];
-
-  // Add retirement line annotation if within chart range
-  etpChart = new Chart(ctx, {
-    type:'line',
-    data:{labels, datasets},
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': $'+ctx.parsed.y.toLocaleString()}},
-      },
-      scales:{
-        x:{ticks:{color:'#64748b',font:{size:11},maxRotation:0,autoSkip:true,maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.04)'}},
-        y:{ticks:{color:'#64748b',font:{size:11},callback:v=>{if(v>=1000000)return'$'+(v/1000000).toFixed(1)+'M';return'$'+(v/1000).toFixed(0)+'K';}},grid:{color:'rgba(255,255,255,0.04)'}},
-      }
-    }
-  });
+  // ── SVG Chart (no external lib, works hidden/visible) ──────────────────
+  renderSVGChart('etf-chart-wrap', labels, dripData, cashData, investedData, yearsToRetire);
 
   // ── Milestones ────────────────────────────────────────────────────────
   const milestoneYears = [1,5,10,yearsToRetire].filter((v,i,a)=>v>0&&a.indexOf(v)===i);
