@@ -831,6 +831,20 @@ main{max-width:1400px;margin:0 auto;padding:20px}
     </div>
   </div>
 
+  <!-- Goal-based AI Recommendation -->
+  <div class="auto-section" style="border-color:#6366f1">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div>
+        <h3 style="margin-bottom:3px">🤖 Personalised Recommendation</h3>
+        <div style="font-size:11px;color:var(--muted)">Based on your age, goals and retirement timeline</div>
+      </div>
+      <button onclick="generateEtfRecommendation()" class="btn btn-primary btn-sm" id="ep-reco-btn">⚡ Get Recommendation</button>
+    </div>
+    <div id="ep-reco-box" style="font-size:13px;color:var(--muted);line-height:1.8;min-height:40px">
+      Set your profile and goals above, then click <strong>Get Recommendation</strong> for a personalised strategy.
+    </div>
+  </div>
+
   <!-- Recommended Portfolio Mix -->
   <div class="auto-section">
     <h3>Recommended Portfolio Mix</h3>
@@ -2814,6 +2828,73 @@ function etpProject(lump, monthly, ret, yld, exp, years, drip){
 
 
 
+
+// ── ETF Recommendation Engine ─────────────────────────────────────────────
+async function generateEtfRecommendation(){
+  const btn  = document.getElementById('ep-reco-btn');
+  const box  = document.getElementById('ep-reco-box');
+  const lump    = +document.getElementById('ep-lump').value || 0;
+  const monthly = getMonthlyContrib();
+  const age     = +document.getElementById('ep-age').value || 35;
+  const retire  = +document.getElementById('ep-retire').value || 65;
+  const years   = Math.max(1, retire - age);
+  const blend   = getBlendedStats();
+
+  // Build goal summary
+  const goalParts = [];
+  if(etpGoals.income > 0) goalParts.push(`${etpGoals.income}% Income Generation (${etpIncomeMode === 'max' ? 'Max Yield — JEPQ' : 'Balanced — JEPQ+JEPI+SCHD'})`);
+  if(etpGoals.growth > 0) goalParts.push(`${etpGoals.growth}% Growth (QQQ)`);
+  if(etpGoals.anchor > 0) goalParts.push(`${etpGoals.anchor}% Stability (VOO+AGG)`);
+  const goalStr = goalParts.join(', ');
+
+  const dripRetire = etpProject(lump, monthly, blend.ret, blend.yld, blend.exp, years, true);
+  const cashRetire = etpProject(lump, monthly, blend.ret, blend.yld, blend.exp, years, false);
+  const monthlyIncomeNow = Math.round(lump * blend.yld / 12);
+  const monthlyIncomeRetire = Math.round(dripRetire.value * blend.yld / 12);
+
+  btn.disabled = true; btn.textContent = '⏳ Thinking...';
+  box.innerHTML = '<span style="color:var(--muted)">Analysing your profile...</span>';
+
+  const prompt = `You are a concise ETF wealth advisor. A Singapore-based investor has shared their profile:
+- Age: ${age}, Target retirement: ${retire} (${years} years away)
+- Lump sum: $${lump.toLocaleString()}, Monthly contribution: $${Math.round(monthly).toLocaleString()}
+- Goal allocation: ${goalStr}
+- Blended portfolio return: ${(blend.ret*100).toFixed(1)}%, yield: ${(blend.yld*100).toFixed(1)}%, expense: ${(blend.exp*100).toFixed(3)}%
+- Projected at retirement: DRIP $${Math.round(dripRetire.value).toLocaleString()}, Cash $${Math.round(cashRetire.value).toLocaleString()}
+- Current monthly income from dividends: $${monthlyIncomeNow}/mo
+- Projected monthly income at retirement: $${monthlyIncomeRetire}/mo
+- Legacy planning: ${etpLegacy ? 'Yes — projecting to age 85' : 'No'}
+
+Write a 4-sentence personalised recommendation:
+1. One sentence assessing whether this allocation suits their age and timeline.
+2. One sentence on their income vs growth balance — is it right, too aggressive, too conservative?
+3. One sentence on what to watch or adjust over time.
+4. One sentence on the DRIP vs Cash decision given their situation.
+
+Be direct, specific, use their actual numbers. No disclaimers. No bullet points.`;
+
+  try {
+    const res = await fetch('/api/market-data?type=ai', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 300,
+        messages: [{role: 'user', content: prompt}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || 'Could not generate recommendation.';
+    box.innerHTML = `<div style="color:var(--text);line-height:1.9">${text.replace(/\n/g,'<br>')}</div>
+      <div style="margin-top:12px;font-size:11px;color:var(--muted);padding:8px 12px;background:var(--surface2);border-radius:6px">
+        Based on: Age ${age} · ${years} yrs to retire · ${goalStr} · Blended return ${(blend.ret*100).toFixed(1)}% · Expense ${(blend.exp*100).toFixed(3)}%/yr
+      </div>`;
+  } catch(e) {
+    box.innerHTML = '<span style="color:var(--red)">Could not connect — check your internet connection.</span>';
+  }
+  btn.disabled = false; btn.textContent = '⚡ Get Recommendation';
+}
+
 // ── ETF Planner Input Helpers ─────────────────────────────────────────────
 let etpFreq = 'daily';
 
@@ -3075,7 +3156,8 @@ function etfUpdate(){
   if(gW > 0) rationale.push(`🚀 ${Math.round(gW*100)}% Growth (QQQ — ${(BASKETS.growth.ret*100).toFixed(0)}% avg return)`);
   if(aW > 0) rationale.push(`⚓ ${Math.round(aW*100)}% Anchor (VOO+AGG — recession-proof core)`);
   rationale.push(`Blended return: ~${(ret*100).toFixed(1)}% · Blended yield: ~${(yld*100).toFixed(1)}% · Avg expense: ${(exp*100).toFixed(3)}%`);
-  document.getElementById('ep-mix-rationale').innerHTML = rationale.join(' &nbsp;·&nbsp; ');
+  rationale.push(`<span style="color:var(--amber)">⚠️ Expense ratios are deducted from returns annually in all projections (blended: ${(exp*100).toFixed(3)}%/yr = $${Math.round(lump*exp)}/yr on your lump sum)</span>`);
+  document.getElementById('ep-mix-rationale').innerHTML = rationale.join('<br>');
 
   // ── Key Numbers ───────────────────────────────────────────────────────
   const currentMonthlyIncome = Math.round(lump * yld / 12);
@@ -3099,6 +3181,10 @@ function etfUpdate(){
   if(etpLegacy){
     keynums.push({label:'Legacy Value at Age 85', val:etpFmt(legacyDrip.value), sub:'DRIP · transferred to children', color:'#8b5cf6'});
   }
+  // Expense ratio transparency card
+  const annualFee = Math.round(lump * exp);
+  const lifetimeFee = Math.round((lump + (monthly * yearsToRetire * 12 / 2)) * exp * yearsToRetire);
+  keynums.push({label:'Expense Ratio Cost', val:'$'+annualFee.toLocaleString()+'/yr', sub:`${(exp*100).toFixed(3)}% blended fee · ~$${Math.round(lifetimeFee/1000)}K over ${yearsToRetire} yrs`, color:'#f59e0b'});
 
   document.getElementById('ep-keynums').innerHTML = keynums.map(k=>`
     <div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:center;border-top:3px solid ${k.color}">
