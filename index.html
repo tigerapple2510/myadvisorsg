@@ -655,96 +655,168 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 
   <div class="section-header">
     <h2>💰 ETF Wealth Planner</h2>
-    <div style="font-size:11px;color:var(--muted)">Long-term wealth building · DRIP vs Cash · Age-based strategy</div>
+    <div style="font-size:11px;color:var(--muted)">Goal-based · DRIP vs Cash · Income + Growth + Stability</div>
   </div>
 
+  <!-- Profile Inputs -->
   <div class="auto-section">
     <h3>Your Profile</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
       <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Lump sum (starting amount)</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Lump Sum (Starting Amount)</div>
         <div style="display:flex;align-items:center;gap:10px">
-          <input type="range" id="ep-lump" min="0" max="200000" step="1000" value="5000" oninput="etfUpdate()" style="flex:1">
-          <span style="font-size:14px;font-weight:700;color:var(--text);min-width:90px;text-align:right" id="ep-lump-out">$5,000</span>
+          <input type="range" id="ep-lump" min="0" max="500000" step="1000" value="10000" oninput="etfUpdate()" style="flex:1;accent-color:var(--accent)">
+          <span style="font-size:14px;font-weight:700;min-width:100px;text-align:right" id="ep-lump-out">$10,000</span>
         </div>
       </div>
       <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Monthly contribution</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Monthly Contribution</div>
         <div style="display:flex;align-items:center;gap:10px">
-          <input type="range" id="ep-monthly" min="0" max="10000" step="50" value="300" oninput="etfUpdate()" style="flex:1">
-          <span style="font-size:14px;font-weight:700;color:var(--text);min-width:90px;text-align:right" id="ep-monthly-out">$300/mo</span>
+          <input type="range" id="ep-monthly" min="0" max="10000" step="50" value="500" oninput="etfUpdate()" style="flex:1;accent-color:var(--accent)">
+          <span style="font-size:14px;font-weight:700;min-width:100px;text-align:right" id="ep-monthly-out">$500/mo</span>
         </div>
       </div>
       <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Your age</div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Current Age</div>
         <div style="display:flex;align-items:center;gap:10px">
-          <input type="range" id="ep-age" min="18" max="75" step="1" value="35" oninput="etfUpdate()" style="flex:1">
-          <span style="font-size:14px;font-weight:700;color:var(--text);min-width:90px;text-align:right" id="ep-age-out">35 yrs</span>
+          <input type="range" id="ep-age" min="18" max="75" step="1" value="35" oninput="etfUpdate()" style="flex:1;accent-color:var(--purple)">
+          <span style="font-size:14px;font-weight:700;min-width:100px;text-align:right" id="ep-age-out">35 yrs</span>
         </div>
       </div>
       <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Select ETF or basket</div>
-        <select id="ep-etf" onchange="etfUpdate()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 12px;font-size:13px;width:100%">
-          <optgroup label="Your Core 4">
-            <option value="voo">VOO — Vanguard S&P 500</option>
-            <option value="vti">VTI — Vanguard Total Market</option>
-            <option value="qqq">QQQ — NASDAQ-100</option>
-            <option value="schd">SCHD — Schwab Dividend</option>
-          </optgroup>
-          <optgroup label="Additional ETFs">
-            <option value="vgt">VGT — Vanguard Tech</option>
-            <option value="jepi">JEPI — JPMorgan Equity Premium</option>
-            <option value="jepq">JEPQ — JPMorgan NASDAQ Premium</option>
-            <option value="vym">VYM — Vanguard High Dividend</option>
-            <option value="agg">AGG — US Aggregate Bond</option>
-          </optgroup>
-          <optgroup label="Smart Baskets">
-            <option value="aggressive">Aggressive (QQQ 50% + VGT 30% + JEPQ 20%)</option>
-            <option value="balanced" selected>Balanced (VOO 40% + SCHD 30% + JEPI 30%)</option>
-            <option value="conservative">Conservative (AGG 40% + SCHD 35% + VYM 25%)</option>
-          </optgroup>
-        </select>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Target Retirement Age</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="range" id="ep-retire" min="40" max="80" step="1" value="65" oninput="etfUpdate()" style="flex:1;accent-color:var(--purple)">
+          <span style="font-size:14px;font-weight:700;min-width:100px;text-align:right" id="ep-retire-out">65 yrs <span style="font-size:11px;color:var(--muted)">(30 yrs)</span></span>
+        </div>
       </div>
+    </div>
+
+    <!-- Legacy Toggle -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:12px 14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:700">🏛️ Legacy / Generational Wealth Planning</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Project portfolio value at age 85 to pass to children. Maximises long-term compounding.</div>
+      </div>
+      <button class="toggle" id="tgl-legacy" onclick="toggleLegacy()"></button>
     </div>
   </div>
 
+  <!-- Goal Sliders -->
   <div class="auto-section">
-    <h3>Age-based Risk Profile & Recommended Allocation</h3>
-    <div id="ep-risk-desc" style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px"></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px" id="ep-alloc-grid"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <h3>Your Investment Goals</h3>
+      <span style="font-size:11px;color:var(--muted)">Sliders must total 100%</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+      Set how much focus you want on each goal. The tool will recommend the best ETFs for each and calculate your projected outcomes.
+    </div>
+
+    <!-- Income Generator -->
+    <div style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#10b981">💵 Income Generator</div>
+          <div style="font-size:11px;color:var(--muted)">Regular monthly dividends · High yield · JEPQ / JEPI / SCHD</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:22px;font-weight:800;color:#10b981" id="ep-income-pct">40%</div>
+          <div style="font-size:10px;color:var(--muted)">of portfolio</div>
+        </div>
+      </div>
+      <input type="range" id="ep-income-slider" min="0" max="100" step="5" value="40" oninput="goalSliderChange('income')" style="width:100%;accent-color:#10b981">
+
+      <!-- Income sub-choice toggle -->
+      <div style="display:flex;gap:8px;margin-top:10px" id="ep-income-subchoice">
+        <button id="btn-max-yield" onclick="setIncomeMode('max')" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #10b981;background:rgba(16,185,129,0.15);color:#10b981;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s">
+          ⚡ Max Yield Now<br><span style="font-weight:400;font-size:10px;opacity:.8">JEPQ 100% · ~10.9% yield</span>
+        </button>
+        <button id="btn-balanced-income" onclick="setIncomeMode('balanced')" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s">
+          📈 Balanced Income<br><span style="font-weight:400;font-size:10px;opacity:.8">JEPQ 50%+JEPI 30%+SCHD 20% · ~8% yield</span>
+        </button>
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;padding:6px 10px;background:var(--surface2);border-radius:6px" id="ep-income-advice"></div>
+    </div>
+
+    <!-- Growth Engine -->
+    <div style="margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#3b82f6">🚀 Growth Engine</div>
+          <div style="font-size:11px;color:var(--muted)">Maximum appreciation · ~15% avg annual return · QQQ</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:22px;font-weight:800;color:#3b82f6" id="ep-growth-pct">40%</div>
+          <div style="font-size:10px;color:var(--muted)">of portfolio</div>
+        </div>
+      </div>
+      <input type="range" id="ep-growth-slider" min="0" max="100" step="5" value="40" oninput="goalSliderChange('growth')" style="width:100%;accent-color:#3b82f6">
+    </div>
+
+    <!-- The Anchor -->
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#8b5cf6">⚓ The Anchor</div>
+          <div style="font-size:11px;color:var(--muted)">Stability · Recession-proof · ~9% return · VOO 80% + AGG 20%</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:22px;font-weight:800;color:#8b5cf6" id="ep-anchor-pct">20%</div>
+          <div style="font-size:10px;color:var(--muted)">of portfolio</div>
+        </div>
+      </div>
+      <input type="range" id="ep-anchor-slider" min="0" max="100" step="5" value="20" oninput="goalSliderChange('anchor')" style="width:100%;accent-color:#8b5cf6">
+    </div>
+
+    <div id="ep-slider-warning" style="display:none;margin-top:8px;padding:8px 12px;background:#450a0a;border-radius:6px;color:#fca5a5;font-size:11px;font-weight:600">
+      ⚠️ Goals must total 100%. Currently: <span id="ep-slider-total">0</span>%
+    </div>
   </div>
 
+  <!-- Recommended Portfolio Mix -->
   <div class="auto-section">
-    <h3>ETF Key Stats — <span id="ep-etf-name" style="color:var(--accent)">Balanced basket</span></h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px" id="ep-etf-stats"></div>
+    <h3>Recommended Portfolio Mix</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:12px" id="ep-mix-grid"></div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.6;padding:10px 14px;background:var(--surface2);border-radius:8px" id="ep-mix-rationale"></div>
   </div>
 
+  <!-- Key Numbers -->
+  <div class="auto-section">
+    <h3>Your Numbers at a Glance</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px" id="ep-keynums"></div>
+  </div>
+
+  <!-- Chart -->
   <div class="auto-section">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <h3>Portfolio Growth Projection</h3>
-      <div style="display:flex;gap:16px;font-size:12px">
-        <span style="display:flex;align-items:center;gap:5px;color:var(--accent)"><span style="width:18px;height:3px;background:var(--accent);display:inline-block;border-radius:2px"></span>DRIP</span>
-        <span style="display:flex;align-items:center;gap:5px;color:var(--green)"><span style="width:18px;height:3px;background:var(--green);display:inline-block;border-radius:2px"></span>Cash</span>
-        <span style="display:flex;align-items:center;gap:5px;color:var(--muted)"><span style="width:18px;height:3px;background:var(--muted);display:inline-block;border-radius:2px"></span>Invested</span>
+      <h3>Wealth Projection Chart</h3>
+      <div style="display:flex;gap:14px;font-size:11px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:5px;color:#3b82f6"><span style="width:18px;height:3px;background:#3b82f6;display:inline-block;border-radius:2px"></span>DRIP (reinvest)</span>
+        <span style="display:flex;align-items:center;gap:5px;color:#10b981"><span style="width:18px;height:3px;background:#10b981;display:inline-block;border-radius:2px;border-top:2px dashed #10b981"></span>Cash payouts</span>
+        <span style="display:flex;align-items:center;gap:5px;color:var(--muted)"><span style="width:18px;height:3px;background:var(--muted);display:inline-block;border-radius:2px"></span>Total invested</span>
       </div>
     </div>
-    <div style="position:relative;width:100%;height:260px"><canvas id="etf-chart" role="img" aria-label="ETF projection chart showing DRIP vs cash growth over 30 years"></canvas></div>
+    <div style="position:relative;width:100%;height:280px"><canvas id="etf-chart"></canvas></div>
+
+    <!-- Milestone markers -->
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px" id="ep-milestones"></div>
   </div>
 
+  <!-- DRIP vs Cash 30-yr -->
   <div class="auto-section">
-    <h3>DRIP vs Cash — 30-Year Comparison</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="ep-compare30"></div>
+    <h3>DRIP vs Cash — At Retirement</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="ep-compare"></div>
     <div style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.7;padding:10px 14px;background:var(--surface2);border-radius:8px;border-left:2px solid var(--border)">
-      <strong>DRIP</strong> — dividends reinvested automatically. Compounds faster. Larger end value.<br>
-      <strong>Cash</strong> — dividends paid to you monthly. Smaller portfolio but regular income now.<br>
-      Projections use historical average returns minus expense ratio. Not financial advice.
+      <strong>DRIP</strong> — dividends reinvested every month. Larger portfolio at retirement but no income along the way.<br>
+      <strong>Cash</strong> — dividends paid to you monthly from day one. Smaller end portfolio but you earn income now.<br>
+      Projections use historical average returns net of expense ratios. Not financial advice.
     </div>
   </div>
 
+  <!-- Basket Reference -->
   <div class="auto-section">
-    <h3>ETF Reference Guide — All 9 Funds</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:8px" id="ep-info-grid"></div>
+    <h3>Basket Reference — What's Inside Each</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px" id="ep-basket-ref"></div>
   </div>
 
 </div>
@@ -2506,174 +2578,387 @@ function exportEarningsCSV() {
   a.click();
 }
 
-// ── ETF Planner Data & Logic ───────────────────────────────────────────────
-const ETF_DB = {
-  voo:{name:'Vanguard S&P 500 ETF',ret:0.107,yld:0.0108,exp:0.0003,price:695,risk:'Low',riskCls:'low',desc:'Tracks the 500 largest US companies. Apple, Microsoft, NVIDIA, Amazon, Meta.',pros:'Lowest cost · Ultra stable · Ideal core holding',cons:'No small caps · Heavy tech weighting'},
-  vti:{name:'Vanguard Total Stock Market ETF',ret:0.106,yld:0.0108,exp:0.0003,price:372,risk:'Low',riskCls:'low',desc:'Owns the entire US stock market — all 3,500+ companies.',pros:'Maximum diversification · Includes small caps · Ultra low cost',cons:'Overlaps heavily with VOO · US-only'},
-  qqq:{name:'Invesco NASDAQ-100 ETF',ret:0.155,yld:0.0055,exp:0.002,price:556,risk:'High',riskCls:'high',desc:'Top 100 non-financial NASDAQ companies — Apple, NVIDIA, Microsoft, Meta, Tesla.',pros:'Highest historical returns · Pure tech/growth · Best for 20s–30s',cons:'Most volatile · Higher fee · Painful in tech downturns'},
-  schd:{name:'Schwab U.S. Dividend Equity ETF',ret:0.12,yld:0.0326,exp:0.0006,price:32.63,risk:'Low',riskCls:'low',desc:'100 high-quality US companies with consistent dividend growth.',pros:'Solid quarterly dividends · Defensive · Great for 40s–50s+',cons:'Lower growth vs QQQ · Heavy financials weighting'},
-  vgt:{name:'Vanguard Information Technology ETF',ret:0.141,yld:0.0032,exp:0.001,price:119,risk:'High',riskCls:'high',desc:'Pure US tech sector — Apple, Microsoft, NVIDIA, Broadcom, AMD.',pros:'Best CAGR of any sector ETF · Low cost · AI tailwind',cons:'Zero diversification · Crashes hard in tech selloffs'},
-  jepi:{name:'JPMorgan Equity Premium Income ETF',ret:0.09,yld:0.0728,exp:0.0035,price:56.20,risk:'Medium',riskCls:'med',desc:'S&P 500 stocks + covered call options. Generates high monthly income.',pros:'7.28% yield · Monthly payments · Lower volatility',cons:'Highest fee of the 9 · Caps upside in bull markets'},
-  jepq:{name:'JPMorgan NASDAQ Equity Premium Income ETF',ret:0.11,yld:0.1089,exp:0.0035,price:59.52,risk:'Medium',riskCls:'med',desc:'NASDAQ-100 + covered calls. Massive monthly income + tech exposure.',pros:'10.89% yield — highest of 9 · Tech + income · Monthly pays',cons:'Newer fund · Yield fluctuates · Same high fee as JEPI'},
-  vym:{name:'Vanguard High Dividend Yield ETF',ret:0.095,yld:0.0275,exp:0.0006,price:130,risk:'Low',riskCls:'low',desc:'400+ large US companies that pay above-average dividends.',pros:'Largest dividend ETF by AUM · Ultra-low cost · Very diversified',cons:'Lower yield than SCHD/JEPI/JEPQ · Slower dividend growth'},
-  agg:{name:'iShares Core U.S. Aggregate Bond ETF',ret:0.038,yld:0.038,exp:0.0003,price:97,risk:'Low',riskCls:'low',desc:'US government + corporate investment-grade bonds. Capital preservation.',pros:'Lowest risk of all 9 · Protects in market crashes · Essential for 50s+',cons:'No real growth · Rising rates hurt bond prices'},
-  aggressive:{name:'Aggressive basket (QQQ 50% + VGT 30% + JEPQ 20%)',ret:0.148,yld:0.035,exp:0.0022,price:null,risk:'High',riskCls:'high',desc:'Maximum growth with income cushion. Best for 20s–35 investors.',pros:'Highest expected returns · Tech-dominant · Income from JEPQ',cons:'High volatility · Heavy sector concentration'},
-  balanced:{name:'Balanced basket (VOO 40% + SCHD 30% + JEPI 30%)',ret:0.107,yld:0.038,exp:0.0018,price:null,risk:'Medium',riskCls:'med',desc:'Growth + income + defensive blend. Suitable for most investors.',pros:'Well diversified · Income + growth · Resilient in downturns',cons:'Won\'t outperform pure growth in bull markets'},
-  conservative:{name:'Conservative basket (AGG 40% + SCHD 35% + VYM 25%)',ret:0.078,yld:0.032,exp:0.0005,price:null,risk:'Low',riskCls:'low',desc:'Capital preservation + income. Designed for 55+ or risk-averse investors.',pros:'Very stable · Strong income yield · Protects in downturns',cons:'Limited upside · Below-inflation real return in bad years'},
+// ── ETF Planner v2 — Goal-Based Engine ────────────────────────────────────
+
+const BASKETS = {
+  income_max: {
+    label: 'Income Generator — Max Yield',
+    color: '#10b981',
+    holdings: [{etf:'JEPQ', pct:1.0}],
+    ret: 0.11, yld: 0.1089, exp: 0.0035,
+    desc: 'JEPQ 100% — highest monthly payout available. 10.89% yield. NASDAQ-100 + covered calls.',
+  },
+  income_balanced: {
+    label: 'Income Generator — Balanced',
+    color: '#10b981',
+    holdings: [{etf:'JEPQ',pct:0.5},{etf:'JEPI',pct:0.3},{etf:'SCHD',pct:0.2}],
+    ret: 0.105, yld: 0.082, exp: 0.0027,
+    desc: 'JEPQ 50% + JEPI 30% + SCHD 20% — strong yield today (~8%) with SCHD growing dividends ~12%/yr.',
+  },
+  growth: {
+    label: 'Growth Engine',
+    color: '#3b82f6',
+    holdings: [{etf:'QQQ', pct:1.0}],
+    ret: 0.155, yld: 0.0055, exp: 0.002,
+    desc: 'QQQ 100% — Invesco NASDAQ-100. Top 100 non-financial companies. ~15% historical annual return.',
+  },
+  anchor: {
+    label: 'The Anchor',
+    color: '#8b5cf6',
+    holdings: [{etf:'VOO',pct:0.8},{etf:'AGG',pct:0.2}],
+    ret: 0.089, yld: 0.018, exp: 0.00042,
+    desc: 'VOO 80% + AGG 20% — S&P 500 stability + bonds for recession protection. Survived every crash since 1928.',
+  },
 };
 
-const ETF_MILESTONES=[1,5,10,20,30];
+const ETF_FACTS = {
+  JEPQ: {name:'JPMorgan NASDAQ Equity Premium Income',price:59.52,yield:0.1089,exp:0.0035},
+  JEPI: {name:'JPMorgan Equity Premium Income',price:56.20,yield:0.0728,exp:0.0035},
+  SCHD: {name:'Schwab U.S. Dividend Equity',price:32.63,yield:0.0326,exp:0.0006},
+  QQQ:  {name:'Invesco NASDAQ-100',price:556,yield:0.0055,exp:0.002},
+  VOO:  {name:'Vanguard S&P 500',price:695,yield:0.0108,exp:0.0003},
+  AGG:  {name:'iShares U.S. Aggregate Bond',price:97,yield:0.038,exp:0.0003},
+};
 
-function etpFmt(n){if(n==null||isNaN(n))return'—';n=Math.round(n);if(n>=1000000)return'$'+(n/1000000).toFixed(2)+'M';if(n>=1000)return'$'+(n/1000).toFixed(0)+'K';return'$'+n;}
-function etpFmtFull(n){if(n==null||isNaN(n))return'—';return'$'+Math.round(n).toLocaleString();}
+// State
+let etpGoals = {income:40, growth:40, anchor:20};
+let etpIncomeMode = 'balanced'; // 'max' | 'balanced'
+let etpLegacy = false;
+let etpChart = null;
 
-function etpProject(lump,monthly,annRet,annYld,exp,years,drip){
-  let val=lump;const mRet=(annRet-exp)/12;const mYld=annYld/12;let totalDiv=0;
-  for(let m=0;m<years*12;m++){val+=monthly;if(drip){val*=(1+mRet+mYld);}else{const div=val*mYld;totalDiv+=div;val*=(1+mRet);}}
-  return{value:val,totalDivPaid:totalDiv};
+function etpFmt(n){
+  if(n==null||isNaN(n))return'—';
+  n=Math.round(n);
+  if(n>=1000000)return'$'+(n/1000000).toFixed(2)+'M';
+  if(n>=1000)return'$'+(n/1000).toFixed(0)+'K';
+  return'$'+n;
+}
+function etpFmtFull(n){
+  if(n==null||isNaN(n))return'—';
+  return'$'+Math.round(n).toLocaleString();
 }
 
-function etpRiskProfile(age){
-  if(age<=30)return{label:'Aggressive',color:'#fca5a5',desc:'Long time horizon — maximise growth. Heavy tech and equity. Volatility is your friend.',weights:{qqq:0.40,vgt:0.30,vti:0.20,schd:0.10}};
-  if(age<=45)return{label:'Growth',color:'#fcd34d',desc:'Strong growth phase. Balance equity growth with some income. Ride market cycles confidently.',weights:{voo:0.35,qqq:0.30,schd:0.20,jepi:0.15}};
-  if(age<=55)return{label:'Balanced',color:'#93c5fd',desc:'Approaching peak earning years. Blend growth and income. Begin reducing concentration risk.',weights:{voo:0.30,schd:0.30,jepi:0.25,agg:0.15}};
-  if(age<=65)return{label:'Conservative',color:'#6ee7b7',desc:'Preservation matters. Shift toward income and stability. Protect what you have built.',weights:{schd:0.30,jepi:0.25,vym:0.20,agg:0.25}};
-  return{label:'Income',color:'#94a3b8',desc:'Capital preservation and monthly income. Bonds and high-yield dividend ETFs dominate.',weights:{agg:0.40,jepi:0.30,schd:0.20,vym:0.10}};
+function toggleLegacy(){
+  etpLegacy = !etpLegacy;
+  document.getElementById('tgl-legacy').classList.toggle('on', etpLegacy);
+  etfUpdate();
 }
 
-let etpChart=null;
+function setIncomeMode(mode){
+  etpIncomeMode = mode;
+  const btnMax = document.getElementById('btn-max-yield');
+  const btnBal = document.getElementById('btn-balanced-income');
+  if(mode === 'max'){
+    btnMax.style.borderColor='#10b981'; btnMax.style.background='rgba(16,185,129,0.15)'; btnMax.style.color='#10b981';
+    btnBal.style.borderColor='var(--border)'; btnBal.style.background='var(--surface2)'; btnBal.style.color='var(--muted)';
+  } else {
+    btnBal.style.borderColor='#10b981'; btnBal.style.background='rgba(16,185,129,0.15)'; btnBal.style.color='#10b981';
+    btnMax.style.borderColor='var(--border)'; btnMax.style.background='var(--surface2)'; btnMax.style.color='var(--muted)';
+  }
+  etfUpdate();
+}
+
+function goalSliderChange(changed){
+  const iEl = document.getElementById('ep-income-slider');
+  const gEl = document.getElementById('ep-growth-slider');
+  const aEl = document.getElementById('ep-anchor-slider');
+  let i=+iEl.value, g=+gEl.value, a=+aEl.value;
+
+  // Clamp the other two proportionally so total = 100
+  const total = i+g+a;
+  if(total !== 100){
+    const diff = total - 100;
+    if(changed === 'income'){
+      // Reduce growth and anchor proportionally
+      const rest = g+a;
+      if(rest > 0){ g = Math.max(0,Math.round(g - diff*(g/rest))); a = 100-i-g; }
+      else { g=0; a=0; i=100; }
+    } else if(changed === 'growth'){
+      const rest = i+a;
+      if(rest > 0){ i = Math.max(0,Math.round(i - diff*(i/rest))); a = 100-i-g; }
+      else { i=0; a=0; g=100; }
+    } else {
+      const rest = i+g;
+      if(rest > 0){ i = Math.max(0,Math.round(i - diff*(i/rest))); g = 100-i-a; }
+      else { i=0; g=0; a=100; }
+    }
+  }
+
+  // Clamp negatives
+  i=Math.max(0,i); g=Math.max(0,g); a=Math.max(0,a);
+  // Final adjust
+  const t2=i+g+a;
+  if(t2!==100){ a+=100-t2; }
+
+  iEl.value=i; gEl.value=g; aEl.value=a;
+  etpGoals = {income:i, growth:g, anchor:a};
+
+  const warn = document.getElementById('ep-slider-warning');
+  warn.style.display='none';
+
+  document.getElementById('ep-income-pct').textContent=i+'%';
+  document.getElementById('ep-growth-pct').textContent=g+'%';
+  document.getElementById('ep-anchor-pct').textContent=a+'%';
+
+  etfUpdate();
+}
+
+function getBlendedStats(){
+  const incomeBasket = etpIncomeMode==='max' ? BASKETS.income_max : BASKETS.income_balanced;
+  const iW = etpGoals.income/100;
+  const gW = etpGoals.growth/100;
+  const aW = etpGoals.anchor/100;
+  const blendRet = incomeBasket.ret*iW + BASKETS.growth.ret*gW + BASKETS.anchor.ret*aW;
+  const blendYld = incomeBasket.yld*iW + BASKETS.growth.yld*gW + BASKETS.anchor.yld*aW;
+  const blendExp = incomeBasket.exp*iW + BASKETS.growth.exp*gW + BASKETS.anchor.exp*aW;
+  return {ret:blendRet, yld:blendYld, exp:blendExp, iW, gW, aW, incomeBasket};
+}
+
+function etpProject(lump, monthly, ret, yld, exp, years, drip){
+  let val = lump;
+  const mRet = (ret - exp) / 12;
+  const mYld = yld / 12;
+  let totalDiv = 0;
+  for(let m=0; m<years*12; m++){
+    val += monthly;
+    if(drip){ val *= (1 + mRet + mYld); }
+    else { const div=val*mYld; totalDiv+=div; val *= (1+mRet); }
+  }
+  return {value: val, totalDivPaid: totalDiv};
+}
 
 function etfUpdate(){
-  const lump=+document.getElementById('ep-lump').value;
-  const monthly=+document.getElementById('ep-monthly').value;
-  const age=+document.getElementById('ep-age').value;
-  const key=document.getElementById('ep-etf').value;
-  const etf=ETF_DB[key];
+  const lump    = +document.getElementById('ep-lump').value;
+  const monthly = +document.getElementById('ep-monthly').value;
+  const age     = +document.getElementById('ep-age').value;
+  const retire  = +document.getElementById('ep-retire').value;
 
-  document.getElementById('ep-lump-out').textContent='$'+Math.round(lump).toLocaleString();
-  document.getElementById('ep-monthly-out').textContent='$'+monthly.toLocaleString()+'/mo';
-  document.getElementById('ep-age-out').textContent=age+' yrs';
-  document.getElementById('ep-etf-name').textContent=etf.name;
+  // Clamp retire >= age+1
+  const retireActual = Math.max(retire, age+1);
+  const yearsToRetire = retireActual - age;
 
-  const risk=etpRiskProfile(age);
-  document.getElementById('ep-risk-desc').innerHTML=
-    `<span style="font-size:11px;font-weight:700;padding:3px 12px;border-radius:999px;background:rgba(255,255,255,0.08);color:${risk.color};margin-right:8px">${risk.label}</span>${risk.desc}`;
+  document.getElementById('ep-lump-out').textContent = '$'+Math.round(lump).toLocaleString();
+  document.getElementById('ep-monthly-out').textContent = '$'+monthly.toLocaleString()+'/mo';
+  document.getElementById('ep-age-out').textContent = age+' yrs';
+  document.getElementById('ep-retire-out').innerHTML = retireActual+' yrs <span style="font-size:11px;color:var(--muted)">(' +yearsToRetire+ ' yrs away)</span>';
 
-  const allocKeys=Object.keys(risk.weights);
-  document.getElementById('ep-alloc-grid').innerHTML=allocKeys.map(k=>{
-    const e=ETF_DB[k];const pct=Math.round(risk.weights[k]*100);
-    return`<div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center">
-      <div style="font-size:13px;font-weight:800;color:var(--accent)">${k.toUpperCase()}</div>
-      <div style="font-size:20px;font-weight:800;color:var(--text)">${pct}%</div>
-      <div style="font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3">${e?e.name.split(' ').slice(0,3).join(' '):'—'}</div>
-    </div>`;
-  }).join('');
+  // Auto-suggest income mode based on age/years to retire
+  const autoMode = (age >= 50 || yearsToRetire <= 10) ? 'max' : 'balanced';
+  const advice = autoMode === 'max'
+    ? `Auto-suggested: Max Yield — ${yearsToRetire} yrs to retirement, prioritise income now.`
+    : `Auto-suggested: Balanced Income — ${yearsToRetire} yrs gives time for SCHD dividend growth to compound.`;
+  document.getElementById('ep-income-advice').textContent = advice;
 
-  const costPerYr=Math.round((lump+monthly*12)*etf.exp);
-  document.getElementById('ep-etf-stats').innerHTML=`
-    <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Share price</div><div style="font-size:16px;font-weight:800;color:var(--text)">${etf.price?'$'+etf.price:'Basket'}</div></div>
-    <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Expense ratio</div><div style="font-size:16px;font-weight:800;color:var(--green)">${(etf.exp*100).toFixed(2)}%/yr</div></div>
-    <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Fee on your $</div><div style="font-size:16px;font-weight:800;color:var(--amber)">$${costPerYr}/yr</div></div>
-    <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Avg annual return</div><div style="font-size:16px;font-weight:800;color:var(--accent)">${(etf.ret*100).toFixed(1)}%</div></div>
-    <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Dividend yield</div><div style="font-size:16px;font-weight:800;color:var(--green)">${(etf.yld*100).toFixed(2)}%</div></div>
-    <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Monthly on $10K</div><div style="font-size:16px;font-weight:800;color:var(--text)">${etpFmtFull(Math.round(10000*etf.yld/12))}</div></div>
-  `;
+  // Sync goal display
+  document.getElementById('ep-income-pct').textContent = etpGoals.income+'%';
+  document.getElementById('ep-growth-pct').textContent = etpGoals.growth+'%';
+  document.getElementById('ep-anchor-pct').textContent = etpGoals.anchor+'%';
+  document.getElementById('ep-income-slider').value = etpGoals.income;
+  document.getElementById('ep-growth-slider').value = etpGoals.growth;
+  document.getElementById('ep-anchor-slider').value = etpGoals.anchor;
 
-  const labels=[];const dripData=[];const cashData=[];const investedData=[];
-  for(let y=0;y<=30;y++){
+  // Sync income mode buttons
+  setIncomeMode(etpIncomeMode);
+
+  const blend = getBlendedStats();
+  const {ret, yld, exp, iW, gW, aW, incomeBasket} = blend;
+
+  // ── Recommended Mix Grid ──────────────────────────────────────────────
+  // Build flat ETF list from all baskets weighted
+  const etfMap = {};
+  const addHoldings = (basket, weight) => {
+    basket.holdings.forEach(h => {
+      if(!etfMap[h.etf]) etfMap[h.etf] = 0;
+      etfMap[h.etf] += h.pct * weight;
+    });
+  };
+  addHoldings(incomeBasket, iW);
+  addHoldings(BASKETS.growth, gW);
+  addHoldings(BASKETS.anchor, aW);
+
+  const etfColors = {JEPQ:'#10b981',JEPI:'#059669',SCHD:'#34d399',QQQ:'#3b82f6',VOO:'#8b5cf6',AGG:'#a78bfa'};
+  const mixGrid = document.getElementById('ep-mix-grid');
+  mixGrid.innerHTML = Object.entries(etfMap)
+    .filter(([,pct])=>pct>0.001)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([etf,pct])=>{
+      const f = ETF_FACTS[etf];
+      const color = etfColors[etf] || 'var(--accent)';
+      const pctRounded = Math.round(pct*100);
+      const monthlyIncome = Math.round(lump * pct * f.yield / 12);
+      return `<div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;border-top:3px solid ${color}">
+        <div style="font-size:16px;font-weight:800;color:${color}">${etf}</div>
+        <div style="font-size:22px;font-weight:800;color:var(--text);margin:2px 0">${pctRounded}%</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.4">${f.name.split(' ').slice(0,3).join(' ')}</div>
+        <div style="font-size:11px;font-weight:700;color:${color};margin-top:4px">${(f.yield*100).toFixed(2)}% yield</div>
+      </div>`;
+    }).join('');
+
+  // Rationale
+  const rationale = [];
+  if(iW > 0) rationale.push(`💵 ${Math.round(iW*100)}% Income (${incomeBasket.label.split('—')[1]?.trim()||incomeBasket.label})`);
+  if(gW > 0) rationale.push(`🚀 ${Math.round(gW*100)}% Growth (QQQ — ${(BASKETS.growth.ret*100).toFixed(0)}% avg return)`);
+  if(aW > 0) rationale.push(`⚓ ${Math.round(aW*100)}% Anchor (VOO+AGG — recession-proof core)`);
+  rationale.push(`Blended return: ~${(ret*100).toFixed(1)}% · Blended yield: ~${(yld*100).toFixed(1)}% · Avg expense: ${(exp*100).toFixed(3)}%`);
+  document.getElementById('ep-mix-rationale').innerHTML = rationale.join(' &nbsp;·&nbsp; ');
+
+  // ── Key Numbers ───────────────────────────────────────────────────────
+  const currentMonthlyIncome = Math.round(lump * yld / 12);
+  const dripAtRetire = etpProject(lump, monthly, ret, yld, exp, yearsToRetire, true);
+  const cashAtRetire = etpProject(lump, monthly, ret, yld, exp, yearsToRetire, false);
+  const retireMonthlyIncomeDrip = Math.round(dripAtRetire.value * yld / 12);
+  const retireMonthlyIncomeCash = Math.round(cashAtRetire.value * yld / 12);
+
+  // Legacy projection (age 85)
+  const legacyYears = Math.max(0, 85 - age);
+  const legacyDrip = etpProject(lump, monthly, ret, yld, exp, legacyYears, true);
+
+  const keynums = [
+    {label:'Current Monthly Income', val:etpFmtFull(currentMonthlyIncome)+'/mo', sub:'From dividends today', color:'#10b981'},
+    {label:'Years to Retirement', val:yearsToRetire+' yrs', sub:`Age ${age} → ${retireActual}`, color:'var(--muted)'},
+    {label:'Portfolio at Retirement (DRIP)', val:etpFmt(dripAtRetire.value), sub:`Dividends reinvested`, color:'#3b82f6'},
+    {label:'Portfolio at Retirement (Cash)', val:etpFmt(cashAtRetire.value), sub:`Taking dividends out`, color:'#10b981'},
+    {label:'Monthly Income at Retirement', val:etpFmtFull(retireMonthlyIncomeDrip)+'/mo', sub:'If switched to cash at retire', color:'#10b981'},
+    {label:'Total Dividends Received', val:etpFmt(cashAtRetire.totalDivPaid), sub:`Over ${yearsToRetire} yrs (cash mode)`, color:'#f59e0b'},
+  ];
+  if(etpLegacy){
+    keynums.push({label:'Legacy Value at Age 85', val:etpFmt(legacyDrip.value), sub:'DRIP · transferred to children', color:'#8b5cf6'});
+  }
+
+  document.getElementById('ep-keynums').innerHTML = keynums.map(k=>`
+    <div style="background:var(--surface2);border-radius:10px;padding:14px;text-align:center;border-top:3px solid ${k.color}">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600">${k.label}</div>
+      <div style="font-size:20px;font-weight:800;color:${k.color}">${k.val}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${k.sub}</div>
+    </div>`).join('');
+
+  // ── Chart ─────────────────────────────────────────────────────────────
+  const maxYears = etpLegacy ? Math.max(yearsToRetire, legacyYears) : yearsToRetire;
+  const labels=[]; const dripData=[]; const cashData=[]; const investedData=[];
+  for(let y=0; y<=Math.min(maxYears,50); y++){
     labels.push(y===0?'Now':'Yr '+y);
-    const d=etpProject(lump,monthly,etf.ret,etf.yld,etf.exp,y,true);
-    const c=etpProject(lump,monthly,etf.ret,etf.yld,etf.exp,y,false);
-    dripData.push(Math.round(d.value));cashData.push(Math.round(c.value));
+    const d=etpProject(lump,monthly,ret,yld,exp,y,true);
+    const c=etpProject(lump,monthly,ret,yld,exp,y,false);
+    dripData.push(Math.round(d.value));
+    cashData.push(Math.round(c.value));
     investedData.push(Math.round(lump+monthly*12*y));
   }
 
-  if(etpChart){etpChart.destroy();}
-  etpChart=new Chart(document.getElementById('etf-chart'),{
+  if(etpChart){ etpChart.destroy(); }
+  const ctx = document.getElementById('etf-chart');
+  if(!ctx) return;
+
+  const datasets = [
+    {label:'DRIP (reinvest)',data:dripData,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.09)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.4},
+    {label:'Cash payouts',data:cashData,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.05)',borderWidth:2,pointRadius:0,fill:true,tension:0.4,borderDash:[6,4]},
+    {label:'Total invested',data:investedData,borderColor:'#475569',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,fill:false,tension:0,borderDash:[3,3]},
+  ];
+
+  // Add retirement line annotation if within chart range
+  etpChart = new Chart(ctx, {
     type:'line',
-    data:{labels,datasets:[
-      {label:'DRIP (reinvest)',data:dripData,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.09)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.4},
-      {label:'Cash payouts',data:cashData,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.05)',borderWidth:2,pointRadius:0,fill:true,tension:0.4,borderDash:[6,4]},
-      {label:'Total invested',data:investedData,borderColor:'#475569',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,fill:false,tension:0,borderDash:[3,3]},
-    ]},
+    data:{labels, datasets},
     options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': $'+ctx.parsed.y.toLocaleString()}}},
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': $'+ctx.parsed.y.toLocaleString()}},
+      },
       scales:{
-        x:{ticks:{color:'#64748b',font:{size:11},maxRotation:0,autoSkip:true,maxTicksLimit:8},grid:{color:'rgba(255,255,255,0.04)'}},
+        x:{ticks:{color:'#64748b',font:{size:11},maxRotation:0,autoSkip:true,maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.04)'}},
         y:{ticks:{color:'#64748b',font:{size:11},callback:v=>{if(v>=1000000)return'$'+(v/1000000).toFixed(1)+'M';return'$'+(v/1000).toFixed(0)+'K';}},grid:{color:'rgba(255,255,255,0.04)'}},
       }
     }
   });
 
-  document.getElementById('ep-milestones').innerHTML=ETF_MILESTONES.map(yr=>{
-    const d=etpProject(lump,monthly,etf.ret,etf.yld,etf.exp,yr,true);
-    const c=etpProject(lump,monthly,etf.ret,etf.yld,etf.exp,yr,false);
-    const mInc=Math.round(c.value*etf.yld/12);
-    return`<div style="background:var(--surface2);border-radius:8px;padding:10px 6px;text-align:center">
-      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Year ${yr}</div>
-      <div style="font-size:13px;font-weight:800;color:var(--accent)">${etpFmt(d.value)}</div>
-      <div style="font-size:9px;color:var(--accent);margin-top:1px">DRIP</div>
-      <div style="font-size:12px;font-weight:700;color:var(--green);margin-top:3px">${etpFmt(c.value)}</div>
-      <div style="font-size:9px;color:var(--green);margin-top:1px">Cash</div>
-      <div style="font-size:10px;color:var(--muted);margin-top:3px">${etpFmtFull(mInc)}/mo</div>
+  // ── Milestones ────────────────────────────────────────────────────────
+  const milestoneYears = [1,5,10,yearsToRetire].filter((v,i,a)=>v>0&&a.indexOf(v)===i);
+  if(etpLegacy && legacyYears > yearsToRetire) milestoneYears.push(legacyYears);
+  milestoneYears.sort((a,b)=>a-b);
+
+  document.getElementById('ep-milestones').style.gridTemplateColumns = `repeat(${milestoneYears.length},1fr)`;
+  document.getElementById('ep-milestones').innerHTML = milestoneYears.map(yr=>{
+    const d=etpProject(lump,monthly,ret,yld,exp,yr,true);
+    const c=etpProject(lump,monthly,ret,yld,exp,yr,false);
+    const mInc=Math.round(c.value*yld/12);
+    const isRetire = yr===yearsToRetire;
+    const isLegacy = etpLegacy && yr===legacyYears;
+    const borderCol = isLegacy?'#8b5cf6':isRetire?'#f59e0b':'var(--border)';
+    const label = isLegacy?'🏛️ Legacy':isRetire?'🎯 Retire':'Year '+yr;
+    return `<div style="background:var(--surface2);border-radius:8px;padding:10px 6px;text-align:center;border:1px solid ${borderCol}">
+      <div style="font-size:10px;font-weight:700;color:${borderCol};text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">${label}</div>
+      <div style="font-size:13px;font-weight:800;color:#3b82f6">${etpFmt(d.value)}</div>
+      <div style="font-size:9px;color:#3b82f6;margin-top:1px">DRIP</div>
+      <div style="font-size:12px;font-weight:700;color:#10b981;margin-top:3px">${etpFmt(c.value)}</div>
+      <div style="font-size:9px;color:#10b981;margin-top:1px">Cash</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${etpFmtFull(mInc)}/mo</div>
     </div>`;
   }).join('');
 
-  const d30=etpProject(lump,monthly,etf.ret,etf.yld,etf.exp,30,true);
-  const c30=etpProject(lump,monthly,etf.ret,etf.yld,etf.exp,30,false);
-  const mInc30=Math.round(c30.value*etf.yld/12);
-  const mIncDrip30=Math.round(d30.value*etf.yld/12);
-  const totalContrib=lump+monthly*12*30;
-  document.getElementById('ep-compare30').innerHTML=`
-    <div style="border-radius:10px;padding:14px;border:1px solid #3b82f6;background:rgba(59,130,246,0.07)">
-      <div style="font-size:12px;font-weight:700;color:#93c5fd;margin-bottom:8px">DRIP — reinvest dividends</div>
-      <div style="font-size:22px;font-weight:800;color:#3b82f6">${etpFmt(d30.value)}</div>
-      <div style="font-size:11px;color:#93c5fd;margin-top:6px;line-height:1.8">
-        Portfolio at year 30<br>
+  // ── DRIP vs Cash at Retirement ────────────────────────────────────────
+  const totalContrib = lump + monthly*12*yearsToRetire;
+  document.getElementById('ep-compare').innerHTML = `
+    <div style="border-radius:10px;padding:16px;border:1px solid #3b82f6;background:rgba(59,130,246,0.07)">
+      <div style="font-size:12px;font-weight:700;color:#93c5fd;margin-bottom:10px">DRIP — Reinvest Every Dividend</div>
+      <div style="font-size:24px;font-weight:800;color:#3b82f6">${etpFmt(dripAtRetire.value)}</div>
+      <div style="font-size:11px;color:#93c5fd;margin-top:8px;line-height:1.9">
+        Portfolio at retirement<br>
         You invested: ${etpFmtFull(totalContrib)}<br>
-        Total gain: ${etpFmt(d30.value-totalContrib)}<br>
-        Monthly income if switched: ${etpFmtFull(mIncDrip30)}/mo
+        Total gain: ${etpFmt(dripAtRetire.value - totalContrib)}<br>
+        Monthly income if switched at retire: ${etpFmtFull(retireMonthlyIncomeDrip)}/mo
       </div>
     </div>
-    <div style="border-radius:10px;padding:14px;border:1px solid #10b981;background:rgba(16,185,129,0.07)">
-      <div style="font-size:12px;font-weight:700;color:#6ee7b7;margin-bottom:8px">Cash — take dividends monthly</div>
-      <div style="font-size:22px;font-weight:800;color:#10b981">${etpFmt(c30.value)}</div>
-      <div style="font-size:11px;color:#6ee7b7;margin-top:6px;line-height:1.8">
-        Portfolio at year 30<br>
-        Monthly income now: ${etpFmtFull(mInc30)}/mo<br>
-        Total dividends received: ${etpFmt(c30.totalDivPaid)}<br>
-        You invested: ${etpFmtFull(totalContrib)}
+    <div style="border-radius:10px;padding:16px;border:1px solid #10b981;background:rgba(16,185,129,0.07)">
+      <div style="font-size:12px;font-weight:700;color:#6ee7b7;margin-bottom:10px">Cash — Receive Dividends Monthly</div>
+      <div style="font-size:24px;font-weight:800;color:#10b981">${etpFmt(cashAtRetire.value)}</div>
+      <div style="font-size:11px;color:#6ee7b7;margin-top:8px;line-height:1.9">
+        Portfolio at retirement<br>
+        Monthly income now: ${etpFmtFull(currentMonthlyIncome)}/mo<br>
+        Monthly income at retire: ${etpFmtFull(retireMonthlyIncomeCash)}/mo<br>
+        Total dividends over ${yearsToRetire} yrs: ${etpFmt(cashAtRetire.totalDivPaid)}
       </div>
     </div>`;
 
-  const infoKeys=['voo','vti','qqq','schd','vgt','jepi','jepq','vym','agg'];
-  const riskColors={low:'#6ee7b7',med:'#fcd34d',high:'#fca5a5'};
-  const riskBg={low:'#064e3b',med:'#451a03',high:'#450a0a'};
-  document.getElementById('ep-info-grid').innerHTML=infoKeys.map(k=>{
-    const e=ETF_DB[k];
-    const costOn10k=Math.round(10000*e.exp);
-    const mOn10k=Math.round(10000*e.yld/12);
-    return`<div style="background:var(--surface2);border-radius:10px;padding:14px;border:1px solid var(--border)">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div>
-          <div style="font-size:16px;font-weight:800;color:var(--accent)">${k.toUpperCase()}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px">${e.name}</div>
+  // ── Basket Reference ──────────────────────────────────────────────────
+  const baskets = [
+    {key:'income', basket: incomeBasket, weight: iW, color:'#10b981'},
+    {key:'growth', basket: BASKETS.growth, weight: gW, color:'#3b82f6'},
+    {key:'anchor', basket: BASKETS.anchor, weight: aW, color:'#8b5cf6'},
+  ].filter(b=>b.weight>0);
+
+  document.getElementById('ep-basket-ref').innerHTML = baskets.map(({basket, weight, color})=>{
+    const wPct = Math.round(weight*100);
+    const holdingsHTML = basket.holdings.map(h=>{
+      const f = ETF_FACTS[h.etf];
+      const allocPct = Math.round(h.pct*100);
+      const mOn10k = Math.round(10000 * f.yield / 12);
+      return `<div style="background:var(--surface);border-radius:6px;padding:8px 10px;margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:13px;font-weight:800;color:${color}">${h.etf}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--muted)">${allocPct}% of basket</span>
         </div>
-        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${riskBg[e.riskCls]};color:${riskColors[e.riskCls]}">${e.risk}</span>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${f.name}</div>
+        <div style="display:flex;gap:10px;font-size:11px;flex-wrap:wrap">
+          <span style="color:#10b981">${(f.yield*100).toFixed(2)}% yield</span>
+          <span style="color:var(--muted)">$${f.exp>0?(f.exp*100).toFixed(2):0}% fee</span>
+          <span style="color:var(--amber)">${etpFmtFull(mOn10k)}/mo per $10K</span>
+          <span style="color:var(--text)">$${f.price}/share</span>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div style="background:var(--surface2);border-radius:10px;padding:16px;border-top:3px solid ${color}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:${color}">${basket.label}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5">${basket.desc}</div>
+        </div>
+        <span style="font-size:16px;font-weight:800;color:${color};white-space:nowrap;margin-left:10px">${wPct}%</span>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5">${e.desc}</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px">
-        <div style="background:var(--surface);border-radius:6px;padding:6px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--green)">${(e.exp*100).toFixed(2)}%</div><div style="font-size:9px;color:var(--muted);margin-top:1px">Expense</div></div>
-        <div style="background:var(--surface);border-radius:6px;padding:6px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--amber)">$${costOn10k}/yr</div><div style="font-size:9px;color:var(--muted);margin-top:1px">Cost $10K</div></div>
-        <div style="background:var(--surface);border-radius:6px;padding:6px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--accent)">${(e.ret*100).toFixed(1)}%</div><div style="font-size:9px;color:var(--muted);margin-top:1px">Avg return</div></div>
-        <div style="background:var(--surface);border-radius:6px;padding:6px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--green)">${(e.yld*100).toFixed(2)}%</div><div style="font-size:9px;color:var(--muted);margin-top:1px">Div yield</div></div>
-        <div style="background:var(--surface);border-radius:6px;padding:6px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--text)">${e.price?'$'+e.price:'Basket'}</div><div style="font-size:9px;color:var(--muted);margin-top:1px">Price</div></div>
-        <div style="background:var(--surface);border-radius:6px;padding:6px;text-align:center"><div style="font-size:12px;font-weight:700;color:var(--text)">${etpFmtFull(mOn10k)}/mo</div><div style="font-size:9px;color:var(--muted);margin-top:1px">On $10K</div></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:10px;color:var(--muted);line-height:1.6">
-        <div style="color:#6ee7b7">${e.pros.split('·').map(p=>'+ '+p.trim()).join('<br>')}</div>
-        <div style="color:#fca5a5">${e.cons.split('·').map(c=>'− '+c.trim()).join('<br>')}</div>
+      ${holdingsHTML}
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px">
+        <div style="background:var(--surface);border-radius:6px;padding:6px;text-align:center"><div style="font-size:12px;font-weight:700;color:#10b981">${(basket.yld*100).toFixed(1)}%</div><div style="font-size:9px;color:var(--muted);margin-top:1px">Blend yield</div></div>
+        <div style="background:var(--surface);border-radius:6px;padding:6px;text-align:center"><div style="font-size:12px;font-weight:700;color:#3b82f6">${(basket.ret*100).toFixed(1)}%</div><div style="font-size:9px;color:var(--muted);margin-top:1px">Avg return</div></div>
+        <div style="background:var(--surface);border-radius:6px;padding:6px;text-align:center"><div style="font-size:12px;font-weight:700;color:#f59e0b">${(basket.exp*100).toFixed(3)}%</div><div style="font-size:9px;color:var(--muted);margin-top:1px">Expense</div></div>
       </div>
     </div>`;
   }).join('');
