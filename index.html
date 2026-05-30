@@ -382,6 +382,8 @@ main{max-width:1400px;margin:0 auto;padding:20px}
   .stats-bar{grid-template-columns:1fr 1fr}
   main{padding:12px}
 }
+.ep-quick-btn{padding:4px 10px;font-size:11px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .15s}
+.ep-quick-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
 </style>
 </head>
 <body>
@@ -661,48 +663,104 @@ main{max-width:1400px;margin:0 auto;padding:20px}
   <!-- Profile Inputs -->
   <div class="auto-section">
     <h3>Your Profile</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+      <!-- Lump Sum -->
       <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Lump Sum (Starting Amount)</div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <input type="range" id="ep-lump" min="0" max="500000" step="1000" value="10000" oninput="etfUpdate()" style="flex:1;accent-color:var(--accent)">
-          <span style="font-size:14px;font-weight:700;min-width:100px;text-align:right" id="ep-lump-out">$10,000</span>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">💰 Lump Sum (Starting Amount)</div>
+        <div style="position:relative">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;font-weight:600">$</span>
+          <input type="number" id="ep-lump" value="10000" min="0" max="10000000" step="1000"
+            style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:11px 12px 11px 24px;font-size:15px;font-weight:700;outline:none"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+            onkeydown="if(event.key==='Enter')etfUpdate()">
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <button onclick="setLump(1000)" class="ep-quick-btn">$1K</button>
+          <button onclick="setLump(5000)" class="ep-quick-btn">$5K</button>
+          <button onclick="setLump(10000)" class="ep-quick-btn">$10K</button>
+          <button onclick="setLump(25000)" class="ep-quick-btn">$25K</button>
+          <button onclick="setLump(50000)" class="ep-quick-btn">$50K</button>
+          <button onclick="setLump(100000)" class="ep-quick-btn">$100K</button>
         </div>
       </div>
+
+      <!-- Contribution -->
       <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Monthly Contribution</div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <input type="range" id="ep-monthly" min="0" max="10000" step="50" value="500" oninput="etfUpdate()" style="flex:1;accent-color:var(--accent)">
-          <span style="font-size:14px;font-weight:700;min-width:100px;text-align:right" id="ep-monthly-out">$500/mo</span>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📅 Contribution Amount</div>
+        <div style="display:flex;gap:0;margin-bottom:8px;border-radius:8px;overflow:hidden;border:1px solid var(--border);width:fit-content">
+          <button id="ep-freq-daily" onclick="setFreq('daily')" style="padding:6px 16px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff">Daily</button>
+          <button id="ep-freq-monthly" onclick="setFreq('monthly')" style="padding:6px 16px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:var(--surface2);color:var(--muted)">Monthly</button>
         </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="position:relative;flex:1">
+            <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;font-weight:600">$</span>
+            <input type="number" id="ep-contrib" value="5" min="0" step="1"
+              style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:11px 12px 11px 24px;font-size:15px;font-weight:700;outline:none"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+              onkeydown="if(event.key==='Enter')etfUpdate()">
+          </div>
+          <span id="ep-contrib-label" style="font-size:13px;color:var(--muted);white-space:nowrap">/day</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <button onclick="setContrib(5)" class="ep-quick-btn">$5</button>
+          <button onclick="setContrib(10)" class="ep-quick-btn">$10</button>
+          <button onclick="setContrib(20)" class="ep-quick-btn">$20</button>
+          <button onclick="setContrib(50)" class="ep-quick-btn">$50</button>
+          <button onclick="setContrib(100)" class="ep-quick-btn">$100</button>
+          <button onclick="setContrib(200)" class="ep-quick-btn">$200</button>
+        </div>
+        <div id="ep-monthly-equiv" style="margin-top:6px;font-size:11px;color:var(--muted)"></div>
       </div>
+
+      <!-- Current Age -->
       <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Current Age</div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <input type="range" id="ep-age" min="18" max="75" step="1" value="35" oninput="etfUpdate()" style="flex:1;accent-color:var(--purple)">
-          <span style="font-size:14px;font-weight:700;min-width:100px;text-align:right" id="ep-age-out">35 yrs</span>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎂 Current Age</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input type="number" id="ep-age" value="35" min="18" max="80"
+            style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:11px 14px;font-size:15px;font-weight:700;outline:none"
+            onfocus="this.style.borderColor='var(--purple)'" onblur="this.style.borderColor='var(--border)'"
+            onkeydown="if(event.key==='Enter')etfUpdate()">
+          <span style="font-size:13px;color:var(--muted);white-space:nowrap">years old</span>
         </div>
+        <div style="margin-top:10px;background:var(--surface2);border-radius:6px;height:5px;overflow:hidden">
+          <div id="ep-age-bar" style="height:5px;background:linear-gradient(90deg,#8b5cf6,#3b82f6);border-radius:6px;width:30%"></div>
+        </div>
+        <div id="ep-age-label" style="font-size:10px;color:var(--muted);margin-top:4px">Age 35 · Early career stage</div>
       </div>
+
+      <!-- Retirement Age -->
       <div>
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Target Retirement Age</div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <input type="range" id="ep-retire" min="40" max="80" step="1" value="65" oninput="etfUpdate()" style="flex:1;accent-color:var(--purple)">
-          <span style="font-size:14px;font-weight:700;min-width:100px;text-align:right" id="ep-retire-out">65 yrs <span style="font-size:11px;color:var(--muted)">(30 yrs)</span></span>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎯 Target Retirement Age</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input type="number" id="ep-retire" value="65" min="40" max="85"
+            style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:11px 14px;font-size:15px;font-weight:700;outline:none"
+            onfocus="this.style.borderColor='var(--amber)'" onblur="this.style.borderColor='var(--border)'"
+            onkeydown="if(event.key==='Enter')etfUpdate()">
+          <span style="font-size:13px;color:var(--muted);white-space:nowrap">years old</span>
         </div>
+        <div id="ep-retire-out" style="margin-top:8px;font-size:12px;color:var(--amber);font-weight:600">30 years to retirement</div>
       </div>
+
     </div>
 
+    <!-- Calculate Button -->
+    <button onclick="etfUpdate()" style="width:100%;padding:13px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px;margin-bottom:14px" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+      ⚡ Calculate My Wealth Plan
+    </button>
+
     <!-- Legacy Toggle -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:12px 14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
       <div>
         <div style="font-size:13px;font-weight:700">🏛️ Legacy / Generational Wealth Planning</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">Project portfolio value at age 85 to pass to children. Maximises long-term compounding.</div>
       </div>
       <button class="toggle" id="tgl-legacy" onclick="toggleLegacy()"></button>
     </div>
+
   </div>
 
-  <!-- Goal Sliders -->
   <div class="auto-section">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <h3>Your Investment Goals</h3>
@@ -2726,6 +2784,71 @@ function etpProject(lump, monthly, ret, yld, exp, years, drip){
 }
 
 
+
+// ── ETF Planner Input Helpers ─────────────────────────────────────────────
+let etpFreq = 'daily';
+
+function setLump(val){
+  document.getElementById('ep-lump').value = val;
+  etfUpdate();
+}
+
+function setContrib(val){
+  document.getElementById('ep-contrib').value = val;
+  updateContribDisplay();
+  etfUpdate();
+}
+
+function setFreq(freq){
+  etpFreq = freq;
+  const daily   = document.getElementById('ep-freq-daily');
+  const monthly = document.getElementById('ep-freq-monthly');
+  const label   = document.getElementById('ep-contrib-label');
+  const qb      = document.getElementById('ep-contrib-quick');
+  if(freq === 'daily'){
+    daily.style.background='var(--accent)'; daily.style.color='#fff';
+    monthly.style.background='var(--surface2)'; monthly.style.color='var(--muted)';
+    if(label) label.textContent = '/day';
+    if(qb) qb.innerHTML = [5,10,20,50,100,200].map(v=>`<button onclick="setContrib(${v})" class="ep-quick-btn">$${v}</button>`).join('');
+    if(+document.getElementById('ep-contrib').value > 500) document.getElementById('ep-contrib').value = 10;
+  } else {
+    monthly.style.background='var(--accent)'; monthly.style.color='#fff';
+    daily.style.background='var(--surface2)'; daily.style.color='var(--muted)';
+    if(label) label.textContent = '/month';
+    if(qb) qb.innerHTML = [50,100,200,500,1000,2000].map(v=>`<button onclick="setContrib(${v})" class="ep-quick-btn">$${v>=1000?v/1000+'K':v}</button>`).join('');
+    if(+document.getElementById('ep-contrib').value < 5) document.getElementById('ep-contrib').value = 100;
+  }
+  updateContribDisplay();
+  etfUpdate();
+}
+
+function updateContribDisplay(){
+  const contrib = +document.getElementById('ep-contrib').value || 0;
+  const equiv   = document.getElementById('ep-monthly-equiv');
+  if(!equiv) return;
+  if(etpFreq === 'daily'){
+    const monthly = Math.round(contrib * 30.44);
+    equiv.textContent = '≈ $'+monthly.toLocaleString()+'/month (×30.44 days)';
+  } else {
+    const daily = (contrib / 30.44).toFixed(2);
+    equiv.textContent = '≈ $'+daily+'/day';
+  }
+}
+
+function getMonthlyContrib(){
+  const contrib = +document.getElementById('ep-contrib').value || 0;
+  return etpFreq === 'daily' ? contrib * 30.44 : contrib;
+}
+
+function getAgeStageLabel(age){
+  if(age <= 25) return 'Early career · Maximum growth runway';
+  if(age <= 35) return 'Building wealth · Growth phase';
+  if(age <= 45) return 'Peak earning years · Growth + income blend';
+  if(age <= 55) return 'Pre-retirement · Shift toward stability';
+  if(age <= 65) return 'Near retirement · Income & preservation';
+  return 'Retirement age · Capital preservation';
+}
+
 // ── SVG Chart Renderer ─────────────────────────────────────────────────────
 function renderSVGChart(containerId, labels, dripData, cashData, investedData, retireYear) {
   const container = document.getElementById(containerId);
@@ -2842,10 +2965,16 @@ function etfUpdate(){
   const retireActual = Math.max(retire, age+1);
   const yearsToRetire = retireActual - age;
 
-  document.getElementById('ep-lump-out').textContent = '$'+Math.round(lump).toLocaleString();
-  document.getElementById('ep-monthly-out').textContent = '$'+monthly.toLocaleString()+'/mo';
-  document.getElementById('ep-age-out').textContent = age+' yrs';
-  document.getElementById('ep-retire-out').innerHTML = retireActual+' yrs <span style="font-size:11px;color:var(--muted)">(' +yearsToRetire+ ' yrs away)</span>';
+    // Update age progress bar and label
+  const ageBarEl = document.getElementById('ep-age-bar');
+  const ageLabelEl = document.getElementById('ep-age-label');
+  if(ageBarEl) ageBarEl.style.width = Math.min(100,((age-18)/(80-18))*100).toFixed(0)+'%';
+  if(ageLabelEl) ageLabelEl.textContent = 'Age '+age+' · '+getAgeStageLabel(age);
+  // Update retirement countdown
+  const retireOutEl = document.getElementById('ep-retire-out');
+  if(retireOutEl) retireOutEl.textContent = yearsToRetire > 0 ? yearsToRetire+' years to retirement (age '+age+' → '+retireActual+')' : 'Already at retirement age';
+  // Update contribution display
+  updateContribDisplay();
 
   // Auto-suggest income mode based on age/years to retire
   const autoMode = (age >= 50 || yearsToRetire <= 10) ? 'max' : 'balanced';
