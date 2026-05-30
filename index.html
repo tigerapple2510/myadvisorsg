@@ -862,7 +862,36 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 
   <!-- DRIP vs Cash 30-yr -->
   <div class="auto-section">
-    <h3>DRIP vs Cash — At Retirement</h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;flex-wrap:wrap;gap:8px">
+      <h3 style="margin-bottom:0">DRIP vs Cash — At Retirement</h3>
+      <button onclick="toggleDripHelp()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer" id="drip-help-btn">💡 What does this mean?</button>
+    </div>
+
+    <!-- Collapsible explanation -->
+    <div id="drip-help-box" style="display:none;margin-top:12px;margin-bottom:4px;background:var(--surface2);border-radius:10px;border-left:3px solid var(--accent);padding:14px 16px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">📖 DRIP vs Cash — which should you choose?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div style="background:rgba(59,130,246,0.08);border-radius:8px;padding:12px;border:1px solid rgba(59,130,246,0.2)">
+          <div style="font-size:12px;font-weight:700;color:#93c5fd;margin-bottom:6px">🔄 DRIP — Reinvest dividends</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">
+            Every dividend is automatically used to buy more shares. You receive <strong style="color:var(--text)">no cash</strong> along the way.<br><br>
+            Result: your portfolio compounds faster on a growing base. <strong style="color:#93c5fd">Bigger portfolio at retirement.</strong><br><br>
+            Best for: <strong style="color:var(--text)">wealth builders</strong> who don't need income yet.
+          </div>
+        </div>
+        <div style="background:rgba(16,185,129,0.08);border-radius:8px;padding:12px;border:1px solid rgba(16,185,129,0.2)">
+          <div style="font-size:12px;font-weight:700;color:#6ee7b7;margin-bottom:6px">💵 Cash — Receive dividends monthly</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">
+            Dividends are paid to you in cash every month from day one. Portfolio grows slower without reinvestment.<br><br>
+            Result: <strong style="color:#6ee7b7">regular monthly income now</strong>, smaller end portfolio.<br><br>
+            Best for: <strong style="color:var(--text)">retirees</strong> or anyone who needs the income today.
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.8;padding:10px 12px;background:rgba(245,158,11,0.06);border-radius:8px;border:1px solid rgba(245,158,11,0.2)">
+        <strong style="color:var(--amber)">💡 Smart strategy:</strong> Use <strong style="color:var(--text)">DRIP while working</strong> to build the largest possible portfolio, then <strong style="color:var(--text)">switch to Cash at retirement</strong> to live off the dividends. A larger DRIP portfolio at retirement generates more monthly income than a Cash portfolio would — because the compounding base is bigger.
+      </div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="ep-compare"></div>
     <div style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.7;padding:10px 14px;background:var(--surface2);border-radius:8px;border-left:2px solid var(--border)">
       <strong>DRIP</strong> — dividends reinvested every month. Larger portfolio at retirement but no income along the way.<br>
@@ -2847,6 +2876,18 @@ function getAgeStageLabel(age){
   if(age <= 55) return 'Pre-retirement · Shift toward stability';
   if(age <= 65) return 'Near retirement · Income & preservation';
   return 'Retirement age · Capital preservation';
+}
+
+
+function toggleDripHelp(){
+  const box = document.getElementById('drip-help-box');
+  const btn = document.getElementById('drip-help-btn');
+  if(!box) return;
+  const isOpen = box.style.display !== 'none';
+  box.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '💡 What does this mean?' : '✕ Close';
+  btn.style.borderColor = isOpen ? 'var(--border)' : 'var(--accent)';
+  btn.style.color = isOpen ? 'var(--muted)' : 'var(--accent)';
 }
 
 // ── SVG Chart Renderer ─────────────────────────────────────────────────────
