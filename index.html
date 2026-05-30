@@ -2956,10 +2956,10 @@ function renderSVGChart(containerId, labels, dripData, cashData, investedData, r
 
 function etfUpdate(){
   try {
-  const lump    = +document.getElementById('ep-lump').value;
-  const monthly = +document.getElementById('ep-monthly').value;
-  const age     = +document.getElementById('ep-age').value;
-  const retire  = +document.getElementById('ep-retire').value;
+  const lump    = +document.getElementById('ep-lump').value || 0;
+  const monthly = getMonthlyContrib();
+  const age     = +document.getElementById('ep-age').value || 35;
+  const retire  = +document.getElementById('ep-retire').value || 65;
 
   // Clamp retire >= age+1
   const retireActual = Math.max(retire, age+1);
