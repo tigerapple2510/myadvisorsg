@@ -752,9 +752,14 @@ main{max-width:1400px;margin:0 auto;padding:20px}
     </div>
 
     <!-- Calculate button -->
-    <button onclick="etfUpdate()" style="width:100%;padding:14px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+    <button id="ep-calc-btn" onclick="etfUpdate()" style="width:100%;padding:14px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px">
       ⚡ Calculate My Wealth Plan
     </button>
+    <!-- Progress bar -->
+    <div id="ep-calc-progress" style="display:none;margin-top:10px;background:var(--surface2);border-radius:999px;height:5px;overflow:hidden">
+      <div id="ep-calc-bar" style="height:5px;background:linear-gradient(90deg,#3b82f6,#6366f1);border-radius:999px;width:0%;transition:width .4s ease"></div>
+    </div>
+    <div id="ep-calc-status" style="display:none;font-size:11px;color:var(--muted);text-align:center;margin-top:6px"></div>
   </div>
 
   <!-- ── STEP 2: GOALS ──────────────────────────────────────── -->
@@ -1376,6 +1381,7 @@ async function refreshAllData(forceRefresh = true) {
   btn.disabled = true; btn.textContent = '⟳ Fetching...';
   const progress = document.getElementById('refresh-progress');
   progress.style.display = 'block';
+  try {
 
   let loaded = 0;
   const total = INSTRUMENTS.length;
@@ -1417,6 +1423,15 @@ async function refreshAllData(forceRefresh = true) {
   // Auto-schedule next refresh in 30 min
   clearTimeout(window._autoRefreshTimer);
   window._autoRefreshTimer = setTimeout(() => refreshAllData(true), CACHE_TTL);
+  } catch(e) {
+    console.error('Refresh error:', e);
+    toast('Refresh failed — check connection', 'error');
+  } finally {
+    const _btn = document.getElementById('refresh-btn');
+    const _prog = document.getElementById('refresh-progress');
+    if(_btn) { _btn.disabled = false; _btn.textContent = '⟳ Refresh All Data'; }
+    if(_prog) { _prog.style.display = 'none'; }
+  }
 }
 
 // ── Iconium Score 2.0 — Five-Layer Intelligence ────────────────────────────
@@ -3170,8 +3185,26 @@ function renderSVGChart(containerId, labels, dripData, cashData, investedData, r
 function etfUpdate(){
   try {
   // Show calculating state on button
-  const _calcBtn = document.querySelector('button[onclick="etfUpdate()"]');
-  if(_calcBtn){ _calcBtn.textContent='⏳ Calculating...'; _calcBtn.disabled=true; _calcBtn.style.opacity='.7'; }
+  const _calcBtn = document.getElementById('ep-calc-btn');
+  const _calcProg = document.getElementById('ep-calc-progress');
+  const _calcBar  = document.getElementById('ep-calc-bar');
+  const _calcStat = document.getElementById('ep-calc-status');
+  if(_calcBtn){ _calcBtn.textContent='⏳ Calculating...'; _calcBtn.disabled=true; _calcBtn.style.background='#4b5563'; }
+  if(_calcProg){ _calcProg.style.display='block'; }
+  if(_calcStat){ _calcStat.style.display='block'; _calcStat.textContent='Running projections...'; }
+  // Animate progress bar
+  let _prog=0; 
+  const _progInterval = setInterval(()=>{ 
+    _prog = Math.min(_prog + Math.random()*15, 85); 
+    if(_calcBar) _calcBar.style.width=_prog+'%';
+    if(_calcStat){
+      if(_prog<30) _calcStat.textContent='Reading your profile...';
+      else if(_prog<55) _calcStat.textContent='Running 30-year projections...';
+      else if(_prog<75) _calcStat.textContent='Building portfolio mix...';
+      else _calcStat.textContent='Almost done...';
+    }
+  }, 200);
+  window._calcProgInterval = _progInterval;
 
   const lump    = +document.getElementById('ep-lump').value || 0;
   const monthly = getMonthlyContrib();
@@ -3394,7 +3427,23 @@ function etfUpdate(){
       </div>
     </div>`;
   }).join('');
-  } catch(e) { console.error('ETF Planner error:', e); }
+  } catch(e) {
+    console.error('ETF Planner error:', e);
+  } finally {
+    // Always restore button and hide progress
+    clearInterval(window._calcProgInterval);
+    const b = document.getElementById('ep-calc-btn');
+    const p = document.getElementById('ep-calc-progress');
+    const s = document.getElementById('ep-calc-status');
+    const bar = document.getElementById('ep-calc-bar');
+    if(bar) { bar.style.width='100%'; }
+    setTimeout(()=>{
+      if(b){ b.textContent='⚡ Calculate My Wealth Plan'; b.disabled=false; b.style.background='linear-gradient(135deg,#3b82f6,#6366f1)'; }
+      if(p){ p.style.display='none'; }
+      if(s){ s.style.display='none'; }
+      if(bar){ bar.style.width='0%'; }
+    }, 400);
+  }
 }
 
 
