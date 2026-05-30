@@ -1217,7 +1217,7 @@ function switchTab(name, btn) {
   btn.classList.add('active');
   if (name === 'intel') { loadFearGreed(); loadPoliticians(); loadWhales(); }
   if (name === 'earnings') { loadEarnings(); }
-  if (name === 'etfplanner') { etfUpdate(); }
+  if (name === 'etfplanner') { requestAnimationFrame(() => setTimeout(etfUpdate, 50)); }
   if (name === 'auto') { loadAccountStatus(); renderAllocationTable(); }
   if (name === 'portfolio') { renderPortfolio(); }
   if (name === 'history') { renderHistory(); }
@@ -2728,6 +2728,7 @@ function etpProject(lump, monthly, ret, yld, exp, years, drip){
 }
 
 function etfUpdate(){
+  try {
   const lump    = +document.getElementById('ep-lump').value;
   const monthly = +document.getElementById('ep-monthly').value;
   const age     = +document.getElementById('ep-age').value;
@@ -2844,9 +2845,12 @@ function etfUpdate(){
     investedData.push(Math.round(lump+monthly*12*y));
   }
 
-  if(etpChart){ etpChart.destroy(); }
+  if(etpChart){ try{ etpChart.destroy(); } catch(e){} etpChart=null; }
   const ctx = document.getElementById('etf-chart');
   if(!ctx) return;
+  if(typeof Chart === 'undefined') { setTimeout(etfUpdate, 300); return; }
+  // Ensure canvas is visible and has dimensions
+  if(ctx.offsetWidth === 0) { setTimeout(etfUpdate, 100); return; }
 
   const datasets = [
     {label:'DRIP (reinvest)',data:dripData,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.09)',borderWidth:2.5,pointRadius:0,fill:true,tension:0.4},
@@ -2962,6 +2966,7 @@ function etfUpdate(){
       </div>
     </div>`;
   }).join('');
+  } catch(e) { console.error('ETF Planner error:', e); }
 }
 
 
