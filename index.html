@@ -2875,13 +2875,15 @@ async function generateEtfRecommendation(){
 - Projected monthly income at retirement: $${monthlyIncomeRetire}/mo
 - Legacy planning: ${etpLegacy ? 'Yes — projecting to age 85' : 'No'}
 
-Write a 4-sentence personalised recommendation:
-1. One sentence assessing whether this allocation suits their age and timeline.
-2. One sentence on their income vs growth balance — is it right, too aggressive, too conservative?
-3. One sentence on what to watch or adjust over time.
-4. One sentence on the DRIP vs Cash decision given their situation.
+Write a personalised recommendation in exactly this format:
 
-Be direct, specific, use their actual numbers. No disclaimers. No bullet points.`;
+ASSESSMENT: [One sentence on whether this allocation suits their age and timeline, using their actual numbers]
+BALANCE: [One sentence on income vs growth — right, too aggressive, or too conservative?]
+WATCH: [One sentence on what to adjust over time, with specific trigger conditions]
+DRIP: [One sentence on DRIP vs Cash given their situation and numbers]
+ALLOCATION: {"income": X, "growth": Y, "anchor": Z}
+
+The ALLOCATION must be valid JSON where X+Y+Z=100 and all are multiples of 5. Base it on your genuine recommendation. No other text.`;
 
   try {
     const res = await fetch('/api/market-data?type=ai', {
@@ -2895,10 +2897,17 @@ Be direct, specific, use their actual numbers. No disclaimers. No bullet points.
     });
     const data = await res.json();
     const text = data.content?.[0]?.text || 'Could not generate recommendation.';
-    box.innerHTML = `<div style="color:var(--text);line-height:1.9">${text.replace(/\n/g,'<br>')}</div>
-      <div style="margin-top:10px;font-size:11px;color:var(--muted);padding:8px 12px;background:var(--surface2);border-radius:6px">
-        Based on: Age ${age} · ${years} yrs to retire · ${goalStr} · Return ${(blend.ret*100).toFixed(1)}% · Fee ${(blend.exp*100).toFixed(3)}%/yr
-      </div>`;
+    const lines = text.split('\n').filter(l=>l.trim());
+    const lmap = {ASSESSMENT:'🎯 Allocation Fit',BALANCE:'⚖️ Income vs Growth',WATCH:'👁 What to Watch',DRIP:'💧 DRIP vs Cash'};
+    let html = '';
+    for(const line of lines){
+      const ci = line.indexOf(':'); if(ci<0) continue;
+      const key = line.slice(0,ci).trim(); const val = line.slice(ci+1).trim();
+      if(key==='ALLOCATION') continue;
+      html += `<div style="margin-bottom:12px"><div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:3px">${lmap[key]||key}</div><div style="color:var(--text);line-height:1.7;font-size:13px">${val}</div></div>`;
+    }
+    if(!html) html = `<div style="color:var(--text);line-height:1.9">${text.replace(/ALLOCATION:[^\n]*/g,'').trim()}</div>`;
+    box.innerHTML = html + `<div style="margin-top:10px;font-size:11px;color:var(--muted);padding:8px 12px;background:var(--surface2);border-radius:6px">Based on: Age ${age} · ${years} yrs to retire · ${goalStr} · Return ${(blend.ret*100).toFixed(1)}% · Fee ${(blend.exp*100).toFixed(3)}%/yr</div>`;
 
     // Parse recommendation for allocation and show accept strip
     const recAlloc = parseRecoAllocation(text, age, years);
@@ -2920,34 +2929,27 @@ Be direct, specific, use their actual numbers. No disclaimers. No bullet points.
 
 // ── Accept Recommendation ─────────────────────────────────────────────────
 function parseRecoAllocation(text, age, years){
-  // Try to extract income/growth/anchor split from AI text
-  // Look for percentage patterns like "60% income", "30% growth", "10% anchor"
-  const incomeMatch = text.match(/(\d+)%?\s*(?:to\s*)?(?:income|Income)/i);
-  const growthMatch = text.match(/(\d+)%?\s*(?:to\s*)?(?:growth|Growth|QQQ)/i);
-  const anchorMatch = text.match(/(\d+)%?\s*(?:to\s*)?(?:anchor|Anchor|stability|stable)/i);
-
-  let income = incomeMatch ? parseInt(incomeMatch[1]) : null;
-  let growth = growthMatch ? parseInt(growthMatch[1]) : null;
-  let anchor = anchorMatch ? parseInt(anchorMatch[1]) : null;
-
-  // If we couldn't parse, derive from age
-  if(!income || !growth || !anchor || (income+growth+anchor) !== 100){
-    if(age <= 30)       { income=20; growth=60; anchor=20; }
-    else if(age <= 40)  { income=30; growth=50; anchor=20; }
-    else if(age <= 50)  { income=40; growth=40; anchor=20; }
-    else if(age <= 60)  { income=55; growth=25; anchor=20; }
-    else                { income=65; growth=10; anchor=25; }
-  }
-
-  // Round to nearest 5 and ensure sums to 100
-  income = Math.round(income/5)*5;
-  growth = Math.round(growth/5)*5;
-  anchor = 100 - income - growth;
-  if(anchor < 0){ growth += anchor; anchor = 0; }
-
-  return {income, growth, anchor};
+  try {
+    const m = text.match(/ALLOCATION:\s*(\{[^}]+\})/);
+    if(m){
+      const obj = JSON.parse(m[1]);
+      if(typeof obj.income==='number' && typeof obj.growth==='number' && typeof obj.anchor==='number'){
+        let {income, growth, anchor} = obj;
+        income = Math.round(income/5)*5;
+        growth = Math.round(growth/5)*5;
+        anchor = 100 - income - growth;
+        if(anchor < 0){ growth += anchor; anchor = 0; }
+        return {income, growth, anchor};
+      }
+    }
+  } catch(e){}
+  // Age-based fallback
+  if(age<=30) return {income:20,growth:60,anchor:20};
+  if(age<=40) return {income:30,growth:50,anchor:20};
+  if(age<=50) return {income:40,growth:40,anchor:20};
+  if(age<=60) return {income:55,growth:25,anchor:20};
+  return {income:65,growth:10,anchor:25};
 }
-
 function acceptRecommendation(){
   const alloc = window._pendingAlloc;
   if(!alloc) return;
@@ -3167,6 +3169,10 @@ function renderSVGChart(containerId, labels, dripData, cashData, investedData, r
 
 function etfUpdate(){
   try {
+  // Show calculating state on button
+  const _calcBtn = document.querySelector('button[onclick="etfUpdate()"]');
+  if(_calcBtn){ _calcBtn.textContent='⏳ Calculating...'; _calcBtn.disabled=true; _calcBtn.style.opacity='.7'; }
+
   const lump    = +document.getElementById('ep-lump').value || 0;
   const monthly = getMonthlyContrib();
   const age     = +document.getElementById('ep-age').value || 35;
