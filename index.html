@@ -660,13 +660,14 @@ main{max-width:1400px;margin:0 auto;padding:20px}
     <div style="font-size:11px;color:var(--muted)">Goal-based · DRIP vs Cash · Income + Growth + Stability</div>
   </div>
 
-  <!-- Profile Inputs -->
+  <!-- ── STEP 1: PROFILE ────────────────────────────────────── -->
   <div class="auto-section">
-    <h3>Your Profile</h3>
-
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <div style="width:22px;height:22px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0">1</div>
+      <h3 style="margin:0">Your Profile</h3>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
 
-      <!-- Lump Sum -->
       <div>
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">💰 Lump Sum (Starting Amount)</div>
         <div style="position:relative">
@@ -686,7 +687,6 @@ main{max-width:1400px;margin:0 auto;padding:20px}
         </div>
       </div>
 
-      <!-- Contribution -->
       <div>
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📅 Contribution Amount</div>
         <div style="display:flex;gap:0;margin-bottom:8px;border-radius:8px;overflow:hidden;border:1px solid var(--border);width:fit-content">
@@ -703,7 +703,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
           </div>
           <span id="ep-contrib-label" style="font-size:13px;color:var(--muted);white-space:nowrap">/day</span>
         </div>
-        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="ep-contrib-quick">
           <button onclick="setContrib(5)" class="ep-quick-btn">$5</button>
           <button onclick="setContrib(10)" class="ep-quick-btn">$10</button>
           <button onclick="setContrib(20)" class="ep-quick-btn">$20</button>
@@ -714,7 +714,6 @@ main{max-width:1400px;margin:0 auto;padding:20px}
         <div id="ep-monthly-equiv" style="margin-top:6px;font-size:11px;color:var(--muted)"></div>
       </div>
 
-      <!-- Current Age -->
       <div>
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎂 Current Age</div>
         <div style="display:flex;gap:10px;align-items:center">
@@ -727,10 +726,9 @@ main{max-width:1400px;margin:0 auto;padding:20px}
         <div style="margin-top:10px;background:var(--surface2);border-radius:6px;height:5px;overflow:hidden">
           <div id="ep-age-bar" style="height:5px;background:linear-gradient(90deg,#8b5cf6,#3b82f6);border-radius:6px;width:30%"></div>
         </div>
-        <div id="ep-age-label" style="font-size:10px;color:var(--muted);margin-top:4px">Age 35 · Early career stage</div>
+        <div id="ep-age-label" style="font-size:10px;color:var(--muted);margin-top:4px">Age 35 · Building wealth · Growth phase</div>
       </div>
 
-      <!-- Retirement Age -->
       <div>
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🎯 Target Retirement Age</div>
         <div style="display:flex;gap:10px;align-items:center">
@@ -742,86 +740,75 @@ main{max-width:1400px;margin:0 auto;padding:20px}
         </div>
         <div id="ep-retire-out" style="margin-top:8px;font-size:12px;color:var(--amber);font-weight:600">30 years to retirement</div>
       </div>
-
     </div>
 
-    <!-- Calculate Button -->
-    <button onclick="etfUpdate()" style="width:100%;padding:13px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px;margin-bottom:14px" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
-      ⚡ Calculate My Wealth Plan
-    </button>
-
-    <!-- Legacy Toggle -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+    <!-- Legacy toggle -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);margin-bottom:14px">
       <div>
         <div style="font-size:13px;font-weight:700">🏛️ Legacy / Generational Wealth Planning</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Project portfolio value at age 85 to pass to children. Maximises long-term compounding.</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Project portfolio value at age 85 to pass to children.</div>
       </div>
       <button class="toggle" id="tgl-legacy" onclick="toggleLegacy()"></button>
     </div>
 
+    <!-- Calculate button -->
+    <button onclick="etfUpdate()" style="width:100%;padding:14px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+      ⚡ Calculate My Wealth Plan
+    </button>
   </div>
 
+  <!-- ── STEP 2: GOALS ──────────────────────────────────────── -->
   <div class="auto-section">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <h3>Your Investment Goals</h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:22px;height:22px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0">2</div>
+        <h3 style="margin:0">Your Investment Goals</h3>
+      </div>
       <span style="font-size:11px;color:var(--muted)">Sliders must total 100%</span>
     </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">
-      Set how much focus you want on each goal. The tool will recommend the best ETFs for each and calculate your projected outcomes.
-    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">Set how much focus you want on each goal. The tool recommends the best ETFs and calculates your projected outcomes.</div>
 
     <!-- Income Generator -->
-    <div style="margin-bottom:18px">
+    <div style="margin-bottom:20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div>
           <div style="font-size:13px;font-weight:700;color:#10b981">💵 Income Generator</div>
-          <div style="font-size:11px;color:var(--muted)">Regular monthly dividends · High yield · JEPQ / JEPI / SCHD</div>
+          <div style="font-size:11px;color:var(--muted)">Regular monthly dividends · JEPQ / JEPI / SCHD</div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:22px;font-weight:800;color:#10b981" id="ep-income-pct">40%</div>
-          <div style="font-size:10px;color:var(--muted)">of portfolio</div>
-        </div>
+        <div style="font-size:24px;font-weight:800;color:#10b981" id="ep-income-pct">40%</div>
       </div>
       <input type="range" id="ep-income-slider" min="0" max="100" step="5" value="40" oninput="goalSliderChange('income')" style="width:100%;accent-color:#10b981">
-
-      <!-- Income sub-choice toggle -->
-      <div style="display:flex;gap:8px;margin-top:10px" id="ep-income-subchoice">
-        <button id="btn-max-yield" onclick="setIncomeMode('max')" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #10b981;background:rgba(16,185,129,0.15);color:#10b981;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s">
-          ⚡ Max Yield Now<br><span style="font-weight:400;font-size:10px;opacity:.8">JEPQ 100% · ~10.9% yield</span>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="btn-max-yield" onclick="setIncomeMode('max')" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer">
+          ⚡ Max Yield Now<br><span style="font-weight:400;font-size:10px">JEPQ 100% · ~10.9% yield</span>
         </button>
-        <button id="btn-balanced-income" onclick="setIncomeMode('balanced')" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s">
-          📈 Balanced Income<br><span style="font-weight:400;font-size:10px;opacity:.8">JEPQ 50%+JEPI 30%+SCHD 20% · ~8% yield</span>
+        <button id="btn-balanced-income" onclick="setIncomeMode('balanced')" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #10b981;background:rgba(16,185,129,0.15);color:#10b981;font-size:11px;font-weight:700;cursor:pointer">
+          📈 Balanced Income<br><span style="font-weight:400;font-size:10px">JEPQ 50%+JEPI 30%+SCHD 20% · ~8%</span>
         </button>
       </div>
       <div style="font-size:10px;color:var(--muted);margin-top:6px;padding:6px 10px;background:var(--surface2);border-radius:6px" id="ep-income-advice"></div>
     </div>
 
     <!-- Growth Engine -->
-    <div style="margin-bottom:18px">
+    <div style="margin-bottom:20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div>
           <div style="font-size:13px;font-weight:700;color:#3b82f6">🚀 Growth Engine</div>
           <div style="font-size:11px;color:var(--muted)">Maximum appreciation · ~15% avg annual return · QQQ</div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:22px;font-weight:800;color:#3b82f6" id="ep-growth-pct">40%</div>
-          <div style="font-size:10px;color:var(--muted)">of portfolio</div>
-        </div>
+        <div style="font-size:24px;font-weight:800;color:#3b82f6" id="ep-growth-pct">40%</div>
       </div>
       <input type="range" id="ep-growth-slider" min="0" max="100" step="5" value="40" oninput="goalSliderChange('growth')" style="width:100%;accent-color:#3b82f6">
     </div>
 
-    <!-- The Anchor -->
+    <!-- Anchor -->
     <div style="margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div>
           <div style="font-size:13px;font-weight:700;color:#8b5cf6">⚓ The Anchor</div>
           <div style="font-size:11px;color:var(--muted)">Stability · Recession-proof · ~9% return · VOO 80% + AGG 20%</div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:22px;font-weight:800;color:#8b5cf6" id="ep-anchor-pct">20%</div>
-          <div style="font-size:10px;color:var(--muted)">of portfolio</div>
-        </div>
+        <div style="font-size:24px;font-weight:800;color:#8b5cf6" id="ep-anchor-pct">20%</div>
       </div>
       <input type="range" id="ep-anchor-slider" min="0" max="100" step="5" value="20" oninput="goalSliderChange('anchor')" style="width:100%;accent-color:#8b5cf6">
     </div>
@@ -831,93 +818,116 @@ main{max-width:1400px;margin:0 auto;padding:20px}
     </div>
   </div>
 
-  <!-- Goal-based AI Recommendation -->
+  <!-- ── STEP 3: AI RECOMMENDATION ──────────────────────────── -->
   <div class="auto-section" style="border-color:#6366f1">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <div style="width:22px;height:22px;background:#6366f1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0">3</div>
       <div>
-        <h3 style="margin-bottom:3px">🤖 Personalised Recommendation</h3>
-        <div style="font-size:11px;color:var(--muted)">Based on your age, goals and retirement timeline</div>
+        <h3 style="margin:0">🤖 Personalised Recommendation</h3>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">AI analysis based on your age, goals and retirement timeline</div>
       </div>
-      <button onclick="generateEtfRecommendation()" class="btn btn-primary btn-sm" id="ep-reco-btn">⚡ Get Recommendation</button>
     </div>
-    <div id="ep-reco-box" style="font-size:13px;color:var(--muted);line-height:1.8;min-height:40px">
+
+    <!-- Recommendation output -->
+    <div id="ep-reco-box" style="font-size:13px;color:var(--muted);line-height:1.9;min-height:48px;margin-bottom:14px">
       Set your profile and goals above, then click <strong>Get Recommendation</strong> for a personalised strategy.
     </div>
+
+    <!-- Accept strip — hidden until recommendation given -->
+    <div id="ep-accept-strip" style="display:none;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:10px;padding:14px 16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#6ee7b7">✅ Accept this recommendation?</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px" id="ep-accept-preview">This will update your goal sliders to the recommended allocation.</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="acceptRecommendation()" style="padding:9px 20px;background:#10b981;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">
+            ✓ Apply Allocation
+          </button>
+          <button onclick="document.getElementById('ep-accept-strip').style.display='none'" style="padding:9px 14px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">
+            Keep mine
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="generateEtfRecommendation()" class="btn btn-primary" id="ep-reco-btn" style="flex:1">⚡ Get Recommendation</button>
+      <button onclick="etfUpdate()" class="btn btn-secondary" style="flex:1">🔄 Recalculate</button>
+    </div>
   </div>
 
-  <!-- Recommended Portfolio Mix -->
+  <!-- ── RESULTS: PORTFOLIO + NUMBERS ──────────────────────── -->
   <div class="auto-section">
-    <h3>Recommended Portfolio Mix</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:12px" id="ep-mix-grid"></div>
-    <div style="font-size:11px;color:var(--muted);line-height:1.6;padding:10px 14px;background:var(--surface2);border-radius:8px" id="ep-mix-rationale"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+
+      <!-- Recommended Portfolio Mix -->
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Recommended Portfolio Mix</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px" id="ep-mix-grid"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.7" id="ep-mix-rationale"></div>
+      </div>
+
+      <!-- Key Numbers -->
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Your Numbers at a Glance</div>
+        <div id="ep-keynums" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- Key Numbers -->
-  <div class="auto-section">
-    <h3>Your Numbers at a Glance</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px" id="ep-keynums"></div>
-  </div>
-
-  <!-- Chart -->
+  <!-- ── WEALTH PROJECTION CHART ────────────────────────────── -->
   <div class="auto-section">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <h3>Wealth Projection Chart</h3>
       <div style="display:flex;gap:14px;font-size:11px;flex-wrap:wrap">
         <span style="display:flex;align-items:center;gap:5px;color:#3b82f6"><span style="width:18px;height:3px;background:#3b82f6;display:inline-block;border-radius:2px"></span>DRIP (reinvest)</span>
-        <span style="display:flex;align-items:center;gap:5px;color:#10b981"><span style="width:18px;height:3px;background:#10b981;display:inline-block;border-radius:2px;border-top:2px dashed #10b981"></span>Cash payouts</span>
+        <span style="display:flex;align-items:center;gap:5px;color:#10b981"><span style="width:18px;height:3px;background:#10b981;display:inline-block;border-radius:2px"></span>Cash payouts</span>
         <span style="display:flex;align-items:center;gap:5px;color:var(--muted)"><span style="width:18px;height:3px;background:var(--muted);display:inline-block;border-radius:2px"></span>Total invested</span>
       </div>
     </div>
     <div id="etf-chart-wrap" style="width:100%;height:280px;position:relative"></div>
-
-    <!-- Milestone markers -->
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px" id="ep-milestones"></div>
   </div>
 
-  <!-- DRIP vs Cash 30-yr -->
+  <!-- ── DRIP VS CASH ───────────────────────────────────────── -->
   <div class="auto-section">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <h3 style="margin-bottom:0">DRIP vs Cash — At Retirement</h3>
       <button onclick="toggleDripHelp()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer" id="drip-help-btn">💡 What does this mean?</button>
     </div>
-
-    <!-- Collapsible explanation -->
     <div id="drip-help-box" style="display:none;margin-top:12px;margin-bottom:4px;background:var(--surface2);border-radius:10px;border-left:3px solid var(--accent);padding:14px 16px">
       <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">📖 DRIP vs Cash — which should you choose?</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
         <div style="background:rgba(59,130,246,0.08);border-radius:8px;padding:12px;border:1px solid rgba(59,130,246,0.2)">
           <div style="font-size:12px;font-weight:700;color:#93c5fd;margin-bottom:6px">🔄 DRIP — Reinvest dividends</div>
-          <div style="font-size:11px;color:var(--muted);line-height:1.7">
-            Every dividend is automatically used to buy more shares. You receive <strong style="color:var(--text)">no cash</strong> along the way.<br><br>
-            Result: your portfolio compounds faster on a growing base. <strong style="color:#93c5fd">Bigger portfolio at retirement.</strong><br><br>
-            Best for: <strong style="color:var(--text)">wealth builders</strong> who don't need income yet.
-          </div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">Every dividend buys more shares automatically. <strong style="color:var(--text)">No cash received</strong> along the way. Compounds faster — <strong style="color:#93c5fd">bigger portfolio at retirement.</strong><br><br>Best for: <strong style="color:var(--text)">wealth builders</strong> who don't need income yet.</div>
         </div>
         <div style="background:rgba(16,185,129,0.08);border-radius:8px;padding:12px;border:1px solid rgba(16,185,129,0.2)">
           <div style="font-size:12px;font-weight:700;color:#6ee7b7;margin-bottom:6px">💵 Cash — Receive dividends monthly</div>
-          <div style="font-size:11px;color:var(--muted);line-height:1.7">
-            Dividends are paid to you in cash every month from day one. Portfolio grows slower without reinvestment.<br><br>
-            Result: <strong style="color:#6ee7b7">regular monthly income now</strong>, smaller end portfolio.<br><br>
-            Best for: <strong style="color:var(--text)">retirees</strong> or anyone who needs the income today.
-          </div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.7">Dividends paid to you in cash from day one. Portfolio grows slower. <strong style="color:#6ee7b7">Regular monthly income now</strong>, smaller end portfolio.<br><br>Best for: <strong style="color:var(--text)">retirees</strong> or anyone who needs income today.</div>
         </div>
       </div>
       <div style="font-size:11px;color:var(--muted);line-height:1.8;padding:10px 12px;background:rgba(245,158,11,0.06);border-radius:8px;border:1px solid rgba(245,158,11,0.2)">
-        <strong style="color:var(--amber)">💡 Smart strategy:</strong> Use <strong style="color:var(--text)">DRIP while working</strong> to build the largest possible portfolio, then <strong style="color:var(--text)">switch to Cash at retirement</strong> to live off the dividends. A larger DRIP portfolio at retirement generates more monthly income than a Cash portfolio would — because the compounding base is bigger.
+        <strong style="color:var(--amber)">💡 Smart strategy:</strong> Use <strong style="color:var(--text)">DRIP while working</strong> to build the largest possible portfolio, then <strong style="color:var(--text)">switch to Cash at retirement</strong>. A larger DRIP base generates more monthly income at retirement than a Cash portfolio would.
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="ep-compare"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px" id="ep-compare"></div>
     <div style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.7;padding:10px 14px;background:var(--surface2);border-radius:8px;border-left:2px solid var(--border)">
-      <strong>DRIP</strong> — dividends reinvested every month. Larger portfolio at retirement but no income along the way.<br>
-      <strong>Cash</strong> — dividends paid to you monthly from day one. Smaller end portfolio but you earn income now.<br>
-      Projections use historical average returns net of expense ratios. Not financial advice.
+      Projections use historical average returns net of expense ratios. Past performance does not guarantee future results. Not financial advice.
     </div>
   </div>
 
-  <!-- Basket Reference -->
+  <!-- ── BASKET REFERENCE (collapsible) ────────────────────── -->
   <div class="auto-section">
-    <h3>Basket Reference — What's Inside Each</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px" id="ep-basket-ref"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleBasketRef()">
+      <h3 style="margin:0">📚 Basket Reference — What's Inside Each</h3>
+      <span id="basket-ref-chevron" style="font-size:18px;color:var(--muted)">▼</span>
+    </div>
+    <div id="ep-basket-ref-wrap" style="display:none;margin-top:14px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px" id="ep-basket-ref"></div>
+    </div>
   </div>
 
 </div>
@@ -2886,13 +2896,92 @@ Be direct, specific, use their actual numbers. No disclaimers. No bullet points.
     const data = await res.json();
     const text = data.content?.[0]?.text || 'Could not generate recommendation.';
     box.innerHTML = `<div style="color:var(--text);line-height:1.9">${text.replace(/\n/g,'<br>')}</div>
-      <div style="margin-top:12px;font-size:11px;color:var(--muted);padding:8px 12px;background:var(--surface2);border-radius:6px">
-        Based on: Age ${age} · ${years} yrs to retire · ${goalStr} · Blended return ${(blend.ret*100).toFixed(1)}% · Expense ${(blend.exp*100).toFixed(3)}%/yr
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);padding:8px 12px;background:var(--surface2);border-radius:6px">
+        Based on: Age ${age} · ${years} yrs to retire · ${goalStr} · Return ${(blend.ret*100).toFixed(1)}% · Fee ${(blend.exp*100).toFixed(3)}%/yr
       </div>`;
+
+    // Parse recommendation for allocation and show accept strip
+    const recAlloc = parseRecoAllocation(text, age, years);
+    if(recAlloc){
+      const strip = document.getElementById('ep-accept-strip');
+      const preview = document.getElementById('ep-accept-preview');
+      if(strip && preview){
+        window._pendingAlloc = recAlloc;
+        preview.innerHTML = `Suggested: <strong style="color:#10b981">${recAlloc.income}% Income</strong> · <strong style="color:#3b82f6">${recAlloc.growth}% Growth</strong> · <strong style="color:#8b5cf6">${recAlloc.anchor}% Anchor</strong>`;
+        strip.style.display = 'block';
+      }
+    }
   } catch(e) {
     box.innerHTML = '<span style="color:var(--red)">Could not connect — check your internet connection.</span>';
   }
   btn.disabled = false; btn.textContent = '⚡ Get Recommendation';
+}
+
+
+// ── Accept Recommendation ─────────────────────────────────────────────────
+function parseRecoAllocation(text, age, years){
+  // Try to extract income/growth/anchor split from AI text
+  // Look for percentage patterns like "60% income", "30% growth", "10% anchor"
+  const incomeMatch = text.match(/(\d+)%?\s*(?:to\s*)?(?:income|Income)/i);
+  const growthMatch = text.match(/(\d+)%?\s*(?:to\s*)?(?:growth|Growth|QQQ)/i);
+  const anchorMatch = text.match(/(\d+)%?\s*(?:to\s*)?(?:anchor|Anchor|stability|stable)/i);
+
+  let income = incomeMatch ? parseInt(incomeMatch[1]) : null;
+  let growth = growthMatch ? parseInt(growthMatch[1]) : null;
+  let anchor = anchorMatch ? parseInt(anchorMatch[1]) : null;
+
+  // If we couldn't parse, derive from age
+  if(!income || !growth || !anchor || (income+growth+anchor) !== 100){
+    if(age <= 30)       { income=20; growth=60; anchor=20; }
+    else if(age <= 40)  { income=30; growth=50; anchor=20; }
+    else if(age <= 50)  { income=40; growth=40; anchor=20; }
+    else if(age <= 60)  { income=55; growth=25; anchor=20; }
+    else                { income=65; growth=10; anchor=25; }
+  }
+
+  // Round to nearest 5 and ensure sums to 100
+  income = Math.round(income/5)*5;
+  growth = Math.round(growth/5)*5;
+  anchor = 100 - income - growth;
+  if(anchor < 0){ growth += anchor; anchor = 0; }
+
+  return {income, growth, anchor};
+}
+
+function acceptRecommendation(){
+  const alloc = window._pendingAlloc;
+  if(!alloc) return;
+
+  // Update sliders
+  etpGoals = {income: alloc.income, growth: alloc.growth, anchor: alloc.anchor};
+  document.getElementById('ep-income-slider').value = alloc.income;
+  document.getElementById('ep-growth-slider').value = alloc.growth;
+  document.getElementById('ep-anchor-slider').value = alloc.anchor;
+  document.getElementById('ep-income-pct').textContent = alloc.income + '%';
+  document.getElementById('ep-growth-pct').textContent = alloc.growth + '%';
+  document.getElementById('ep-anchor-pct').textContent = alloc.anchor + '%';
+
+  // Hide accept strip
+  document.getElementById('ep-accept-strip').style.display = 'none';
+
+  // Flash the sliders to show they changed
+  ['ep-income-slider','ep-growth-slider','ep-anchor-slider'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){ el.style.transition='opacity .3s'; el.style.opacity='0.4'; setTimeout(()=>el.style.opacity='1', 300); }
+  });
+
+  // Recalculate
+  etfUpdate();
+  toast('Recommendation applied ✓', 'success');
+}
+
+function toggleBasketRef(){
+  const wrap    = document.getElementById('ep-basket-ref-wrap');
+  const chevron = document.getElementById('basket-ref-chevron');
+  if(!wrap) return;
+  const open = wrap.style.display !== 'none';
+  wrap.style.display = open ? 'none' : 'block';
+  if(chevron) chevron.textContent = open ? '▼' : '▲';
 }
 
 // ── ETF Planner Input Helpers ─────────────────────────────────────────────
