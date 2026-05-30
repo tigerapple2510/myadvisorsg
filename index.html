@@ -1151,6 +1151,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
     <div class="port-stat"><div class="port-val" id="p-value">$0</div><div class="port-label">Live Value</div></div>
     <div class="port-stat"><div class="port-val" id="p-pnl">$0</div><div class="port-label">Total P&L</div></div>
     <div class="port-stat"><div class="port-val" id="p-positions">0</div><div class="port-label">Positions</div></div>
+    <div class="port-stat"><div class="port-val" id="p-buying-power" style="color:var(--green)">—</div><div class="port-label">Buying Power</div></div>
   </div>
 
   <div class="section-header">
@@ -1334,7 +1335,7 @@ function switchTab(name, btn) {
   if (name === 'earnings') { loadEarnings(); }
   if (name === 'etfplanner') { requestAnimationFrame(() => setTimeout(etfUpdate, 50)); }
   if (name === 'auto') { loadAccountStatus(); renderAllocationTable(); }
-  if (name === 'portfolio') { renderPortfolio(); }
+  if (name === 'portfolio') { refreshPortfolio(); }
   if (name === 'history') { renderHistory(); }
 }
 
@@ -1771,8 +1772,13 @@ function renderOrders() {
 }
 
 async function executeBestSignal() {
-  const signals = Object.values(state.signals).filter(s => s.signal === 'strong-buy' || s.signal === 'buy');
-  if (!signals.length) { toast('No buy signals loaded — refresh data first', 'error'); return; }
+  let signals = Object.values(state.signals).filter(s => s.signal === 'strong-buy' || s.signal === 'buy');
+  if (!signals.length) {
+    toast('No signals loaded — fetching data...', '');
+    await refreshAllData(true);
+    signals = Object.values(state.signals).filter(s => s.signal === 'strong-buy' || s.signal === 'buy');
+    if (!signals.length) { toast('No buy signals found — try again later', 'error'); return; }
+  }
   signals.sort((a, b) => b.score - a.score);
   const best = signals[0];
   const amount = state.allocation[best.symbol]?.amount || 100;
@@ -1976,7 +1982,65 @@ function renderPortfolio() {
   document.getElementById('p-positions').textContent = state.portfolio.length;
 }
 
-function refreshPortfolio() { renderPortfolio(); toast('Portfolio refreshed', ''); }
+async function refreshPortfolio() {
+  const tbody = document.getElementById('positions-body');
+  const btn = document.querySelector('button[onclick="refreshPortfolio()"]');
+  if(btn){ btn.textContent='⟳ Loading...'; btn.disabled=true; }
+  if(tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted)">Loading positions from Alpaca...</td></tr>';
+  try {
+    const [positions, account] = await Promise.all([alpacaAPI('positions'), alpacaAPI('account')]);
+    if(Array.isArray(positions) && positions.length > 0){
+      let totalInvested=0, totalValue=0, totalPnl=0;
+      tbody.innerHTML = positions.map(p => {
+        const cost=parseFloat(p.cost_basis), value=parseFloat(p.market_value);
+        const pnl=parseFloat(p.unrealized_pl), pnlPct=parseFloat(p.unrealized_plpc)*100;
+        const price=parseFloat(p.current_price), entry=parseFloat(p.avg_entry_price), qty=parseFloat(p.qty);
+        totalInvested+=cost; totalValue+=value; totalPnl+=pnl;
+        const col=pnl>=0?'var(--green)':'var(--red)';
+        const sign=pnl>=0?'+':'';
+        return `<tr>
+          <td><strong>${p.symbol}</strong><div style="font-size:10px;color:var(--muted)">${qty.toFixed(4)} shares</div></td>
+          <td>$${fmt(entry)}</td><td>$${fmt(cost)}</td><td>$${fmt(price)}</td>
+          <td style="color:${col}">${sign}$${fmt(pnl)} (${sign}${fmt(pnlPct)}%)</td>
+          <td>—</td><td>—</td>
+          <td><button class="btn btn-danger btn-sm" onclick="closeAlpacaPos('${p.symbol}')">Close</button></td>
+        </tr>`;
+      }).join('');
+      document.getElementById('p-invested').textContent  = '$'+fmt(totalInvested);
+      document.getElementById('p-value').textContent     = '$'+fmt(totalValue);
+      const pEl = document.getElementById('p-pnl');
+      pEl.textContent = (totalPnl>=0?'+$':'-$')+fmt(Math.abs(totalPnl));
+      pEl.style.color = totalPnl>=0?'var(--green)':'var(--red)';
+      document.getElementById('p-positions').textContent = positions.length;
+      if(account?.buying_power){
+        const bpEl = document.getElementById('p-buying-power');
+        if(bpEl) bpEl.textContent = '$'+fmt(parseFloat(account.buying_power));
+      }
+      toast('Loaded '+positions.length+' positions from Alpaca ✓','success');
+    } else if(Array.isArray(positions) && positions.length===0){
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted)">No open Alpaca positions. Use Execute Signal to place trades.</td></tr>';
+      toast('No open positions in Alpaca','');
+    } else {
+      renderPortfolio();
+      toast('Alpaca error — showing local trades','error');
+    }
+  } catch(e) {
+    console.error('Portfolio error:',e);
+    renderPortfolio();
+    toast('Could not connect to Alpaca','error');
+  } finally {
+    if(btn){ btn.textContent='⟳ Refresh'; btn.disabled=false; }
+  }
+}
+
+async function closeAlpacaPos(symbol){
+  if(!confirm('Close entire '+symbol+' position at market price?')) return;
+  try {
+    await alpacaAPI('positions/'+symbol,'DELETE');
+    toast(symbol+' closed ✓','success');
+    setTimeout(refreshPortfolio,1500);
+  } catch(e){ toast('Could not close '+symbol,'error'); }
+}
 
 function openAddTrade() { document.getElementById('add-trade-modal').classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
