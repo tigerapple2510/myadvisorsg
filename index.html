@@ -1719,9 +1719,16 @@ setInterval(updateCacheStatus, 60000);
 async function alpacaAPI(endpoint, method='GET', body=null) {
   const mode = state.mode;
   const url = `/api/trade?mode=${mode}&endpoint=${endpoint}`;
-  const opts = { method, headers: {'Content-Type':'application/json'} };
-  if (body) opts.body = JSON.stringify(body);
+  const opts = { method, headers: {} };
+  if (method === 'POST' || method === 'PUT' || body) {
+    opts.headers['Content-Type'] = 'application/json';
+    if (body) opts.body = JSON.stringify(body);
+  }
   const res = await fetch(url, opts);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || err.message || 'HTTP ' + res.status);
+  }
   return await res.json();
 }
 
@@ -2087,10 +2094,15 @@ async function refreshPortfolio() {
 async function closeAlpacaPos(symbol){
   if(!confirm('Close entire '+symbol+' position at market price?')) return;
   try {
-    await alpacaAPI('positions/'+symbol,'DELETE');
-    toast(symbol+' closed ✓','success');
-    setTimeout(refreshPortfolio,1500);
-  } catch(e){ toast('Could not close '+symbol,'error'); }
+    const pos = await alpacaAPI('positions');
+    const position = Array.isArray(pos) ? pos.find(p=>p.symbol===symbol) : null;
+    if(!position){ toast('Position not found for '+symbol,'error'); return; }
+    const order = await alpacaAPI('orders','POST',{
+      symbol, qty: String(position.qty), side:'sell', type:'market', time_in_force:'day'
+    });
+    if(order.id){ toast(symbol+' sell order placed ✓','success'); setTimeout(refreshPortfolio,2000); }
+    else { toast('Could not close '+symbol+': '+(order.message||'error'),'error'); }
+  } catch(e){ toast('Could not close '+symbol+': '+e.message,'error'); }
 }
 
 function openAddTrade() { document.getElementById('add-trade-modal').classList.add('open'); }
