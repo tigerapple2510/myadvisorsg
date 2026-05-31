@@ -1779,16 +1779,19 @@ function renderOrders() {
 }
 
 async function executeBestSignal() {
-  let signals = Object.values(state.signals).filter(s => s.signal === 'strong-buy' || s.signal === 'buy');
+  const _minS = state.rules.minScore;
+  const _qualifies = s => s.score >= _minS && (s.signal === 'strong-buy' || s.signal === 'buy' || (_minS < 65 && s.signal === 'hold'));
+  let signals = Object.values(state.signals).filter(_qualifies);
   if (!signals.length) {
     toast('No signals loaded — fetching data...', '');
     await refreshAllData(true);
-    signals = Object.values(state.signals).filter(s => s.signal === 'strong-buy' || s.signal === 'buy');
+    signals = Object.values(state.signals).filter(_qualifies);
     if (!signals.length) {
       const allSigs = Object.values(state.signals).sort((a,b)=>b.score-a.score);
       const best = allSigs[0];
       if(best){
-        toast(`No BUY signals. Best available: ${best.symbol} at ${best.score}/100 (${best.signal.toUpperCase()}). Min score is ${state.rules.minScore}.`, 'error');
+        const needed = best.signal === 'hold' ? 'Lower Min Score below 65 to trade HOLD signals' : 'Raise min score';
+        toast(`Best available: ${best.symbol} at ${best.score}/100 (${best.signal.toUpperCase()}). Your min score is ${_minS} — ${needed}.`, 'error');
       } else {
         toast('No signals loaded. Please refresh data first.', 'error');
       }
@@ -1803,13 +1806,13 @@ async function executeBestSignal() {
 }
 
 async function executeAllSignals() {
-  let signals = Object.values(state.signals)
-    .filter(s => (s.signal === 'strong-buy' || s.signal === 'buy') && s.score >= state.rules.minScore);
+  const minS = state.rules.minScore;
+  const qualifies = s => s.score >= minS && (s.signal === 'strong-buy' || s.signal === 'buy' || (minS < 65 && s.signal === 'hold'));
+  let signals = Object.values(state.signals).filter(qualifies);
   if (!signals.length) {
     toast('No signals loaded — fetching data first...', '');
     await refreshAllData(true);
-    signals = Object.values(state.signals)
-      .filter(s => (s.signal === 'strong-buy' || s.signal === 'buy') && s.score >= state.rules.minScore);
+    signals = Object.values(state.signals).filter(qualifies);
     if (!signals.length) {
       // Show rich market context instead of bare error
       const allSigs = Object.values(state.signals).sort((a,b)=>b.score-a.score);
@@ -1817,6 +1820,7 @@ async function executeAllSignals() {
       const topStr = top3.map(s=>`${s.symbol} (${s.score}/100)`).join(', ');
       const holdCount = allSigs.filter(s=>s.signal==='hold').length;
       const sellCount = allSigs.filter(s=>s.signal==='sell').length;
+      const minNeedToTrade = allSigs[0]?.score || 65;
       
       // Show a detailed toast + offer to execute best available
       toast(`Market is in HOLD territory (${holdCount} HOLD, ${sellCount} SELL). Best scores: ${topStr}. Min score is ${state.rules.minScore} — lower it in Risk Rules to trade.`, 'error');
