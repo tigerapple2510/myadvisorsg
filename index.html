@@ -1787,9 +1787,18 @@ async function executeBestSignal() {
 }
 
 async function executeAllSignals() {
-  const signals = Object.values(state.signals)
+  let signals = Object.values(state.signals)
     .filter(s => (s.signal === 'strong-buy' || s.signal === 'buy') && s.score >= state.rules.minScore);
-  if (!signals.length) { toast('No qualifying signals — refresh data first', 'error'); return; }
+  if (!signals.length) {
+    toast('No signals loaded — fetching data first...', '');
+    await refreshAllData(true);
+    signals = Object.values(state.signals)
+      .filter(s => (s.signal === 'strong-buy' || s.signal === 'buy') && s.score >= state.rules.minScore);
+    if (!signals.length) {
+      toast('No qualifying signals found. Try lowering the Min Score in Risk Rules (currently '+state.rules.minScore+').', 'error');
+      return;
+    }
+  }
   toast(`Placing ${signals.length} orders...`);
   for (const s of signals) {
     const alloc = state.allocation[s.symbol];
