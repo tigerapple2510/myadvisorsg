@@ -1777,7 +1777,16 @@ async function executeBestSignal() {
     toast('No signals loaded — fetching data...', '');
     await refreshAllData(true);
     signals = Object.values(state.signals).filter(s => s.signal === 'strong-buy' || s.signal === 'buy');
-    if (!signals.length) { toast('No buy signals found — try again later', 'error'); return; }
+    if (!signals.length) {
+      const allSigs = Object.values(state.signals).sort((a,b)=>b.score-a.score);
+      const best = allSigs[0];
+      if(best){
+        toast(`No BUY signals. Best available: ${best.symbol} at ${best.score}/100 (${best.signal.toUpperCase()}). Min score is ${state.rules.minScore}.`, 'error');
+      } else {
+        toast('No signals loaded. Please refresh data first.', 'error');
+      }
+      return;
+    }
   }
   signals.sort((a, b) => b.score - a.score);
   const best = signals[0];
@@ -1795,7 +1804,29 @@ async function executeAllSignals() {
     signals = Object.values(state.signals)
       .filter(s => (s.signal === 'strong-buy' || s.signal === 'buy') && s.score >= state.rules.minScore);
     if (!signals.length) {
-      toast('No qualifying signals found. Try lowering the Min Score in Risk Rules (currently '+state.rules.minScore+').', 'error');
+      // Show rich market context instead of bare error
+      const allSigs = Object.values(state.signals).sort((a,b)=>b.score-a.score);
+      const top3 = allSigs.slice(0,3);
+      const topStr = top3.map(s=>`${s.symbol} (${s.score}/100)`).join(', ');
+      const holdCount = allSigs.filter(s=>s.signal==='hold').length;
+      const sellCount = allSigs.filter(s=>s.signal==='sell').length;
+      
+      // Show a detailed toast + offer to execute best available
+      toast(`Market is in HOLD territory (${holdCount} HOLD, ${sellCount} SELL). Best scores: ${topStr}. Min score is ${state.rules.minScore} — lower it in Risk Rules to trade.`, 'error');
+      
+      // Also show a modal-like banner in the orders section
+      const ordersEl = document.getElementById('orders-list');
+      if(ordersEl && top3.length){
+        ordersEl.innerHTML = `<div style="background:var(--surface2);border-radius:10px;padding:16px;border:1px solid var(--border)">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--amber)">⚠️ No signals meet the min score of ${state.rules.minScore}</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Market is mostly neutral right now. Top 3 available signals:</div>
+          ${top3.map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface);border-radius:8px;margin-bottom:6px">
+            <div><strong>${s.symbol}</strong> <span style="font-size:11px;color:var(--muted)">${s.signal.toUpperCase()} · ${s.score}/100</span></div>
+            <button class="btn btn-secondary btn-sm" onclick="forceExecute('${s.symbol}')">Execute anyway</button>
+          </div>`).join('')}
+          <div style="font-size:11px;color:var(--muted);margin-top:10px">Or lower Min Score in Risk Rules (currently ${state.rules.minScore}) to include more signals.</div>
+        </div>`;
+      }
       return;
     }
   }
@@ -1809,6 +1840,17 @@ async function executeAllSignals() {
   }
   await loadOrders();
   toast(`Executed ${signals.length} buy signals ✓`, 'success');
+}
+
+
+function forceExecute(symbol) {
+  const sig = state.signals[symbol];
+  if(!sig){ toast('Signal data not found for '+symbol,'error'); return; }
+  const alloc = state.allocation[symbol];
+  const amount = alloc?.amount || 100;
+  if(confirm('Execute '+symbol+' at score '+sig.score+'/100 (below min threshold of '+state.rules.minScore+')? Amount: $'+amount)){
+    placeOrder(symbol, amount, sig.score);
+  }
 }
 
 async function placeOrder(symbol, notional, score) {
