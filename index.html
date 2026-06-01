@@ -4184,6 +4184,7 @@ async function pollBotStatus() {
     updateBotStatusUI(d);
     if (d.trades?.length) renderTradeLog(d.trades);
     if (d.signals) renderCryptoSignals(d.signals);
+    updateActionBanner(d, d.signals || {});
   } catch(e) {
     console.warn('Status poll failed:', e.message);
   }
@@ -4577,16 +4578,6 @@ function setTrafficLight(strategy, statusText, color, active) {
 }
 
 // Auto-run advisor when bot status updates
-const _origUpdateBotStatusUI = updateBotStatusUI;
-function updateBotStatusUI(d) {
-  _origUpdateBotStatusUI(d);
-  // Run advisor every 10 polls (~50 minutes) automatically
-  const pollCount = parseInt(localStorage.getItem('iconium_poll_count') || '0') + 1;
-  localStorage.setItem('iconium_poll_count', pollCount);
-  if (pollCount % 10 === 1) {
-    runStrategyAdvisor();
-  }
-}
 
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -4755,30 +4746,6 @@ function updateActionBanner(botData, signalData) {
   }
 }
 
-// Hook into pollBotStatus to update the banner automatically
-const _origPollBotStatus = pollBotStatus;
-async function pollBotStatus() {
-  const url = BOT_BACKEND();
-  if (!url) return;
-  try {
-    const r = await fetch(url + '/bot/status', { signal: AbortSignal.timeout(8000) });
-    const d = await r.json();
-    updateBotStatusUI(d);
-    if (d.trades?.length) renderTradeLog(d.trades);
-
-    // Fetch signals too for the action banner
-    try {
-      const sr = await fetch(url + '/market/signals', { signal: AbortSignal.timeout(8000) });
-      const signals = await sr.json();
-      renderCryptoSignals(signals);
-      updateActionBanner(d, signals);
-    } catch(e) {
-      updateActionBanner(d, {});
-    }
-  } catch(e) {
-    console.warn('Status poll failed:', e.message);
-  }
-}
 
 
 // ═══════════════════════════════════════════════════════════════════════════
