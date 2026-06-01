@@ -4753,7 +4753,7 @@ function updateActionBanner(botData, signalData) {
 // Analyses live market conditions and recommends which strategy to use
 // ═══════════════════════════════════════════════════════════════════════════
 
-let advisorHistory = JSON.parse(localStorage.getItem('iconium_advisor_history') || '[]');
+advisorHistory = JSON.parse(localStorage.getItem('iconium_advisor_history') || '[]');
 
 async function runStrategyAdvisor() {
   const btn = document.getElementById('advisor-refresh-btn');
