@@ -395,7 +395,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 
 <!-- Alert Banner -->
 <div id="alert-banner">
-  <span>⚡ <strong>NEW:</strong> ETF Wealth Planner is live — long-term projections, DRIP vs cash, age-based risk profiles 💰</span>
+  <span>⚡ <strong>NEW:</strong> ⚡ NEW in v3.0: Crypto Bot LIVE — OKX Demo · Goal-Based · Crash Shield · Market Regime Detection 🤖</span>
   <button onclick="document.getElementById('alert-banner').style.display='none'">✕</button>
 </div>
 
@@ -405,7 +405,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
     <div class="logo-icon">⚡</div>
     <div>
       <h1>IconiumTrade</h1>
-      <p>Proprietary AI · v2.2</p>
+      <p>Proprietary AI · v3.0</p>
     </div>
   </div>
   <div class="header-meta">
@@ -938,209 +938,94 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════
-     AUTOMATION TAB
-═══════════════════════════════════════════════════════════ -->
-<div class="panel" id="panel-auto">
+1
+âš¡ Set Your Goal
+Turn spare capital into ETF fuel. Set a realistic target â€” the app picks the right strategy automatically.
+ÐŸ’° STARTING CAPITAL ($)
+$500
+$1K
+$5K
+$10K
+ÐŸŽ¯ TARGET AMOUNT ($)
+$5K
+$10K
+$50K
+$100K
+Â± TIMELINE
+        6 months
+        1 year
+        18 months
+        2 years
+        3 years
+      
+Monthly return needed: â€”
+2
+Choose Your Strategy
+Each strategy has a different risk profile. The app recommends one based on your goal.
+ðŸ”²
+The Grinder
+Steady RSI + SMA momentum on BTC & ETH. Lower variance, consistent returns.
+5â€“15%
+Monthly target
+Medium
+Risk level
+BTC ETH
+Pairs
+15%
+Stop loss
+ðŸ“ˆ
+The Rider
+Momentum breakout across BTC, ETH, SOL & BNB. Rides bull trends aggressively.
+15â€“30%
+Monthly target
+High
+Risk level
+4 pairs
+Pairs
+20%
+Stop loss
+ðŸš€
+The Moonshot
+Concentrated breakout on SOL, AVAX, DOT. 2x potential but high drawdown risk.
+30â€“50%+
+Monthly target
+Very High
+Risk level
+Alt coins
+Pairs
+25%
+Stop loss
+4
+Bot Controls
+PAPER TRADING
+BACKEND URL (YOUR RENDER SERVICE)
 
-  <!-- Telegram Alerts -->
-  <div class="auto-section" style="border-color:#1d4ed8">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <h3>🔔 Telegram Alerts</h3>
-      <button class="btn btn-primary btn-sm" onclick="sendTestAlert()">⚡ Send Test Alert</button>
-    </div>
-
-    <div class="alert-status disconnected" id="telegram-status">
-      <span>●</span> <span id="telegram-status-text">Not tested yet — click Send Test Alert to verify</span>
-    </div>
-
-    <div class="alert-toggle-grid">
-      <div class="alert-toggle-item">
-        <div class="alert-toggle-info">
-          <div class="alert-toggle-title">🚨 Strong Buy Alerts</div>
-          <div class="alert-toggle-desc">Alert when Iconium Score ≥ 80</div>
-        </div>
-        <button class="toggle on" id="tgl-strong-buy-alert" onclick="toggleAlert('strong-buy-alert')"></button>
-      </div>
-      <div class="alert-toggle-item">
-        <div class="alert-toggle-info">
-          <div class="alert-toggle-title">📅 Earnings Reminders</div>
-          <div class="alert-toggle-desc">Day-before alert for upcoming earnings</div>
-        </div>
-        <button class="toggle on" id="tgl-earnings-alert" onclick="toggleAlert('earnings-alert')"></button>
-      </div>
-      <div class="alert-toggle-item">
-        <div class="alert-toggle-info">
-          <div class="alert-toggle-title">☀️ Morning Brief</div>
-          <div class="alert-toggle-desc">Daily summary at 9am SGT</div>
-        </div>
-        <button class="toggle on" id="tgl-morning-brief" onclick="toggleAlert('morning-brief')"></button>
-      </div>
-      <div class="alert-toggle-item">
-        <div class="alert-toggle-info">
-          <div class="alert-toggle-title">🔴 Trade Confirmations</div>
-          <div class="alert-toggle-desc">Alert when a trade is executed</div>
-        </div>
-        <button class="toggle on" id="tgl-trade-confirm" onclick="toggleAlert('trade-confirm')"></button>
-      </div>
-    </div>
-
-    <div style="background:var(--surface2);border-radius:8px;padding:12px;margin-top:8px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Alert Threshold</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:12px;color:var(--muted)">Min Score to Alert:</span>
-        <input type="number" id="alert-threshold" value="78" min="50" max="100"
-          style="background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 8px;width:70px;font-size:13px">
-        <span style="font-size:12px;color:var(--muted)">/100</span>
-        <button class="btn btn-secondary btn-sm" onclick="saveAlertSettings()">Save</button>
-      </div>
-    </div>
-
-    <div style="margin-top:12px">
-      <button class="btn btn-primary" style="width:100%" onclick="sendSignalsSummary()">
-        📊 Send Signals Summary Now
-      </button>
-    </div>
-
-    <div style="margin-top:10px;font-size:11px;color:var(--muted)">
-      Alerts are sent via your Iconium Telegram bot. Bot token and chat ID are stored securely in Vercel — never in this page.
-    </div>
-  </div>
-
-  <!-- Quick Start -->
-  <div class="auto-section" style="border-color:#1d4ed8">
-    <h3>🚀 Quick Start — Test Paper Trading in 3 Steps</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0">
-      <div style="background:var(--surface2);border-radius:8px;padding:14px">
-        <div style="font-size:20px;margin-bottom:6px">1️⃣</div>
-        <div style="font-size:13px;font-weight:600;margin-bottom:4px">Fetch Live Data</div>
-        <div style="font-size:11px;color:var(--muted)">Go to Live Signals tab, click "Refresh All Data". Data loads in ~30 seconds.</div>
-      </div>
-      <div style="background:var(--surface2);border-radius:8px;padding:14px">
-        <div style="font-size:20px;margin-bottom:6px">2️⃣</div>
-        <div style="font-size:13px;font-weight:600;margin-bottom:4px">Set Your Rules</div>
-        <div style="font-size:11px;color:var(--muted)">Below, set Max Position to $250 and Min Score to 70. Click Save Rules.</div>
-      </div>
-      <div style="background:var(--surface2);border-radius:8px;padding:14px">
-        <div style="font-size:20px;margin-bottom:6px">3️⃣</div>
-        <div style="font-size:13px;font-weight:600;margin-bottom:4px">Execute Trade</div>
-        <div style="font-size:11px;color:var(--muted)">Click "Execute Best Signal Now" or "Execute ALL Buy Signals" below.</div>
-      </div>
-    </div>
-    <button class="btn btn-primary" onclick="executeQuickTest()">⚡ Run Quick Test Now</button>
-  </div>
-
-  <!-- Account Status -->
-  <div class="auto-section">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <h3>📊 Account Status</h3>
-      <button class="btn btn-secondary btn-sm" onclick="loadAccountStatus()">⟳ Refresh</button>
-    </div>
-    <div class="account-grid" id="account-grid">
-      <div class="acct-stat"><div class="acct-val" id="acct-equity">—</div><div class="acct-label">Equity</div></div>
-      <div class="acct-stat"><div class="acct-val" id="acct-buying-power">—</div><div class="acct-label">Buying Power</div></div>
-      <div class="acct-stat"><div class="acct-val" id="acct-positions">—</div><div class="acct-label">Positions</div></div>
-      <div class="acct-stat"><div class="acct-val" id="acct-pnl">—</div><div class="acct-label">Unrealised P&L</div></div>
-    </div>
-    <div style="font-size:11px;margin-top:8px" id="account-status-msg">Loading account...</div>
-  </div>
-
-  <!-- Trading Mode Switcher -->
-  <div class="auto-section">
-    <h3>🔄 Trading Mode</h3>
-    <div class="mode-switcher" style="margin:14px 0">
-      <div class="mode-card active-mode" id="mode-paper-card" onclick="selectMode('paper')">
-        <h4>📝 Paper Trading</h4>
-        <p>$100,000 practice money. No real money at risk. Recommended during first 4 weeks.</p>
-        <div class="mode-acct">Account: PA3DFVJ1ZHBQ</div>
-      </div>
-      <div class="mode-card" id="mode-live-card" onclick="confirmLiveMode()">
-        <h4>🔴 Live Trading</h4>
-        <p>Real money. Deposit funds at alpaca.markets first. Complete 4 weeks paper trading before switching.</p>
-        <div class="mode-acct">Account: AKLZRMAMIZRI6O6557FNW3MBBI</div>
-      </div>
-    </div>
-    <div style="font-size:11px;color:var(--muted)">
-      ⚠️ Automated trading carries significant risk. Never automate more than you can afford to lose.
-    </div>
-  </div>
-
-  <!-- Execute Trades -->
-  <div class="auto-section">
-    <h3>🤖 Place Trades</h3>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0">
-      <button class="btn btn-primary" onclick="executeBestSignal()">⚡ Execute Best Signal</button>
-      <button class="btn btn-primary" onclick="executeAllSignals()">🔄 Execute ALL Buy Signals</button>
-    </div>
-    <p style="font-size:12px;color:var(--muted)">
-      <strong>Execute Best Signal</strong> — buys the 1 highest-scoring stock right now.<br>
-      <strong>Execute ALL Buy Signals</strong> — buys every qualifying stock across all 25 instruments.
-    </p>
-  </div>
-
-  <!-- Per-Stock Allocation -->
-  <div class="auto-section">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <h3>💰 Per-Stock Allocation</h3>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-secondary btn-sm" onclick="resetAllocation()">↺ Reset</button>
-        <button class="btn btn-primary btn-sm" onclick="saveAllocation()">✓ Save</button>
-      </div>
-    </div>
-    <div style="overflow-x:auto">
-      <table class="allocation-table" id="allocation-table">
-        <thead>
-          <tr>
-            <th>Stock</th><th>Amount ($)</th><th>Min Score</th><th>Auto-Buy</th><th>Priority</th>
-          </tr>
-        </thead>
-        <tbody id="allocation-body"></tbody>
-      </table>
-    </div>
-    <div style="margin-top:10px;font-size:12px;color:var(--muted)">
-      Total allocated: <strong id="total-allocated">$0</strong> across <strong id="stocks-active">0</strong> stocks
-    </div>
-  </div>
-
-  <!-- Risk Rules -->
-  <div class="auto-section">
-    <h3>🛡️ Risk Rules</h3>
-    <div class="risk-grid" style="margin:14px 0">
-      <div class="risk-item">
-        <div class="risk-label">Max Portfolio Drawdown (%)</div>
-        <input class="risk-input" type="number" id="r-drawdown" value="15" min="1" max="50">
-      </div>
-      <div class="risk-item">
-        <div class="risk-label">Max Single Position (% of portfolio)</div>
-        <input class="risk-input" type="number" id="r-position" value="25" min="1" max="100">
-      </div>
-      <div class="risk-item">
-        <div class="risk-label">Max Trades Per Week</div>
-        <input class="risk-input" type="number" id="r-trades" value="10" min="1" max="100">
-      </div>
-      <div class="risk-item">
-        <div class="risk-label">Min Iconium Score to Trade</div>
-        <input class="risk-input" type="number" id="r-minscore" value="65" min="0" max="100">
-      </div>
-    </div>
-    <button class="btn btn-primary" onclick="saveRules()">✓ Save All Rules</button>
-  </div>
-
-  <!-- Recent Orders -->
-  <div class="auto-section">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <h3>📋 Recent Orders</h3>
-      <button class="btn btn-secondary btn-sm" onclick="loadOrders()">⟳ Refresh</button>
-    </div>
-    <div id="orders-list">
-      <div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">
-        No orders yet. Execute a signal to place your first trade.
-      </div>
-    </div>
-  </div>
-
-</div>
-
+ðŸ”— Test
+Not connected â€” enter your Render URL above
+â–¶ Start Paper Bot
+â¸ Pause
+â¹ Stop
+ðŸ“¡ Live Market Signals
+âŸ³ Refresh
+Start bot or click Refresh to load live signals
+Signals from OKX Demo API Â· RSI + SMA7 + SMA20 + Volume Â· Updated every 5 min while bot runs
+ðŸ“‹ Trade Log
+0 signals
+Clear
+No signals yet â€” start the bot to begin paper trading
+ðŸ”‘
+OKX Demo Setup â€” 3 Steps
+1ï¸âƒ£
+Create OKX Account
+Go to okx.com â†’ Sign Up â†’ Complete KYC (passport + selfie)
+â†’ okx.com
+2ï¸âƒ£
+Enable Demo Trading
+Trade menu â†’ Demo Trading â†’ API Management â†’ Create key with Read + Trade permissions
+3ï¸âƒ£
+Deploy Backend
+Upload the bot code to Render â†’ Add OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE as env vars
+ðŸ”’ Security: Your API keys are stored only in Render's encrypted environment variables â€” never in this HTML file, never in your browser. The backend holds the keys; this page only sends instructions.
 <!-- ═══════════════════════════════════════════════════════════
      PORTFOLIO TAB
 ═══════════════════════════════════════════════════════════ -->
@@ -1334,7 +1219,7 @@ function switchTab(name, btn) {
   if (name === 'intel') { loadFearGreed(); loadPoliticians(); loadWhales(); }
   if (name === 'earnings') { loadEarnings(); }
   if (name === 'etfplanner') { requestAnimationFrame(() => setTimeout(etfUpdate, 50)); }
-  if (name === 'auto') { loadAccountStatus(); renderAllocationTable(); }
+  if (name === 'auto') { loadAccountStatus(); renderAllocationTable(); initAutomation(); loadMarketSignals(); }
   if (name === 'portfolio') { refreshPortfolio(); }
   if (name === 'history') { renderHistory(); }
 }
@@ -3578,7 +3463,511 @@ function etfUpdate(){
 }
 
 
-// ── Initialise ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// ICONIUM TRADE — Automation Tab JS (Crypto Bot)
+// OKX Demo API · Goal-Based · Crash Shield · Market Regime Detection
+// ═══════════════════════════════════════════════════════════════════════════
+
+const BOT_BACKEND = () => (document.getElementById('bot-backend-url')?.value || '').replace(/\/$/, '');
+
+let selectedStrategy = null;
+let botPollingInterval = null;
+let botRunning = false;
+
+// ── Strategy definitions (mirrors backend) ─────────────────────────────────
+const BOT_STRATEGIES = {
+  grinder:  { name:'🔲 The Grinder',  monthly: [5,15],  stopLoss:15, risk:'Medium',    color:'#10b981' },
+  rider:    { name:'📈 The Rider',    monthly: [15,30], stopLoss:20, risk:'High',      color:'#f59e0b' },
+  moonshot: { name:'🚀 The Moonshot', monthly: [30,50], stopLoss:25, risk:'Very High', color:'#ef4444' },
+};
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function setBotVal(id, val) {
+  document.getElementById(id).value = val;
+  botGoalUpdate();
+}
+
+function fmtMoney(n) {
+  if (!n && n !== 0) return '—';
+  if (Math.abs(n) >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  if (Math.abs(n) >= 1000)    return '$' + (n/1000).toFixed(0) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+}
+
+// ── Goal Calculator ────────────────────────────────────────────────────────
+function botGoalUpdate() {
+  const capital   = parseFloat(document.getElementById('bot-capital')?.value) || 1000;
+  const target    = parseFloat(document.getElementById('bot-target')?.value)  || 100000;
+  const months    = parseInt(document.getElementById('bot-timeline')?.value)  || 24;
+  const multiplier = target / capital;
+  const monthlyNeeded = (Math.pow(multiplier, 1/months) - 1) * 100;
+
+  // Monthly needed display
+  const mnEl = document.getElementById('bot-monthly-needed');
+  if (mnEl) {
+    const color = monthlyNeeded > 50 ? '#ef4444' : monthlyNeeded > 25 ? '#f59e0b' : '#10b981';
+    mnEl.innerHTML = `Monthly return needed: <strong style="color:${color}">${monthlyNeeded.toFixed(1)}%/mo</strong>`;
+  }
+
+  // Auto-recommend strategy
+  let recommended = 'grinder';
+  if (monthlyNeeded > 30) recommended = 'moonshot';
+  else if (monthlyNeeded > 12) recommended = 'rider';
+
+  // Goal cards
+  const cardsEl = document.getElementById('bot-goal-cards');
+  if (cardsEl) {
+    const scenarios = [
+      { label: '🐢 Conservative (8%/mo)',  rate: 0.08, color: '#10b981' },
+      { label: '📈 Moderate (20%/mo)',     rate: 0.20, color: '#f59e0b' },
+      { label: '🚀 Aggressive (30%/mo)',   rate: 0.30, color: '#ef4444' },
+    ];
+    cardsEl.innerHTML = scenarios.map(s => {
+      let bal = capital;
+      let hitMonth = null;
+      for (let m = 1; m <= 60; m++) {
+        bal *= (1 + s.rate);
+        if (bal >= target && !hitMonth) hitMonth = m;
+      }
+      const reachText = hitMonth
+        ? `Reaches target in <strong style="color:${s.color}">${hitMonth} months</strong>`
+        : `Does not reach target in 5 years`;
+      return `<div style="background:var(--surface2);border-radius:10px;padding:12px;border-top:3px solid ${s.color}">
+        <div style="font-size:11px;font-weight:700;color:${s.color};margin-bottom:6px">${s.label}</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">${reachText}<br>At 24 months: <strong>${fmtMoney(capital * Math.pow(1+s.rate, 24))}</strong></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Warning for impossible goals
+  const warnEl = document.getElementById('bot-goal-warning');
+  if (warnEl) {
+    if (monthlyNeeded > 100) {
+      warnEl.style.display = 'block';
+      warnEl.style.background = 'rgba(239,68,68,0.1)';
+      warnEl.style.border = '1px solid rgba(239,68,68,0.3)';
+      warnEl.style.color = '#fca5a5';
+      warnEl.innerHTML = `⚠️ <strong>This goal requires ${monthlyNeeded.toFixed(0)}% per month</strong> — essentially impossible to sustain. Consider a longer timeline or lower target. The "Fuel for ETFs" philosophy works best with realistic goals (15–25%/mo over 2–3 years).`;
+    } else if (monthlyNeeded > 50) {
+      warnEl.style.display = 'block';
+      warnEl.style.background = 'rgba(245,158,11,0.1)';
+      warnEl.style.border = '1px solid rgba(245,158,11,0.3)';
+      warnEl.style.color = '#fcd34d';
+      warnEl.innerHTML = `⚠️ <strong>${monthlyNeeded.toFixed(0)}%/month required</strong> — extremely high risk. Only the Moonshot strategy could theoretically reach this, but wipeout risk is very high. Consider extending your timeline to reduce required returns.`;
+    } else {
+      warnEl.style.display = 'none';
+    }
+  }
+
+  // Auto-highlight recommended strategy
+  if (!selectedStrategy) {
+    highlightRecommended(recommended);
+  }
+
+  return { capital, target, months, monthlyNeeded, recommended };
+}
+
+function highlightRecommended(strategy) {
+  Object.keys(BOT_STRATEGIES).forEach(s => {
+    const el = document.getElementById('strat-' + s);
+    if (el) {
+      el.style.borderColor = 'var(--border)';
+      el.style.background = 'var(--surface2)';
+    }
+  });
+  const el = document.getElementById('strat-' + strategy);
+  if (el) {
+    el.style.borderColor = '#f59e0b';
+    el.style.background = 'rgba(245,158,11,0.08)';
+  }
+}
+
+// ── Strategy Selection ─────────────────────────────────────────────────────
+function selectStrategy(key) {
+  selectedStrategy = key;
+  const strat = BOT_STRATEGIES[key];
+  if (!strat) return;
+
+  // Update card borders
+  Object.keys(BOT_STRATEGIES).forEach(s => {
+    const el = document.getElementById('strat-' + s);
+    if (el) {
+      el.style.borderColor = s === key ? strat.color : 'var(--border)';
+      el.style.background  = s === key ? `rgba(${hexToRgb(strat.color)},0.08)` : 'var(--surface2)';
+    }
+  });
+
+  // Show strategy info
+  const infoEl = document.getElementById('strategy-selected-info');
+  if (infoEl) {
+    infoEl.style.display = 'block';
+    infoEl.innerHTML = `<strong style="color:${strat.color}">${strat.name}</strong> selected · Target: ${strat.monthly[0]}–${strat.monthly[1]}%/month · Stop loss: ${strat.stopLoss}% · Risk: ${strat.risk}`;
+  }
+
+  // Show scenarios
+  showScenarios(key);
+
+  // Update start button
+  const startBtn = document.getElementById('btn-start-bot');
+  if (startBtn) startBtn.textContent = `▶ Start ${strat.name} (Paper)`;
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `${r},${g},${b}`;
+}
+
+// ── Scenario Display ───────────────────────────────────────────────────────
+function showScenarios(stratKey) {
+  const strat   = BOT_STRATEGIES[stratKey];
+  const capital = parseFloat(document.getElementById('bot-capital')?.value) || 1000;
+  const target  = parseFloat(document.getElementById('bot-target')?.value)  || 100000;
+  const months  = parseInt(document.getElementById('bot-timeline')?.value)  || 24;
+
+  const scenarios = [
+    {
+      label: '✅ Upside Scenario',
+      desc:  'Bull market, strategy performs at upper range',
+      rate:  strat.monthly[1] / 100,
+      color: '#10b981',
+      border: '1px solid rgba(16,185,129,0.3)',
+      bg:    'rgba(16,185,129,0.07)',
+    },
+    {
+      label: '⚠️ Downside Scenario',
+      desc:  `Bear market + ${strat.stopLoss}% max loss months`,
+      rate:  -strat.stopLoss / 100,
+      color: '#ef4444',
+      border: '1px solid rgba(239,68,68,0.3)',
+      bg:    'rgba(239,68,68,0.07)',
+      isDown: true,
+    },
+  ];
+
+  const grid = document.getElementById('scenario-grid');
+  if (!grid) return;
+
+  grid.innerHTML = scenarios.map(s => {
+    let bal = capital;
+    const milestones = [];
+    for (let m = 1; m <= months; m++) {
+      if (s.isDown) {
+        // Downside: good months and crash months
+        if (m % 5 === 0) bal *= (1 + s.rate);  // crash every 5th month
+        else bal *= (1 + strat.monthly[0] / 200); // half the low range other months
+      } else {
+        bal *= (1 + s.rate);
+      }
+      if ([3, 6, 12, months].includes(m)) {
+        milestones.push({ m, val: Math.round(bal) });
+      }
+    }
+    const hitTarget = bal >= target;
+
+    return `<div style="border-radius:12px;padding:16px;border:${s.border};background:${s.bg}">
+      <div style="font-size:13px;font-weight:700;color:${s.color};margin-bottom:4px">${s.label}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">${s.desc}</div>
+      <div style="font-size:28px;font-weight:800;color:${s.color};margin-bottom:4px">${fmtMoney(bal)}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">After ${months} months</div>
+      <div style="display:grid;grid-template-columns:repeat(${milestones.length},1fr);gap:6px">
+        ${milestones.map(ms => `<div style="background:var(--surface);border-radius:6px;padding:6px;text-align:center">
+          <div style="font-size:12px;font-weight:700;color:${s.color}">${fmtMoney(ms.val)}</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px">Mo ${ms.m}</div>
+        </div>`).join('')}
+      </div>
+      ${hitTarget ? `<div style="margin-top:10px;font-size:11px;font-weight:700;color:${s.color};padding:6px 10px;background:rgba(16,185,129,0.1);border-radius:6px">✅ Target ${fmtMoney(target)} reached</div>` : `<div style="margin-top:10px;font-size:11px;color:var(--muted);padding:6px 10px;background:var(--surface);border-radius:6px">Target not reached in timeline</div>`}
+    </div>`;
+  }).join('');
+
+  document.getElementById('bot-scenarios').style.display = 'block';
+}
+
+// ── Backend Connection ─────────────────────────────────────────────────────
+async function testBackendConnection() {
+  const url     = BOT_BACKEND();
+  const statusEl = document.getElementById('backend-status');
+  if (!url) {
+    statusEl.textContent = '⚠️ Enter your Render URL first';
+    statusEl.style.color = '#f59e0b';
+    return;
+  }
+  statusEl.textContent = 'Testing connection...';
+  statusEl.style.color = 'var(--muted)';
+  try {
+    const r = await fetch(url + '/health', { signal: AbortSignal.timeout(8000) });
+    const d = await r.json();
+    if (d.ok) {
+      statusEl.innerHTML = `✅ Connected · Bot ${d.bot_running ? 'running' : 'idle'}`;
+      statusEl.style.color = '#10b981';
+      toast('Backend connected ✓', 'success');
+    } else {
+      throw new Error('Unexpected response');
+    }
+  } catch(e) {
+    statusEl.innerHTML = `❌ Cannot reach backend — check URL or wait for Render to wake up (free tier sleeps after 15min)`;
+    statusEl.style.color = '#ef4444';
+  }
+}
+
+// ── Start Bot ──────────────────────────────────────────────────────────────
+async function startBot() {
+  if (!selectedStrategy) {
+    toast('Select a strategy first', 'error');
+    return;
+  }
+  const url = BOT_BACKEND();
+  if (!url) {
+    toast('Enter your Render backend URL first', 'error');
+    return;
+  }
+
+  const capital = parseFloat(document.getElementById('bot-capital')?.value) || 1000;
+  const target  = parseFloat(document.getElementById('bot-target')?.value)  || 100000;
+  const strat   = BOT_STRATEGIES[selectedStrategy];
+
+  const startBtn = document.getElementById('btn-start-bot');
+  startBtn.disabled = true;
+  startBtn.textContent = '⏳ Starting...';
+
+  try {
+    const r = await fetch(url + '/bot/start', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        strategy:      selectedStrategy,
+        capital:       capital,
+        target:        target,
+        stop_loss_pct: strat.stopLoss,
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      botRunning = true;
+      document.getElementById('btn-pause-bot').disabled = false;
+      document.getElementById('btn-stop-bot').disabled  = false;
+      startBtn.disabled  = true;
+      startBtn.textContent = '▶ Running...';
+      document.getElementById('bot-status-display').style.display = 'block';
+      document.getElementById('bs-target-show').textContent = 'Target: ' + fmtMoney(target);
+      toast(`${strat.name} started in paper mode ⚡`, 'success');
+      startPolling();
+      loadMarketSignals();
+    } else {
+      throw new Error(d.detail || d.message || 'Start failed');
+    }
+  } catch(e) {
+    toast('Could not start bot: ' + e.message, 'error');
+    startBtn.disabled = false;
+    startBtn.textContent = `▶ Start ${strat.name} (Paper)`;
+  }
+}
+
+async function pauseBot() {
+  const url = BOT_BACKEND();
+  try {
+    await fetch(url + '/bot/pause', { method: 'POST' });
+    botRunning = false;
+    stopPolling();
+    document.getElementById('btn-start-bot').disabled  = false;
+    document.getElementById('btn-pause-bot').disabled  = true;
+    toast('Bot paused — capital preserved', '');
+  } catch(e) { toast('Pause failed: ' + e.message, 'error'); }
+}
+
+async function stopBot() {
+  const url = BOT_BACKEND();
+  try {
+    const r = await fetch(url + '/bot/stop', { method: 'POST' });
+    const d = await r.json();
+    botRunning = false;
+    stopPolling();
+    document.getElementById('btn-start-bot').disabled  = false;
+    document.getElementById('btn-start-bot').textContent = selectedStrategy ? `▶ Start ${BOT_STRATEGIES[selectedStrategy].name} (Paper)` : '▶ Start Paper Bot';
+    document.getElementById('btn-pause-bot').disabled  = true;
+    document.getElementById('btn-stop-bot').disabled   = true;
+    toast(`Bot stopped · Final P&L: ${d.final_pnl >= 0 ? '+' : ''}$${d.final_pnl?.toFixed(2)}`, d.final_pnl >= 0 ? 'success' : 'error');
+
+    // Check if target was reached → show profit router
+    const capital = parseFloat(document.getElementById('bot-capital')?.value) || 1000;
+    const target  = parseFloat(document.getElementById('bot-target')?.value)  || 100000;
+    if (capital + (d.final_pnl || 0) >= target) {
+      document.getElementById('profit-router').style.display = 'block';
+    }
+  } catch(e) { toast('Stop failed: ' + e.message, 'error'); }
+}
+
+// ── Status Polling ─────────────────────────────────────────────────────────
+function startPolling() {
+  stopPolling();
+  botPollingInterval = setInterval(pollBotStatus, 5000);
+  pollBotStatus();
+}
+
+function stopPolling() {
+  if (botPollingInterval) { clearInterval(botPollingInterval); botPollingInterval = null; }
+}
+
+async function pollBotStatus() {
+  const url = BOT_BACKEND();
+  if (!url) return;
+  try {
+    const r = await fetch(url + '/bot/status', { signal: AbortSignal.timeout(8000) });
+    const d = await r.json();
+    updateBotStatusUI(d);
+    if (d.trades?.length) renderTradeLog(d.trades);
+    if (d.signals) renderCryptoSignals(d.signals);
+  } catch(e) {
+    console.warn('Status poll failed:', e.message);
+  }
+}
+
+function updateBotStatusUI(d) {
+  const capital   = parseFloat(document.getElementById('bot-capital')?.value) || 1000;
+  const target    = parseFloat(document.getElementById('bot-target')?.value)  || 100000;
+  const pnl       = d.pnl || 0;
+  const pnlPct    = d.pnl_pct || 0;
+  const currentVal = capital + pnl;
+  const progress  = Math.min(100, Math.max(0, ((currentVal - capital) / (target - capital)) * 100));
+
+  const pnlEl = document.getElementById('bs-pnl');
+  if (pnlEl) {
+    pnlEl.textContent = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2);
+    pnlEl.style.color = pnl >= 0 ? '#10b981' : '#ef4444';
+  }
+
+  const pnlPctEl = document.getElementById('bs-pnl-pct');
+  if (pnlPctEl) {
+    pnlPctEl.textContent = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+    pnlPctEl.style.color = pnlPct >= 0 ? '#10b981' : '#ef4444';
+  }
+
+  const regimeEl = document.getElementById('bs-regime');
+  if (regimeEl) {
+    const regimeColors = { bull:'#10b981', bear:'#ef4444', sideways:'#f59e0b', unknown:'var(--muted)' };
+    const regimeIcons  = { bull:'🐂', bear:'🐻', sideways:'➡️', unknown:'—' };
+    regimeEl.innerHTML = `<span style="color:${regimeColors[d.regime]||'var(--muted)'}">${regimeIcons[d.regime]||'—'} ${(d.regime||'—').toUpperCase()}</span>`;
+  }
+
+  const tradesEl = document.getElementById('bs-trades');
+  if (tradesEl) tradesEl.textContent = d.trades?.length || 0;
+
+  const progPct = document.getElementById('bs-progress-pct');
+  const progBar = document.getElementById('bs-progress-bar');
+  const capNow  = document.getElementById('bs-capital-now');
+  if (progPct) progPct.textContent = progress.toFixed(1) + '%';
+  if (progBar) progBar.style.width = progress + '%';
+  if (capNow)  capNow.textContent  = fmtMoney(currentVal);
+
+  const updateEl = document.getElementById('bs-last-update');
+  if (updateEl) updateEl.textContent = 'Last update: ' + (d.last_update || new Date().toLocaleTimeString());
+
+  document.getElementById('trade-log-count').textContent = (d.trades?.length || 0) + ' signals';
+}
+
+// ── Trade Log Renderer ─────────────────────────────────────────────────────
+function renderTradeLog(trades) {
+  const el = document.getElementById('trade-log');
+  if (!el || !trades.length) return;
+
+  const actionColors = {
+    'BUY':            '#10b981',
+    'SELL':           '#ef4444',
+    '🛡️ CRASH SHIELD': '#f59e0b',
+    '🛡️ STOP LOSS':    '#f59e0b',
+    'HOLD':           'var(--muted)',
+  };
+
+  el.innerHTML = trades.map(t => {
+    const col   = actionColors[t.action] || 'var(--muted)';
+    const isShield = t.action.includes('SHIELD') || t.action.includes('STOP');
+    return `<div style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:6px;border-left:3px solid ${col};display:flex;align-items:center;gap:10px">
+      <div style="font-size:12px;color:var(--muted);white-space:nowrap">${t.time}</div>
+      <div style="font-size:13px;font-weight:700;width:80px;color:${col}">${t.action}</div>
+      <div style="flex:1;font-size:12px;color:var(--text)">${t.pair || '—'}</div>
+      ${!isShield ? `
+        <div style="font-size:11px;color:var(--muted)">$${t.price?.toFixed(2)||'—'}</div>
+        <div style="font-size:11px;color:var(--muted)">${fmtMoney(t.amount)}</div>
+        <div style="font-size:11px;font-weight:700;color:${t.rsi<35?'#10b981':t.rsi>65?'#ef4444':'#f59e0b'}">RSI ${t.rsi?.toFixed(0)||'—'}</div>
+      ` : `<div style="font-size:11px;color:#f59e0b">Capital protected</div>`}
+      <div style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:${t.status==='PAPER'?'#1e3a5f':t.status==='PROTECTED'?'#451a03':'var(--surface)'};color:${t.status==='PAPER'?'#93c5fd':t.status==='PROTECTED'?'#fcd34d':'var(--muted)'}">
+        ${t.status || '—'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearTradeLog() {
+  const el = document.getElementById('trade-log');
+  if (el) el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Trade log cleared</div>';
+}
+
+// ── Market Signals Renderer ────────────────────────────────────────────────
+async function loadMarketSignals() {
+  const url = BOT_BACKEND();
+  const el  = document.getElementById('crypto-signals-grid');
+  if (!url || !el) return;
+
+  el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted)">Loading signals from OKX...</div>';
+
+  try {
+    const r = await fetch(url + '/market/signals', { signal: AbortSignal.timeout(15000) });
+    const d = await r.json();
+    renderCryptoSignals(d);
+  } catch(e) {
+    el.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted)">Could not load signals — start bot first or check backend connection</div>`;
+  }
+}
+
+function renderCryptoSignals(signals) {
+  const el = document.getElementById('crypto-signals-grid');
+  if (!el || !signals || !Object.keys(signals).length) return;
+
+  const actionColors = { BUY:'#10b981', SELL:'#ef4444', HOLD:'#f59e0b' };
+  const regimeIcons  = { bull:'🐂 BULL', bear:'🐻 BEAR', sideways:'➡️ SIDE', unknown:'—' };
+
+  el.innerHTML = Object.values(signals).map(s => {
+    if (s.error) return `<div style="background:var(--surface2);border-radius:10px;padding:14px"><div style="font-weight:700">${s.pair}</div><div style="font-size:11px;color:var(--muted)">Error loading</div></div>`;
+    const col = actionColors[s.action] || 'var(--muted)';
+    const regCol = { bull:'#10b981', bear:'#ef4444', sideways:'#f59e0b' }[s.regime] || 'var(--muted)';
+    return `<div style="background:var(--surface2);border-radius:10px;padding:14px;border-top:3px solid ${col}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:15px;font-weight:800">${s.pair?.replace('-USDT','')}</div>
+        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;background:${col}22;color:${col}">${s.action}</span>
+      </div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:6px">$${s.price?.toLocaleString(undefined,{maximumFractionDigits:2})||'—'}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px">
+        <div style="color:var(--muted)">RSI</div><div style="font-weight:700;color:${s.rsi<35?'#10b981':s.rsi>65?'#ef4444':'var(--text)'}">${s.rsi?.toFixed(1)||'—'}</div>
+        <div style="color:var(--muted)">Score</div><div style="font-weight:700;color:${col}">${s.score||'—'}/100</div>
+        <div style="color:var(--muted)">Regime</div><div style="font-weight:700;color:${regCol}">${regimeIcons[s.regime]||'—'}</div>
+        <div style="color:var(--muted)">Vol Surge</div><div style="font-weight:700;color:${s.vol_surge?'#10b981':'var(--muted)'}">${s.vol_surge?'YES':'—'}</div>
+      </div>
+      ${s.reasons?.length ? `<div style="margin-top:8px;font-size:10px;color:var(--muted);line-height:1.5">${s.reasons.join(' · ')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function initAutomation() {
+  botGoalUpdate();
+  // Restore saved backend URL
+  const savedUrl = localStorage.getItem('iconium_bot_url');
+  if (savedUrl) {
+    const el = document.getElementById('bot-backend-url');
+    if (el) el.value = savedUrl;
+  }
+}
+
+// Save backend URL when changed
+document.addEventListener('input', e => {
+  if (e.target.id === 'bot-backend-url') {
+    localStorage.setItem('iconium_bot_url', e.target.value);
+  }
+});
+
+  // ── Initialise ─────────────────────────────────────────────────────────────
 function init() {
   loadState();
 
@@ -3612,6 +4001,7 @@ function init() {
 
   // Load alert settings
   loadAlertSettings();
+  initAutomation();
   scheduleMorningBrief();
 
   // Load intelligence data
