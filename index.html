@@ -4851,25 +4851,36 @@ function renderSignals() {
     } else if (s.signal === 'hold') {
       recHTML = `
         <div style="margin-top:10px;padding:8px 12px;background:rgba(245,158,11,0.06);border-radius:8px;border:1px solid rgba(245,158,11,0.15)">
-          <div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:2px">⏸ HOLD — No action recommended</div>
-          <div style="font-size:11px;color:var(--muted)">Score ${s.score}/100 — wait for a clearer signal before buying.</div>
-          ${pos ? `
-            <div style="margin-top:6px;font-size:10px;color:#f59e0b">You own ${pos.shares.toFixed(4)} shares · Value: $${fmtNum(pos.shares*s.price)}</div>
-            <button onclick="paperSell('${s.symbol}',${s.price})" style="margin-top:6px;padding:5px 10px;background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.2);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer">🔴 Exit Position</button>
-          ` : ''}
+          <div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:2px">⏸ HOLD — No strong signal yet</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Score ${s.score}/100 — not ideal entry. You can still buy manually if you want to start a position.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button onclick="paperCustomBuy('${s.symbol}','${s.name}',${s.price})"
+              style="flex:1;padding:7px;background:rgba(245,158,11,0.1);color:#fcd34d;border:1px solid rgba(245,158,11,0.3);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+              📥 Buy Anyway (Manual)
+            </button>
+            ${pos ? `<button onclick="paperSell('${s.symbol}',${s.price})"
+              style="padding:7px 10px;background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.2);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+              🔴 Sell All
+            </button>` : ''}
+          </div>
+          ${pos ? `<div style="margin-top:6px;font-size:10px;color:#f59e0b">You own ${pos.shares.toFixed(4)} shares · Value: $${fmtNum(pos.shares*s.price)}</div>` : ''}
         </div>`;
     } else if (s.signal === 'sell') {
       recHTML = `
         <div style="margin-top:10px;padding:10px 12px;background:rgba(239,68,68,0.1);border-radius:8px;border:1px solid rgba(239,68,68,0.3)">
           <div style="font-size:11px;font-weight:700;color:#ef4444;margin-bottom:4px">✗ SELL / AVOID</div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:${pos?'8px':'0'}">Score ${s.score}/100 — avoid buying. ${pos ? 'Consider exiting your position.' : 'Do not enter.'}</div>
-          ${pos ? `
-            <button onclick="paperSell('${s.symbol}',${s.price})"
-              style="width:100%;padding:8px;background:#ef4444;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Score ${s.score}/100 — avoid buying. ${pos ? 'Consider exiting your position.' : 'Not recommended to enter.'}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${pos ? `<button onclick="paperSell('${s.symbol}',${s.price})"
+              style="flex:2;padding:8px;background:#ef4444;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">
               🔴 Accept & Sell All (${pos.shares.toFixed(4)} shares)
+            </button>` : ''}
+            <button onclick="paperCustomBuy('${s.symbol}','${s.name}',${s.price})"
+              style="flex:1;padding:8px;background:rgba(100,116,139,0.1);color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer">
+              ⚠️ Buy Anyway
             </button>
-            <div style="margin-top:6px;font-size:10px;color:#fca5a5">Position value: $${fmtNum(pos.shares*s.price)} · Avg buy: $${fmtNum(pos.avgPrice)}</div>
-          ` : ''}
+          </div>
+          ${pos ? `<div style="margin-top:6px;font-size:10px;color:#fca5a5">Position value: $${fmtNum(pos.shares*s.price)} · Avg buy: $${fmtNum(pos.avgPrice)}</div>` : ''}
         </div>`;
     }
 
