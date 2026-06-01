@@ -1365,8 +1365,8 @@ main{max-width:1400px;margin:0 auto;padding:20px}
     <table class="positions-table" id="positions-table">
       <thead>
         <tr>
-          <th>Symbol</th><th>Avg Buy</th><th>Invested</th><th>Live Price</th>
-          <th>P&L</th><th>Shares</th><th>Value</th><th>Action</th>
+          <th>Stock</th><th>Bought At</th><th>Invested</th><th>Live Price</th>
+          <th>Live P&L</th><th>Target</th><th>Stop Loss</th><th>Action</th>
         </tr>
       </thead>
       <tbody id="positions-body">
@@ -3098,7 +3098,11 @@ function toggleLegacy(){
   etfUpdate();
 }
 
+let _settingIncomeMode = false;
 function setIncomeMode(mode){
+  if(_settingIncomeMode) return;
+  _settingIncomeMode = true;
+  setTimeout(()=>_settingIncomeMode=false, 100);
   etpIncomeMode = mode;
   const btnMax = document.getElementById('btn-max-yield');
   const btnBal = document.getElementById('btn-balanced-income');
@@ -3782,6 +3786,807 @@ function etfUpdate(){
 // OKX Demo API · Goal-Based · Crash Shield · Market Regime Detection
 // ═══════════════════════════════════════════════════════════════════════════
 
+const BOT_BACKEND = () => (document.getElementById('bot-backend-url')?.value || '').replace(/\/$/, '');
+
+let selectedStrategy = null;
+let botPollingInterval = null;
+let botRunning = false;
+
+// ── Strategy definitions (mirrors backend) ─────────────────────────────────
+const BOT_STRATEGIES = {
+  grinder:  { name:'🔲 The Grinder',  monthly: [5,15],  stopLoss:15, risk:'Medium',    color:'#10b981' },
+  rider:    { name:'📈 The Rider',    monthly: [15,30], stopLoss:20, risk:'High',      color:'#f59e0b' },
+  moonshot: { name:'🚀 The Moonshot', monthly: [30,50], stopLoss:25, risk:'Very High', color:'#ef4444' },
+};
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function setBotVal(id, val) {
+  document.getElementById(id).value = val;
+  botGoalUpdate();
+}
+
+function fmtMoney(n) {
+  if (!n && n !== 0) return '—';
+  if (Math.abs(n) >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  if (Math.abs(n) >= 1000)    return '$' + (n/1000).toFixed(0) + 'K';
+  return '$' + Math.round(n).toLocaleString();
+}
+
+// ── Goal Calculator ────────────────────────────────────────────────────────
+function botGoalUpdate() {
+  const capital   = parseFloat(document.getElementById('bot-capital')?.value) || 1000;
+  const target    = parseFloat(document.getElementById('bot-target')?.value)  || 100000;
+  const months    = parseInt(document.getElementById('bot-timeline')?.value)  || 24;
+  const multiplier = target / capital;
+  const monthlyNeeded = (Math.pow(multiplier, 1/months) - 1) * 100;
+
+  // Monthly needed display
+  const mnEl = document.getElementById('bot-monthly-needed');
+  if (mnEl) {
+    const color = monthlyNeeded > 50 ? '#ef4444' : monthlyNeeded > 25 ? '#f59e0b' : '#10b981';
+    mnEl.innerHTML = `Monthly return needed: <strong style="color:${color}">${monthlyNeeded.toFixed(1)}%/mo</strong>`;
+  }
+
+  // Auto-recommend strategy
+  let recommended = 'grinder';
+  if (monthlyNeeded > 30) recommended = 'moonshot';
+  else if (monthlyNeeded > 12) recommended = 'rider';
+
+  // Goal cards
+  const cardsEl = document.getElementById('bot-goal-cards');
+  if (cardsEl) {
+    const scenarios = [
+      { label: '🐢 Conservative (8%/mo)',  rate: 0.08, color: '#10b981' },
+      { label: '📈 Moderate (20%/mo)',     rate: 0.20, color: '#f59e0b' },
+      { label: '🚀 Aggressive (30%/mo)',   rate: 0.30, color: '#ef4444' },
+    ];
+    cardsEl.innerHTML = scenarios.map(s => {
+      let bal = capital;
+      let hitMonth = null;
+      for (let m = 1; m <= 60; m++) {
+        bal *= (1 + s.rate);
+        if (bal >= target && !hitMonth) hitMonth = m;
+      }
+      const reachText = hitMonth
+        ? `Reaches target in <strong style="color:${s.color}">${hitMonth} months</strong>`
+        : `Does not reach target in 5 years`;
+      return `<div style="background:var(--surface2);border-radius:10px;padding:12px;border-top:3px solid ${s.color}">
+        <div style="font-size:11px;font-weight:700;color:${s.color};margin-bottom:6px">${s.label}</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7">${reachText}<br>At 24 months: <strong>${fmtMoney(capital * Math.pow(1+s.rate, 24))}</strong></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Warning for impossible goals
+  const warnEl = document.getElementById('bot-goal-warning');
+  if (warnEl) {
+    if (monthlyNeeded > 100) {
+      warnEl.style.display = 'block';
+      warnEl.style.background = 'rgba(239,68,68,0.1)';
+      warnEl.style.border = '1px solid rgba(239,68,68,0.3)';
+      warnEl.style.color = '#fca5a5';
+      warnEl.innerHTML = `⚠️ <strong>This goal requires ${monthlyNeeded.toFixed(0)}% per month</strong> — essentially impossible to sustain. Consider a longer timeline or lower target. The "Fuel for ETFs" philosophy works best with realistic goals (15–25%/mo over 2–3 years).`;
+    } else if (monthlyNeeded > 50) {
+      warnEl.style.display = 'block';
+      warnEl.style.background = 'rgba(245,158,11,0.1)';
+      warnEl.style.border = '1px solid rgba(245,158,11,0.3)';
+      warnEl.style.color = '#fcd34d';
+      warnEl.innerHTML = `⚠️ <strong>${monthlyNeeded.toFixed(0)}%/month required</strong> — extremely high risk. Only the Moonshot strategy could theoretically reach this, but wipeout risk is very high. Consider extending your timeline to reduce required returns.`;
+    } else {
+      warnEl.style.display = 'none';
+    }
+  }
+
+  // Auto-highlight recommended strategy
+  if (!selectedStrategy) {
+    highlightRecommended(recommended);
+  }
+
+  return { capital, target, months, monthlyNeeded, recommended };
+}
+
+function highlightRecommended(strategy) {
+  Object.keys(BOT_STRATEGIES).forEach(s => {
+    const el = document.getElementById('strat-' + s);
+    if (el) {
+      el.style.borderColor = 'var(--border)';
+      el.style.background = 'var(--surface2)';
+    }
+  });
+  const el = document.getElementById('strat-' + strategy);
+  if (el) {
+    el.style.borderColor = '#f59e0b';
+    el.style.background = 'rgba(245,158,11,0.08)';
+  }
+}
+
+// ── Strategy Selection ─────────────────────────────────────────────────────
+function selectStrategy(key) {
+  selectedStrategy = key;
+  const strat = BOT_STRATEGIES[key];
+  if (!strat) return;
+
+  // Update card borders
+  Object.keys(BOT_STRATEGIES).forEach(s => {
+    const el = document.getElementById('strat-' + s);
+    if (el) {
+      el.style.borderColor = s === key ? strat.color : 'var(--border)';
+      el.style.background  = s === key ? `rgba(${hexToRgb(strat.color)},0.08)` : 'var(--surface2)';
+    }
+  });
+
+  // Show strategy info
+  const infoEl = document.getElementById('strategy-selected-info');
+  if (infoEl) {
+    infoEl.style.display = 'block';
+    infoEl.innerHTML = `<strong style="color:${strat.color}">${strat.name}</strong> selected · Target: ${strat.monthly[0]}–${strat.monthly[1]}%/month · Stop loss: ${strat.stopLoss}% · Risk: ${strat.risk}`;
+  }
+
+  // Show scenarios
+  showScenarios(key);
+
+  // Update start button
+  const startBtn = document.getElementById('btn-start-bot');
+  if (startBtn) startBtn.textContent = `▶ Start ${strat.name} (Paper)`;
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `${r},${g},${b}`;
+}
+
+// ── Scenario Display ───────────────────────────────────────────────────────
+function showScenarios(stratKey) {
+  const strat   = BOT_STRATEGIES[stratKey];
+  const capital = parseFloat(document.getElementById('bot-capital')?.value) || 1000;
+  const target  = parseFloat(document.getElementById('bot-target')?.value)  || 100000;
+  const months  = parseInt(document.getElementById('bot-timeline')?.value)  || 24;
+
+  const scenarios = [
+    {
+      label: '✅ Upside Scenario',
+      desc:  'Bull market, strategy performs at upper range',
+      rate:  strat.monthly[1] / 100,
+      color: '#10b981',
+      border: '1px solid rgba(16,185,129,0.3)',
+      bg:    'rgba(16,185,129,0.07)',
+    },
+    {
+      label: '⚠️ Downside Scenario',
+      desc:  `Bear market + ${strat.stopLoss}% max loss months`,
+      rate:  -strat.stopLoss / 100,
+      color: '#ef4444',
+      border: '1px solid rgba(239,68,68,0.3)',
+      bg:    'rgba(239,68,68,0.07)',
+      isDown: true,
+    },
+  ];
+
+  const grid = document.getElementById('scenario-grid');
+  if (!grid) return;
+
+  grid.innerHTML = scenarios.map(s => {
+    let bal = capital;
+    const milestones = [];
+    for (let m = 1; m <= months; m++) {
+      if (s.isDown) {
+        // Downside: good months and crash months
+        if (m % 5 === 0) bal *= (1 + s.rate);  // crash every 5th month
+        else bal *= (1 + strat.monthly[0] / 200); // half the low range other months
+      } else {
+        bal *= (1 + s.rate);
+      }
+      if ([3, 6, 12, months].includes(m)) {
+        milestones.push({ m, val: Math.round(bal) });
+      }
+    }
+    const hitTarget = bal >= target;
+
+    return `<div style="border-radius:12px;padding:16px;border:${s.border};background:${s.bg}">
+      <div style="font-size:13px;font-weight:700;color:${s.color};margin-bottom:4px">${s.label}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">${s.desc}</div>
+      <div style="font-size:28px;font-weight:800;color:${s.color};margin-bottom:4px">${fmtMoney(bal)}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px">After ${months} months</div>
+      <div style="display:grid;grid-template-columns:repeat(${milestones.length},1fr);gap:6px">
+        ${milestones.map(ms => `<div style="background:var(--surface);border-radius:6px;padding:6px;text-align:center">
+          <div style="font-size:12px;font-weight:700;color:${s.color}">${fmtMoney(ms.val)}</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px">Mo ${ms.m}</div>
+        </div>`).join('')}
+      </div>
+      ${hitTarget ? `<div style="margin-top:10px;font-size:11px;font-weight:700;color:${s.color};padding:6px 10px;background:rgba(16,185,129,0.1);border-radius:6px">✅ Target ${fmtMoney(target)} reached</div>` : `<div style="margin-top:10px;font-size:11px;color:var(--muted);padding:6px 10px;background:var(--surface);border-radius:6px">Target not reached in timeline</div>`}
+    </div>`;
+  }).join('');
+
+  document.getElementById('bot-scenarios').style.display = 'block';
+}
+
+// ── Backend Connection ─────────────────────────────────────────────────────
+async function testBackendConnection() {
+  const url     = BOT_BACKEND();
+  const statusEl = document.getElementById('backend-status');
+  if (!url) {
+    statusEl.textContent = '⚠️ Enter your Render URL first';
+    statusEl.style.color = '#f59e0b';
+    return;
+  }
+  statusEl.textContent = 'Testing connection...';
+  statusEl.style.color = 'var(--muted)';
+  try {
+    const r = await fetch(url + '/health', { signal: AbortSignal.timeout(8000) });
+    const d = await r.json();
+    if (d.ok) {
+      statusEl.innerHTML = `✅ Connected · Bot ${d.bot_running ? 'running' : 'idle'}`;
+      statusEl.style.color = '#10b981';
+      toast('Backend connected ✓', 'success');
+    } else {
+      throw new Error('Unexpected response');
+    }
+  } catch(e) {
+    statusEl.innerHTML = `❌ Cannot reach backend — check URL or wait for Render to wake up (free tier sleeps after 15min)`;
+    statusEl.style.color = '#ef4444';
+  }
+}
+
+// ── Start Bot ──────────────────────────────────────────────────────────────
+async function startBot() {
+  if (!selectedStrategy) {
+    toast('Select a strategy first', 'error');
+    return;
+  }
+  const url = BOT_BACKEND();
+  if (!url) {
+    toast('Enter your Render backend URL first', 'error');
+    return;
+  }
+
+  const capital = parseFloat(document.getElementById('bot-capital')?.value) || 1000;
+  const target  = parseFloat(document.getElementById('bot-target')?.value)  || 100000;
+  const strat   = BOT_STRATEGIES[selectedStrategy];
+
+  const startBtn = document.getElementById('btn-start-bot');
+  startBtn.disabled = true;
+  startBtn.textContent = '⏳ Starting...';
+
+  try {
+    const r = await fetch(url + '/bot/start', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        strategy:      selectedStrategy,
+        capital:       capital,
+        target:        target,
+        stop_loss_pct: strat.stopLoss,
+      }),
+      signal: AbortSignal.timeout(10000),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      botRunning = true;
+      document.getElementById('btn-pause-bot').disabled = false;
+      document.getElementById('btn-stop-bot').disabled  = false;
+      startBtn.disabled  = true;
+      startBtn.textContent = '▶ Running...';
+      document.getElementById('bot-status-display').style.display = 'block';
+      document.getElementById('bs-target-show').textContent = 'Target: ' + fmtMoney(target);
+      toast(`${strat.name} started in paper mode ⚡`, 'success');
+      startPolling();
+      loadMarketSignals();
+    } else {
+      throw new Error(d.detail || d.message || 'Start failed');
+    }
+  } catch(e) {
+    toast('Could not start bot: ' + e.message, 'error');
+    startBtn.disabled = false;
+    startBtn.textContent = `▶ Start ${strat.name} (Paper)`;
+  }
+}
+
+async function pauseBot() {
+  const url = BOT_BACKEND();
+  try {
+    await fetch(url + '/bot/pause', { method: 'POST' });
+    botRunning = false;
+    stopPolling();
+    document.getElementById('btn-start-bot').disabled  = false;
+    document.getElementById('btn-pause-bot').disabled  = true;
+    toast('Bot paused — capital preserved', '');
+  } catch(e) { toast('Pause failed: ' + e.message, 'error'); }
+}
+
+async function stopBot() {
+  const url = BOT_BACKEND();
+  try {
+    const r = await fetch(url + '/bot/stop', { method: 'POST' });
+    const d = await r.json();
+    botRunning = false;
+    stopPolling();
+    document.getElementById('btn-start-bot').disabled  = false;
+    document.getElementById('btn-start-bot').textContent = selectedStrategy ? `▶ Start ${BOT_STRATEGIES[selectedStrategy].name} (Paper)` : '▶ Start Paper Bot';
+    document.getElementById('btn-pause-bot').disabled  = true;
+    document.getElementById('btn-stop-bot').disabled   = true;
+    toast(`Bot stopped · Final P&L: ${d.final_pnl >= 0 ? '+' : ''}$${d.final_pnl?.toFixed(2)}`, d.final_pnl >= 0 ? 'success' : 'error');
+
+    // Check if target was reached → show profit router
+    const capital = parseFloat(document.getElementById('bot-capital')?.value) || 1000;
+    const target  = parseFloat(document.getElementById('bot-target')?.value)  || 100000;
+    if (capital + (d.final_pnl || 0) >= target) {
+      document.getElementById('profit-router').style.display = 'block';
+    }
+  } catch(e) { toast('Stop failed: ' + e.message, 'error'); }
+}
+
+// ── Status Polling ─────────────────────────────────────────────────────────
+function startPolling() {
+  stopPolling();
+  botPollingInterval = setInterval(pollBotStatus, 5000);
+  pollBotStatus();
+}
+
+function stopPolling() {
+  if (botPollingInterval) { clearInterval(botPollingInterval); botPollingInterval = null; }
+}
+
+async function pollBotStatus() {
+  const url = BOT_BACKEND();
+  if (!url) return;
+  try {
+    const r = await fetch(url + '/bot/status', { signal: AbortSignal.timeout(8000) });
+    const d = await r.json();
+    updateBotStatusUI(d);
+    if (d.trades?.length) renderTradeLog(d.trades);
+    if (d.signals) renderCryptoSignals(d.signals);
+  } catch(e) {
+    console.warn('Status poll failed:', e.message);
+  }
+}
+
+function updateBotStatusUI(d) {
+  const capital   = parseFloat(document.getElementById('bot-capital')?.value) || 1000;
+  const target    = parseFloat(document.getElementById('bot-target')?.value)  || 100000;
+  const pnl       = d.pnl || 0;
+  const pnlPct    = d.pnl_pct || 0;
+  const currentVal = capital + pnl;
+  const progress  = Math.min(100, Math.max(0, ((currentVal - capital) / (target - capital)) * 100));
+
+  const pnlEl = document.getElementById('bs-pnl');
+  if (pnlEl) {
+    pnlEl.textContent = (pnl >= 0 ? '+$' : '-$') + Math.abs(pnl).toFixed(2);
+    pnlEl.style.color = pnl >= 0 ? '#10b981' : '#ef4444';
+  }
+
+  const pnlPctEl = document.getElementById('bs-pnl-pct');
+  if (pnlPctEl) {
+    pnlPctEl.textContent = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+    pnlPctEl.style.color = pnlPct >= 0 ? '#10b981' : '#ef4444';
+  }
+
+  const regimeEl = document.getElementById('bs-regime');
+  if (regimeEl) {
+    const regimeColors = { bull:'#10b981', bear:'#ef4444', sideways:'#f59e0b', unknown:'var(--muted)' };
+    const regimeIcons  = { bull:'🐂', bear:'🐻', sideways:'➡️', unknown:'—' };
+    regimeEl.innerHTML = `<span style="color:${regimeColors[d.regime]||'var(--muted)'}">${regimeIcons[d.regime]||'—'} ${(d.regime||'—').toUpperCase()}</span>`;
+  }
+
+  const tradesEl = document.getElementById('bs-trades');
+  if (tradesEl) tradesEl.textContent = d.trades?.length || 0;
+
+  const progPct = document.getElementById('bs-progress-pct');
+  const progBar = document.getElementById('bs-progress-bar');
+  const capNow  = document.getElementById('bs-capital-now');
+  if (progPct) progPct.textContent = progress.toFixed(1) + '%';
+  if (progBar) progBar.style.width = progress + '%';
+  if (capNow)  capNow.textContent  = fmtMoney(currentVal);
+
+  const updateEl = document.getElementById('bs-last-update');
+  if (updateEl) updateEl.textContent = 'Last update: ' + (d.last_update || new Date().toLocaleTimeString());
+
+  document.getElementById('trade-log-count').textContent = (d.trades?.length || 0) + ' signals';
+}
+
+// ── Trade Log Renderer ─────────────────────────────────────────────────────
+function renderTradeLog(trades) {
+  const el = document.getElementById('trade-log');
+  if (!el || !trades.length) return;
+
+  const actionColors = {
+    'BUY':            '#10b981',
+    'SELL':           '#ef4444',
+    '🛡️ CRASH SHIELD': '#f59e0b',
+    '🛡️ STOP LOSS':    '#f59e0b',
+    'HOLD':           'var(--muted)',
+  };
+
+  el.innerHTML = trades.map(t => {
+    const col   = actionColors[t.action] || 'var(--muted)';
+    const isShield = t.action.includes('SHIELD') || t.action.includes('STOP');
+    return `<div style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:6px;border-left:3px solid ${col};display:flex;align-items:center;gap:10px">
+      <div style="font-size:12px;color:var(--muted);white-space:nowrap">${t.time}</div>
+      <div style="font-size:13px;font-weight:700;width:80px;color:${col}">${t.action}</div>
+      <div style="flex:1;font-size:12px;color:var(--text)">${t.pair || '—'}</div>
+      ${!isShield ? `
+        <div style="font-size:11px;color:var(--muted)">$${t.price?.toFixed(2)||'—'}</div>
+        <div style="font-size:11px;color:var(--muted)">${fmtMoney(t.amount)}</div>
+        <div style="font-size:11px;font-weight:700;color:${t.rsi<35?'#10b981':t.rsi>65?'#ef4444':'#f59e0b'}">RSI ${t.rsi?.toFixed(0)||'—'}</div>
+      ` : `<div style="font-size:11px;color:#f59e0b">Capital protected</div>`}
+      <div style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:${t.status==='PAPER'?'#1e3a5f':t.status==='PROTECTED'?'#451a03':'var(--surface)'};color:${t.status==='PAPER'?'#93c5fd':t.status==='PROTECTED'?'#fcd34d':'var(--muted)'}">
+        ${t.status || '—'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearTradeLog() {
+  const el = document.getElementById('trade-log');
+  if (el) el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Trade log cleared</div>';
+}
+
+// ── Market Signals Renderer ────────────────────────────────────────────────
+async function loadMarketSignals() {
+  const url = BOT_BACKEND();
+  const el  = document.getElementById('crypto-signals-grid');
+  if (!url || !el) return;
+
+  el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted)">Loading signals from OKX...</div>';
+
+  try {
+    const r = await fetch(url + '/market/signals', { signal: AbortSignal.timeout(15000) });
+    const d = await r.json();
+    renderCryptoSignals(d);
+  } catch(e) {
+    el.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted)">Could not load signals — start bot first or check backend connection</div>`;
+  }
+}
+
+function renderCryptoSignals(signals) {
+  const el = document.getElementById('crypto-signals-grid');
+  if (!el || !signals || !Object.keys(signals).length) return;
+
+  const actionColors = { BUY:'#10b981', SELL:'#ef4444', HOLD:'#f59e0b' };
+  const regimeIcons  = { bull:'🐂 BULL', bear:'🐻 BEAR', sideways:'➡️ SIDE', unknown:'—' };
+
+  el.innerHTML = Object.values(signals).map(s => {
+    if (s.error) return `<div style="background:var(--surface2);border-radius:10px;padding:14px"><div style="font-weight:700">${s.pair}</div><div style="font-size:11px;color:var(--muted)">Error loading</div></div>`;
+    const col = actionColors[s.action] || 'var(--muted)';
+    const regCol = { bull:'#10b981', bear:'#ef4444', sideways:'#f59e0b' }[s.regime] || 'var(--muted)';
+    return `<div style="background:var(--surface2);border-radius:10px;padding:14px;border-top:3px solid ${col}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:15px;font-weight:800">${s.pair?.replace('-USDT','')}</div>
+        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;background:${col}22;color:${col}">${s.action}</span>
+      </div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:6px">$${s.price?.toLocaleString(undefined,{maximumFractionDigits:2})||'—'}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px">
+        <div style="color:var(--muted)">RSI</div><div style="font-weight:700;color:${s.rsi<35?'#10b981':s.rsi>65?'#ef4444':'var(--text)'}">${s.rsi?.toFixed(1)||'—'}</div>
+        <div style="color:var(--muted)">Score</div><div style="font-weight:700;color:${col}">${s.score||'—'}/100</div>
+        <div style="color:var(--muted)">Regime</div><div style="font-weight:700;color:${regCol}">${regimeIcons[s.regime]||'—'}</div>
+        <div style="color:var(--muted)">Vol Surge</div><div style="font-weight:700;color:${s.vol_surge?'#10b981':'var(--muted)'}">${s.vol_surge?'YES':'—'}</div>
+      </div>
+      ${s.reasons?.length ? `<div style="margin-top:8px;font-size:10px;color:var(--muted);line-height:1.5">${s.reasons.join(' · ')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function initAutomation() {
+  botGoalUpdate();
+  // Restore saved backend URL
+  const savedUrl = localStorage.getItem('iconium_bot_url');
+  if (savedUrl) {
+    const el = document.getElementById('bot-backend-url');
+    if (el) el.value = savedUrl;
+  }
+}
+
+// Save backend URL when changed
+document.addEventListener('input', e => {
+  if (e.target.id === 'bot-backend-url') {
+    localStorage.setItem('iconium_bot_url', e.target.value);
+  }
+});
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STRATEGY ADVISOR
+// Analyses live market conditions and recommends which strategy to use
+// ═══════════════════════════════════════════════════════════════════════════
+
+let advisorHistory = JSON.parse(localStorage.getItem('iconium_advisor_history') || '[]');
+
+async function runStrategyAdvisor() {
+  const btn = document.getElementById('advisor-refresh-btn');
+  btn.textContent = '⏳ Analysing...';
+  btn.disabled = true;
+
+  // Get latest signals from backend
+  const url = BOT_BACKEND();
+  let signals = {};
+  let regime = 'unknown';
+  let btcData = null;
+
+  if (url) {
+    try {
+      const r = await fetch(url + '/market/signals', { signal: AbortSignal.timeout(10000) });
+      const d = await r.json();
+      signals = d || {};
+      btcData = signals['BTC-USDT'] || signals['BTC'] || null;
+      regime = btcData?.regime || 'unknown';
+    } catch(e) {
+      console.warn('Advisor: could not fetch signals', e.message);
+    }
+  }
+
+  // Build condition analysis
+  const btcRsi    = btcData?.rsi || null;
+  const btcScore  = btcData?.score || null;
+  const volSurge  = btcData?.vol_surge || false;
+  const btcAction = btcData?.action || 'HOLD';
+
+  // Track regime history
+  advisorHistory.push({ regime, rsi: btcRsi, ts: Date.now() });
+  advisorHistory = advisorHistory.slice(-200); // keep last 200 readings
+  localStorage.setItem('iconium_advisor_history', JSON.stringify(advisorHistory));
+
+  // Count consecutive bull days
+  const recentReadings = advisorHistory.slice(-24); // last ~2 days of 5-min polls
+  const bullCount  = recentReadings.filter(r => r.regime === 'bull').length;
+  const bearCount  = recentReadings.filter(r => r.regime === 'bear').length;
+  const bullPct    = recentReadings.length > 0 ? (bullCount / recentReadings.length) * 100 : 0;
+  const bearPct    = recentReadings.length > 0 ? (bearCount / recentReadings.length) * 100 : 0;
+
+  // ── Determine recommendation ──────────────────────────────────────────
+  let recommendation = '';
+  let headline = '';
+  let reason = '';
+  let action = '';
+  let icon = '';
+  let color = '';
+
+  if (regime === 'bear' || bearPct > 60) {
+    recommendation = 'pause';
+    icon = '🛑';
+    color = '#ef4444';
+    headline = 'PAUSE THE BOT — Bear Market Detected';
+    reason = `The market regime is showing BEAR conditions${bearPct > 0 ? ` (${Math.round(bearPct)}% of recent readings)` : ''}. ${btcRsi ? `BTC RSI is ${btcRsi.toFixed(1)}.` : ''} Running any strategy in a bear market risks significant capital loss. The crash shield will trigger repeatedly, eating into your capital with each stop-loss.
+
+Historically, the best trade in a bear market is no trade at all. Preserve your $${document.getElementById('bot-capital')?.value || '1,000'} and wait for conditions to improve.`;
+    action = '⏸ Click PAUSE above → Wait for regime to flip back to SIDEWAYS or BULL before restarting';
+  }
+  else if (regime === 'sideways' || regime === 'unknown') {
+    if (btcRsi !== null && btcRsi < 25) {
+      recommendation = 'grinder-watch';
+      icon = '👀';
+      color = '#f59e0b';
+      headline = 'Stay on Grinder — But Watch Closely';
+      reason = `Market is SIDEWAYS but BTC RSI is extremely oversold at ${btcRsi.toFixed(1)}. This is historically where bull runs begin — when everyone has sold and given up.
+
+The Grinder is correct right now because we need SMA confirmation before committing to a bigger strategy. If BTC RSI rises above 40 AND regime flips to BULL, that's your signal to consider switching to The Rider.`;
+      action = '✅ Keep running The Grinder · Watch for regime → BULL + RSI > 40 as your switch trigger';
+    } else {
+      recommendation = 'grinder';
+      icon = '🔲';
+      color = '#10b981';
+      headline = 'Stick with The Grinder';
+      reason = `Market is in SIDEWAYS regime. ${btcRsi ? `BTC RSI is ${btcRsi.toFixed(1)} — ` : ''}This is not the time to chase higher returns with The Rider or Moonshot. In sideways markets, those strategies lose money more often than they make it because momentum signals fire and then reverse quickly.
+
+The Grinder is specifically designed for this environment — it waits for RSI oversold + volume confirmation before entering, which is exactly right for choppy conditions.`;
+      action = '✅ Keep The Grinder running · Switch to Rider only when BULL regime confirmed for 2+ weeks';
+    }
+  }
+  else if (regime === 'bull') {
+    if (bullPct > 70) {
+      // Strong sustained bull
+      recommendation = 'rider';
+      icon = '📈';
+      color = '#f59e0b';
+      headline = 'Switch to The Rider — Bull Market Confirmed';
+      reason = `BULL regime has been confirmed across ${Math.round(bullPct)}% of recent market readings. ${btcRsi ? `BTC RSI is ${btcRsi.toFixed(1)} — healthy uptrend territory.` : ''} ${volSurge ? 'Volume surge is confirming the move.' : ''}
+
+This is exactly the condition The Rider is built for. It catches momentum across BTC, ETH, SOL and BNB — all of which tend to move together in a sustained bull market. The Grinder will still make money here, but The Rider will make significantly more.
+
+Note: Only switch if you're comfortable with a 20% stop-loss in any given month.`;
+      action = '🔄 Stop current bot → Select THE RIDER → Click Start · Consider switching if you have not already';
+    } else {
+      // Early bull — cautious
+      recommendation = 'grinder-to-rider';
+      icon = '⚡';
+      color = '#f59e0b';
+      headline = 'Bull Market Emerging — Prepare to Switch';
+      reason = `BULL regime is appearing in ${Math.round(bullPct)}% of recent readings — it's building but not yet confirmed as sustained. ${btcRsi ? `BTC RSI at ${btcRsi.toFixed(1)} supports the emerging trend.` : ''}
+
+You're in the transition zone between Grinder and Rider territory. The safe play is to stay on Grinder for now but start watching daily. If BULL regime holds for another week and RSI stays above 50, that's your signal to switch to The Rider.
+
+Do not switch to Moonshot yet — altcoins need BTC to lead first.`;
+      action = '👀 Stay on Grinder for now · Set a reminder to check regime in 7 days · Switch to Rider if BULL holds';
+    }
+  }
+
+  // ── Update Traffic Lights ─────────────────────────────────────────────
+  const lights = {
+    grinder: { el: 'tl-grinder', status: 'tl-grinder-status' },
+    rider:   { el: 'tl-rider',   status: 'tl-rider-status'   },
+    moonshot:{ el: 'tl-moonshot',status: 'tl-moonshot-status'},
+  };
+
+  // Reset all
+  Object.values(lights).forEach(l => {
+    document.getElementById(l.el).style.borderColor = 'var(--border)';
+    document.getElementById(l.el).style.background = 'var(--surface2)';
+  });
+
+  if (recommendation === 'pause') {
+    setTrafficLight('grinder', '🔴 NOT NOW', '#ef4444', false);
+    setTrafficLight('rider',   '🔴 NOT NOW', '#ef4444', false);
+    setTrafficLight('moonshot','🔴 NOT NOW', '#ef4444', false);
+  } else if (recommendation === 'grinder' || recommendation === 'grinder-watch') {
+    setTrafficLight('grinder', '🟢 USE THIS', '#10b981', true);
+    setTrafficLight('rider',   '🟡 NOT YET', '#f59e0b', false);
+    setTrafficLight('moonshot','🔴 NOT YET', '#ef4444', false);
+  } else if (recommendation === 'grinder-to-rider') {
+    setTrafficLight('grinder', '🟢 CURRENT', '#10b981', true);
+    setTrafficLight('rider',   '🟡 WATCH', '#f59e0b', false);
+    setTrafficLight('moonshot','🔴 NOT YET', '#ef4444', false);
+  } else if (recommendation === 'rider') {
+    setTrafficLight('grinder', '🟡 TOO SLOW', '#f59e0b', false);
+    setTrafficLight('rider',   '🟢 SWITCH NOW', '#10b981', true);
+    setTrafficLight('moonshot','🔴 NOT YET', '#ef4444', false);
+  }
+
+  // ── Show recommendation box ───────────────────────────────────────────
+  const recBox = document.getElementById('advisor-recommendation');
+  recBox.style.display = 'block';
+  recBox.style.borderColor = color;
+  recBox.style.background = `${color}15`;
+  document.getElementById('advisor-icon').textContent = icon;
+  document.getElementById('advisor-headline').textContent = headline;
+  document.getElementById('advisor-headline').style.color = color;
+  document.getElementById('advisor-reason').textContent = reason;
+  document.getElementById('advisor-action').textContent = action;
+  document.getElementById('advisor-action').style.color = color;
+  document.getElementById('advisor-action').style.borderColor = `${color}44`;
+  document.getElementById('advisor-action').style.background = `${color}15`;
+
+  // ── Conditions Grid ───────────────────────────────────────────────────
+  const conditionsEl = document.getElementById('advisor-conditions');
+  conditionsEl.style.display = 'block';
+  const conditions = [
+    {
+      label: 'Market Regime',
+      value: regime.toUpperCase(),
+      color: regime === 'bull' ? '#10b981' : regime === 'bear' ? '#ef4444' : '#f59e0b',
+      icon: regime === 'bull' ? '🐂' : regime === 'bear' ? '🐻' : '➡️',
+    },
+    {
+      label: 'BTC RSI',
+      value: btcRsi ? btcRsi.toFixed(1) : '—',
+      color: btcRsi < 35 ? '#10b981' : btcRsi > 65 ? '#ef4444' : '#f59e0b',
+      icon: btcRsi < 35 ? '🟢' : btcRsi > 65 ? '🔴' : '🟡',
+      sub: btcRsi < 35 ? 'Oversold — buy zone' : btcRsi > 65 ? 'Overbought — caution' : 'Neutral',
+    },
+    {
+      label: 'BTC Signal',
+      value: btcAction,
+      color: btcAction === 'BUY' ? '#10b981' : btcAction === 'SELL' ? '#ef4444' : '#f59e0b',
+      icon: btcAction === 'BUY' ? '✅' : btcAction === 'SELL' ? '❌' : '⏸',
+    },
+    {
+      label: 'Volume Surge',
+      value: volSurge ? 'YES' : 'NO',
+      color: volSurge ? '#10b981' : 'var(--muted)',
+      icon: volSurge ? '🔥' : '💤',
+      sub: volSurge ? 'Confirms move' : 'No confirmation',
+    },
+    {
+      label: 'Bull Readings',
+      value: `${Math.round(bullPct)}%`,
+      color: bullPct > 70 ? '#10b981' : bullPct > 40 ? '#f59e0b' : 'var(--muted)',
+      icon: bullPct > 70 ? '🐂' : bullPct > 40 ? '📈' : '😴',
+      sub: `Last ${recentReadings.length} polls`,
+    },
+    {
+      label: 'BTC Score',
+      value: btcScore ? `${btcScore}/100` : '—',
+      color: btcScore >= 65 ? '#10b981' : btcScore >= 45 ? '#f59e0b' : '#ef4444',
+      icon: btcScore >= 65 ? '💚' : btcScore >= 45 ? '💛' : '❤️',
+    },
+  ];
+
+  document.getElementById('advisor-conditions-grid').innerHTML = conditions.map(c => `
+    <div style="background:var(--surface);border-radius:8px;padding:10px;border-left:3px solid ${c.color}">
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${c.label}</div>
+      <div style="font-size:16px;font-weight:800;color:${c.color}">${c.icon} ${c.value}</div>
+      ${c.sub ? `<div style="font-size:10px;color:var(--muted);margin-top:2px">${c.sub}</div>` : ''}
+    </div>
+  `).join('');
+
+  // Also send Telegram alert if recommendation changed
+  const lastRec = localStorage.getItem('iconium_last_advisor_rec');
+  if (lastRec !== recommendation) {
+    localStorage.setItem('iconium_last_advisor_rec', recommendation);
+    if (recommendation === 'rider' || recommendation === 'pause') {
+      sendAlert('strategy_switch', {
+        recommendation,
+        headline,
+        regime,
+        btcRsi: btcRsi?.toFixed(1),
+        action,
+      });
+    }
+  }
+
+  btn.textContent = '⚡ Analyse Now';
+  btn.disabled = false;
+}
+
+function setTrafficLight(strategy, statusText, color, active) {
+  const el = document.getElementById('tl-' + strategy);
+  const statusEl = document.getElementById('tl-' + strategy + '-status');
+  if (!el || !statusEl) return;
+  el.style.borderColor = active ? color : 'var(--border)';
+  el.style.background = active ? `${color}18` : 'var(--surface2)';
+  statusEl.textContent = statusText;
+  statusEl.style.color = color;
+  statusEl.style.background = `${color}18`;
+}
+
+// Auto-run advisor when bot status updates
+const _origUpdateBotStatusUI = updateBotStatusUI;
+function updateBotStatusUI(d) {
+  _origUpdateBotStatusUI(d);
+  // Run advisor every 10 polls (~50 minutes) automatically
+  const pollCount = parseInt(localStorage.getItem('iconium_poll_count') || '0') + 1;
+  localStorage.setItem('iconium_poll_count', pollCount);
+  if (pollCount % 10 === 1) {
+    runStrategyAdvisor();
+  }
+}
+
+
+ // ── Initialise ─────────────────────────────────────────────────────────────
+function init() {
+  loadState();
+
+  // Restore mode UI
+  selectMode(state.mode);
+
+  // Restore allocation UI
+  renderAllocationTable();
+
+  // Restore risk rules
+  if (state.rules) {
+    document.getElementById('r-drawdown').value = state.rules.drawdown || 15;
+    document.getElementById('r-position').value = state.rules.position || 25;
+    document.getElementById('r-trades').value   = state.rules.trades   || 10;
+    document.getElementById('r-minscore').value = state.rules.minScore || 65;
+  }
+
+  // Restore cached signals if fresh
+  if (Object.keys(state.signals).length > 0) {
+    renderSignals();
+    updateCacheStatus();
+    document.getElementById('s-instruments').textContent = `${Object.keys(state.signals).length} / 25`;
+    document.getElementById('s-updated').textContent = state.cacheTime
+      ? new Date(state.cacheTime).toLocaleTimeString() : '—';
+
+    // Auto refresh if stale
+    if (state.cacheTime && (Date.now() - state.cacheTime > CACHE_TTL)) {
+      setTimeout(() => refreshAllData(true), 2000);
+    }
+  }
+
+  // Load alert settings
+  loadAlertSettings();
+  initAutomation();
+  scheduleMorningBrief();
+
+  // Load intelligence data
+  loadFearGreed();
+  renderPortfolio();
+  renderHistory();
+  loadAccountStatus();
+  loadOrders();
+}
+
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PAPER TRADING ENGINE v2
@@ -4200,6 +5005,9 @@ function initPaperTrading() {
   renderPaperHistory();
 }
 
+
 init();
 initPaperTrading();
 </script>
+</body>
+</html>
