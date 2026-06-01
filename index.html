@@ -945,6 +945,53 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 <div class="panel" id="panel-auto">
 
 <!-- ── GOAL SETTER ─────────────────────────────────────────── -->
+
+<!-- ═══ CLEAR ACTION BANNER ═══════════════════════════════════════════════ -->
+<div id="action-banner" style="display:none;border-radius:16px;padding:24px;margin-bottom:16px;border:3px solid #10b981;background:rgba(16,185,129,0.1);position:relative;overflow:hidden">
+  <!-- Pulsing background effect -->
+  <div id="action-banner-pulse" style="position:absolute;inset:0;border-radius:14px;opacity:0.05;pointer-events:none"></div>
+  
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <!-- Big icon -->
+    <div id="action-banner-icon" style="font-size:48px;flex-shrink:0">⏳</div>
+    
+    <div style="flex:1;min-width:200px">
+      <!-- What to do RIGHT NOW -->
+      <div id="action-banner-label" style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">WHAT TO DO RIGHT NOW</div>
+      <div id="action-banner-action" style="font-size:24px;font-weight:900;color:#10b981;margin-bottom:6px;line-height:1.2">Loading...</div>
+      <div id="action-banner-reason" style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px"></div>
+      
+      <!-- Waiting for conditions -->
+      <div id="action-banner-conditions" style="display:none;background:rgba(0,0,0,0.2);border-radius:10px;padding:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⏳ Waiting for these conditions before buying:</div>
+        <div id="action-conditions-list" style="display:grid;grid-template-columns:1fr 1fr;gap:6px"></div>
+      </div>
+    </div>
+
+    <!-- Right side: key number -->
+    <div style="text-align:center;flex-shrink:0">
+      <div id="action-banner-number" style="font-size:36px;font-weight:900;color:#10b981">—</div>
+      <div id="action-banner-number-label" style="font-size:11px;color:var(--muted);margin-top:2px">BTC RSI</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SIGNAL SUMMARY BAR ══════════════════════════════════════════════════ -->
+<div id="signal-summary-bar" style="display:none;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Bot Status</div>
+    <div id="ssb-bot-status" style="font-size:16px;font-weight:800;color:var(--muted)">—</div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Market State</div>
+    <div id="ssb-market-state" style="font-size:16px;font-weight:800;color:var(--muted)">—</div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Next Action</div>
+    <div id="ssb-next-action" style="font-size:16px;font-weight:800;color:var(--muted)">—</div>
+  </div>
+</div>
+
 <div class="auto-section" style="border-color:#f59e0b;background:linear-gradient(135deg,#1a1200,#111827)">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
     <div style="width:24px;height:24px;background:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#000;flex-shrink:0">1</div>
@@ -3781,6 +3828,11 @@ function etfUpdate(){
 // OKX Demo API · Goal-Based · Crash Shield · Market Regime Detection
 // ═══════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ICONIUM TRADE — Automation Tab JS (Crypto Bot)
+// OKX Demo API · Goal-Based · Crash Shield · Market Regime Detection
+// ═══════════════════════════════════════════════════════════════════════════
+
 const BOT_BACKEND = () => (document.getElementById('bot-backend-url')?.value || '').replace(/\/$/, '');
 
 let selectedStrategy = null;
@@ -4279,6 +4331,454 @@ document.addEventListener('input', e => {
     localStorage.setItem('iconium_bot_url', e.target.value);
   }
 });
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STRATEGY ADVISOR
+// Analyses live market conditions and recommends which strategy to use
+// ═══════════════════════════════════════════════════════════════════════════
+
+let advisorHistory = JSON.parse(localStorage.getItem('iconium_advisor_history') || '[]');
+
+async function runStrategyAdvisor() {
+  const btn = document.getElementById('advisor-refresh-btn');
+  btn.textContent = '⏳ Analysing...';
+  btn.disabled = true;
+
+  // Get latest signals from backend
+  const url = BOT_BACKEND();
+  let signals = {};
+  let regime = 'unknown';
+  let btcData = null;
+
+  if (url) {
+    try {
+      const r = await fetch(url + '/market/signals', { signal: AbortSignal.timeout(10000) });
+      const d = await r.json();
+      signals = d || {};
+      btcData = signals['BTC-USDT'] || signals['BTC'] || null;
+      regime = btcData?.regime || 'unknown';
+    } catch(e) {
+      console.warn('Advisor: could not fetch signals', e.message);
+    }
+  }
+
+  // Build condition analysis
+  const btcRsi    = btcData?.rsi || null;
+  const btcScore  = btcData?.score || null;
+  const volSurge  = btcData?.vol_surge || false;
+  const btcAction = btcData?.action || 'HOLD';
+
+  // Track regime history
+  advisorHistory.push({ regime, rsi: btcRsi, ts: Date.now() });
+  advisorHistory = advisorHistory.slice(-200); // keep last 200 readings
+  localStorage.setItem('iconium_advisor_history', JSON.stringify(advisorHistory));
+
+  // Count consecutive bull days
+  const recentReadings = advisorHistory.slice(-24); // last ~2 days of 5-min polls
+  const bullCount  = recentReadings.filter(r => r.regime === 'bull').length;
+  const bearCount  = recentReadings.filter(r => r.regime === 'bear').length;
+  const bullPct    = recentReadings.length > 0 ? (bullCount / recentReadings.length) * 100 : 0;
+  const bearPct    = recentReadings.length > 0 ? (bearCount / recentReadings.length) * 100 : 0;
+
+  // ── Determine recommendation ──────────────────────────────────────────
+  let recommendation = '';
+  let headline = '';
+  let reason = '';
+  let action = '';
+  let icon = '';
+  let color = '';
+
+  if (regime === 'bear' || bearPct > 60) {
+    recommendation = 'pause';
+    icon = '🛑';
+    color = '#ef4444';
+    headline = 'PAUSE THE BOT — Bear Market Detected';
+    reason = `The market regime is showing BEAR conditions${bearPct > 0 ? ` (${Math.round(bearPct)}% of recent readings)` : ''}. ${btcRsi ? `BTC RSI is ${btcRsi.toFixed(1)}.` : ''} Running any strategy in a bear market risks significant capital loss. The crash shield will trigger repeatedly, eating into your capital with each stop-loss.
+
+Historically, the best trade in a bear market is no trade at all. Preserve your $${document.getElementById('bot-capital')?.value || '1,000'} and wait for conditions to improve.`;
+    action = '⏸ Click PAUSE above → Wait for regime to flip back to SIDEWAYS or BULL before restarting';
+  }
+  else if (regime === 'sideways' || regime === 'unknown') {
+    if (btcRsi !== null && btcRsi < 25) {
+      recommendation = 'grinder-watch';
+      icon = '👀';
+      color = '#f59e0b';
+      headline = 'Stay on Grinder — But Watch Closely';
+      reason = `Market is SIDEWAYS but BTC RSI is extremely oversold at ${btcRsi.toFixed(1)}. This is historically where bull runs begin — when everyone has sold and given up.
+
+The Grinder is correct right now because we need SMA confirmation before committing to a bigger strategy. If BTC RSI rises above 40 AND regime flips to BULL, that's your signal to consider switching to The Rider.`;
+      action = '✅ Keep running The Grinder · Watch for regime → BULL + RSI > 40 as your switch trigger';
+    } else {
+      recommendation = 'grinder';
+      icon = '🔲';
+      color = '#10b981';
+      headline = 'Stick with The Grinder';
+      reason = `Market is in SIDEWAYS regime. ${btcRsi ? `BTC RSI is ${btcRsi.toFixed(1)} — ` : ''}This is not the time to chase higher returns with The Rider or Moonshot. In sideways markets, those strategies lose money more often than they make it because momentum signals fire and then reverse quickly.
+
+The Grinder is specifically designed for this environment — it waits for RSI oversold + volume confirmation before entering, which is exactly right for choppy conditions.`;
+      action = '✅ Keep The Grinder running · Switch to Rider only when BULL regime confirmed for 2+ weeks';
+    }
+  }
+  else if (regime === 'bull') {
+    if (bullPct > 70) {
+      // Strong sustained bull
+      recommendation = 'rider';
+      icon = '📈';
+      color = '#f59e0b';
+      headline = 'Switch to The Rider — Bull Market Confirmed';
+      reason = `BULL regime has been confirmed across ${Math.round(bullPct)}% of recent market readings. ${btcRsi ? `BTC RSI is ${btcRsi.toFixed(1)} — healthy uptrend territory.` : ''} ${volSurge ? 'Volume surge is confirming the move.' : ''}
+
+This is exactly the condition The Rider is built for. It catches momentum across BTC, ETH, SOL and BNB — all of which tend to move together in a sustained bull market. The Grinder will still make money here, but The Rider will make significantly more.
+
+Note: Only switch if you're comfortable with a 20% stop-loss in any given month.`;
+      action = '🔄 Stop current bot → Select THE RIDER → Click Start · Consider switching if you have not already';
+    } else {
+      // Early bull — cautious
+      recommendation = 'grinder-to-rider';
+      icon = '⚡';
+      color = '#f59e0b';
+      headline = 'Bull Market Emerging — Prepare to Switch';
+      reason = `BULL regime is appearing in ${Math.round(bullPct)}% of recent readings — it's building but not yet confirmed as sustained. ${btcRsi ? `BTC RSI at ${btcRsi.toFixed(1)} supports the emerging trend.` : ''}
+
+You're in the transition zone between Grinder and Rider territory. The safe play is to stay on Grinder for now but start watching daily. If BULL regime holds for another week and RSI stays above 50, that's your signal to switch to The Rider.
+
+Do not switch to Moonshot yet — altcoins need BTC to lead first.`;
+      action = '👀 Stay on Grinder for now · Set a reminder to check regime in 7 days · Switch to Rider if BULL holds';
+    }
+  }
+
+  // ── Update Traffic Lights ─────────────────────────────────────────────
+  const lights = {
+    grinder: { el: 'tl-grinder', status: 'tl-grinder-status' },
+    rider:   { el: 'tl-rider',   status: 'tl-rider-status'   },
+    moonshot:{ el: 'tl-moonshot',status: 'tl-moonshot-status'},
+  };
+
+  // Reset all
+  Object.values(lights).forEach(l => {
+    document.getElementById(l.el).style.borderColor = 'var(--border)';
+    document.getElementById(l.el).style.background = 'var(--surface2)';
+  });
+
+  if (recommendation === 'pause') {
+    setTrafficLight('grinder', '🔴 NOT NOW', '#ef4444', false);
+    setTrafficLight('rider',   '🔴 NOT NOW', '#ef4444', false);
+    setTrafficLight('moonshot','🔴 NOT NOW', '#ef4444', false);
+  } else if (recommendation === 'grinder' || recommendation === 'grinder-watch') {
+    setTrafficLight('grinder', '🟢 USE THIS', '#10b981', true);
+    setTrafficLight('rider',   '🟡 NOT YET', '#f59e0b', false);
+    setTrafficLight('moonshot','🔴 NOT YET', '#ef4444', false);
+  } else if (recommendation === 'grinder-to-rider') {
+    setTrafficLight('grinder', '🟢 CURRENT', '#10b981', true);
+    setTrafficLight('rider',   '🟡 WATCH', '#f59e0b', false);
+    setTrafficLight('moonshot','🔴 NOT YET', '#ef4444', false);
+  } else if (recommendation === 'rider') {
+    setTrafficLight('grinder', '🟡 TOO SLOW', '#f59e0b', false);
+    setTrafficLight('rider',   '🟢 SWITCH NOW', '#10b981', true);
+    setTrafficLight('moonshot','🔴 NOT YET', '#ef4444', false);
+  }
+
+  // ── Show recommendation box ───────────────────────────────────────────
+  const recBox = document.getElementById('advisor-recommendation');
+  recBox.style.display = 'block';
+  recBox.style.borderColor = color;
+  recBox.style.background = `${color}15`;
+  document.getElementById('advisor-icon').textContent = icon;
+  document.getElementById('advisor-headline').textContent = headline;
+  document.getElementById('advisor-headline').style.color = color;
+  document.getElementById('advisor-reason').textContent = reason;
+  document.getElementById('advisor-action').textContent = action;
+  document.getElementById('advisor-action').style.color = color;
+  document.getElementById('advisor-action').style.borderColor = `${color}44`;
+  document.getElementById('advisor-action').style.background = `${color}15`;
+
+  // ── Conditions Grid ───────────────────────────────────────────────────
+  const conditionsEl = document.getElementById('advisor-conditions');
+  conditionsEl.style.display = 'block';
+  const conditions = [
+    {
+      label: 'Market Regime',
+      value: regime.toUpperCase(),
+      color: regime === 'bull' ? '#10b981' : regime === 'bear' ? '#ef4444' : '#f59e0b',
+      icon: regime === 'bull' ? '🐂' : regime === 'bear' ? '🐻' : '➡️',
+    },
+    {
+      label: 'BTC RSI',
+      value: btcRsi ? btcRsi.toFixed(1) : '—',
+      color: btcRsi < 35 ? '#10b981' : btcRsi > 65 ? '#ef4444' : '#f59e0b',
+      icon: btcRsi < 35 ? '🟢' : btcRsi > 65 ? '🔴' : '🟡',
+      sub: btcRsi < 35 ? 'Oversold — buy zone' : btcRsi > 65 ? 'Overbought — caution' : 'Neutral',
+    },
+    {
+      label: 'BTC Signal',
+      value: btcAction,
+      color: btcAction === 'BUY' ? '#10b981' : btcAction === 'SELL' ? '#ef4444' : '#f59e0b',
+      icon: btcAction === 'BUY' ? '✅' : btcAction === 'SELL' ? '❌' : '⏸',
+    },
+    {
+      label: 'Volume Surge',
+      value: volSurge ? 'YES' : 'NO',
+      color: volSurge ? '#10b981' : 'var(--muted)',
+      icon: volSurge ? '🔥' : '💤',
+      sub: volSurge ? 'Confirms move' : 'No confirmation',
+    },
+    {
+      label: 'Bull Readings',
+      value: `${Math.round(bullPct)}%`,
+      color: bullPct > 70 ? '#10b981' : bullPct > 40 ? '#f59e0b' : 'var(--muted)',
+      icon: bullPct > 70 ? '🐂' : bullPct > 40 ? '📈' : '😴',
+      sub: `Last ${recentReadings.length} polls`,
+    },
+    {
+      label: 'BTC Score',
+      value: btcScore ? `${btcScore}/100` : '—',
+      color: btcScore >= 65 ? '#10b981' : btcScore >= 45 ? '#f59e0b' : '#ef4444',
+      icon: btcScore >= 65 ? '💚' : btcScore >= 45 ? '💛' : '❤️',
+    },
+  ];
+
+  document.getElementById('advisor-conditions-grid').innerHTML = conditions.map(c => `
+    <div style="background:var(--surface);border-radius:8px;padding:10px;border-left:3px solid ${c.color}">
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${c.label}</div>
+      <div style="font-size:16px;font-weight:800;color:${c.color}">${c.icon} ${c.value}</div>
+      ${c.sub ? `<div style="font-size:10px;color:var(--muted);margin-top:2px">${c.sub}</div>` : ''}
+    </div>
+  `).join('');
+
+  // Also send Telegram alert if recommendation changed
+  const lastRec = localStorage.getItem('iconium_last_advisor_rec');
+  if (lastRec !== recommendation) {
+    localStorage.setItem('iconium_last_advisor_rec', recommendation);
+    if (recommendation === 'rider' || recommendation === 'pause') {
+      sendAlert('strategy_switch', {
+        recommendation,
+        headline,
+        regime,
+        btcRsi: btcRsi?.toFixed(1),
+        action,
+      });
+    }
+  }
+
+  btn.textContent = '⚡ Analyse Now';
+  btn.disabled = false;
+}
+
+function setTrafficLight(strategy, statusText, color, active) {
+  const el = document.getElementById('tl-' + strategy);
+  const statusEl = document.getElementById('tl-' + strategy + '-status');
+  if (!el || !statusEl) return;
+  el.style.borderColor = active ? color : 'var(--border)';
+  el.style.background = active ? `${color}18` : 'var(--surface2)';
+  statusEl.textContent = statusText;
+  statusEl.style.color = color;
+  statusEl.style.background = `${color}18`;
+}
+
+// Auto-run advisor when bot status updates
+const _origUpdateBotStatusUI = updateBotStatusUI;
+function updateBotStatusUI(d) {
+  _origUpdateBotStatusUI(d);
+  // Run advisor every 10 polls (~50 minutes) automatically
+  const pollCount = parseInt(localStorage.getItem('iconium_poll_count') || '0') + 1;
+  localStorage.setItem('iconium_poll_count', pollCount);
+  if (pollCount % 10 === 1) {
+    runStrategyAdvisor();
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CLEAR ACTION BANNER
+// Shows the user exactly what to do right now in plain English
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateActionBanner(botData, signalData) {
+  const banner = document.getElementById('action-banner');
+  if (!banner) return;
+  banner.style.display = 'block';
+
+  const regime   = botData?.regime || 'unknown';
+  const pnl      = botData?.pnl || 0;
+  const running  = botData?.bot_running || false;
+  const trades   = botData?.trades?.length || 0;
+
+  // Get BTC signal data
+  const btc = signalData?.['BTC-USDT'] || signalData?.['BTC'] || null;
+  const btcRsi    = btc?.rsi || null;
+  const btcAction = btc?.action || 'HOLD';
+  const btcScore  = btc?.score || 0;
+  const volSurge  = btc?.vol_surge || false;
+  const reasons   = btc?.reasons || [];
+
+  // Determine the ONE clear action
+  let icon, action, reason, color, numberVal, numberLabel, showConditions = false;
+  const conditionItems = [];
+
+  if (!running) {
+    // Bot not started
+    icon = '▶️';
+    color = '#3b82f6';
+    action = 'START THE BOT';
+    reason = 'The bot is not running. Select a strategy above and click Start Paper Bot to begin paper trading. No real money is at risk in paper mode.';
+    numberVal = '—';
+    numberLabel = 'Bot offline';
+
+  } else if (regime === 'bear') {
+    // Bear market — stop everything
+    icon = '🛑';
+    color = '#ef4444';
+    action = 'PAUSE THE BOT NOW';
+    reason = 'Bear market detected. Running any strategy in a bear market will trigger repeated stop-losses and drain your capital. Click PAUSE above to protect your money and wait for market recovery.';
+    numberVal = btcRsi ? btcRsi.toFixed(0) : '—';
+    numberLabel = 'BTC RSI';
+
+  } else if (regime === 'sideways' || regime === 'unknown') {
+
+    if (btcRsi !== null && btcRsi < 30 && volSurge) {
+      // Oversold + volume surge — getting close to a buy
+      icon = '👀';
+      color = '#f59e0b';
+      action = 'WATCH CLOSELY — BUY SIGNAL FORMING';
+      reason = `BTC RSI is ${btcRsi.toFixed(1)} — deeply oversold — and volume is surging. The bot is watching for SMA confirmation before buying. A trade signal could fire within the next few hours. Do not switch strategies right now.`;
+      showConditions = true;
+      numberVal = btcRsi.toFixed(0);
+      numberLabel = 'BTC RSI (oversold)';
+      conditionItems.push(
+        { label: 'RSI < 35', met: btcRsi < 35, value: btcRsi.toFixed(1) },
+        { label: 'Volume Surge', met: volSurge, value: volSurge ? 'YES ✓' : 'NO' },
+        { label: 'SMA7 > SMA20', met: false, value: 'Waiting...' },
+        { label: 'Regime = BULL', met: false, value: 'SIDEWAYS' },
+      );
+
+    } else if (btcRsi !== null && btcRsi < 35) {
+      // Oversold but no volume yet
+      icon = '⏳';
+      color = '#f59e0b';
+      action = 'HOLD — WAITING FOR BUY SIGNAL';
+      reason = `BTC is oversold (RSI ${btcRsi.toFixed(1)}) but the bot needs volume confirmation and SMA alignment before entering a trade. This is normal — the bot is being patient to avoid buying into a continued downtrend. Keep the bot running.`;
+      showConditions = true;
+      numberVal = btcRsi.toFixed(0);
+      numberLabel = 'BTC RSI';
+      conditionItems.push(
+        { label: 'RSI < 35', met: btcRsi < 35, value: btcRsi.toFixed(1) },
+        { label: 'Volume Surge', met: volSurge, value: volSurge ? 'YES ✓' : 'Waiting' },
+        { label: 'SMA7 > SMA20', met: false, value: 'Waiting...' },
+        { label: 'Regime = BULL', met: false, value: 'SIDEWAYS' },
+      );
+
+    } else {
+      // Normal sideways
+      icon = '⏳';
+      color = '#64748b';
+      action = 'HOLD — MARKET IS SIDEWAYS';
+      reason = `No buy conditions met right now. BTC RSI is ${btcRsi ? btcRsi.toFixed(1) : '—'} — not yet in the oversold zone where The Grinder buys. The bot is running but waiting for better entry conditions. Check back in a few hours.`;
+      numberVal = btcRsi ? btcRsi.toFixed(0) : '—';
+      numberLabel = 'BTC RSI';
+    }
+
+  } else if (regime === 'bull') {
+
+    if (btcAction === 'BUY' && btcScore >= 65) {
+      // Active buy signal in bull market
+      icon = '🚀';
+      color = '#10b981';
+      action = trades > 0 ? `BOT IS BUYING — ${trades} TRADE${trades > 1 ? 'S' : ''} EXECUTED` : 'BUY SIGNAL ACTIVE — BOT EXECUTING';
+      reason = `Bull market confirmed. BTC RSI is ${btcRsi ? btcRsi.toFixed(1) : '—'} and score is ${btcScore}/100. The bot is actively placing paper trades. ${pnl >= 0 ? `Current P&L: +$${pnl.toFixed(2)}` : `Current P&L: -$${Math.abs(pnl).toFixed(2)}`}. ${reasons[0] || ''}`;
+      numberVal = `+$${pnl.toFixed(2)}`;
+      numberLabel = 'Paper P&L';
+
+    } else {
+      icon = '📈';
+      color = '#10b981';
+      action = 'BULL MARKET — BOT RUNNING';
+      reason = `Market is in bull mode. The bot is actively scanning for entry points. BTC RSI is ${btcRsi ? btcRsi.toFixed(1) : '—'}. ${btcAction === 'HOLD' ? 'Waiting for RSI to dip before entering to get a better price.' : ''}`;
+      numberVal = btcRsi ? btcRsi.toFixed(0) : '—';
+      numberLabel = 'BTC RSI';
+    }
+  }
+
+  // Update banner
+  const iconEl   = document.getElementById('action-banner-icon');
+  const actionEl = document.getElementById('action-banner-action');
+  const reasonEl = document.getElementById('action-banner-reason');
+  const numEl    = document.getElementById('action-banner-number');
+  const numLblEl = document.getElementById('action-banner-number-label');
+  const condsEl  = document.getElementById('action-banner-conditions');
+  const condsListEl = document.getElementById('action-conditions-list');
+  const pulseEl  = document.getElementById('action-banner-pulse');
+
+  if (iconEl)   iconEl.textContent   = icon;
+  if (actionEl) { actionEl.textContent = action; actionEl.style.color = color; }
+  if (reasonEl) reasonEl.textContent  = reason;
+  if (numEl)    { numEl.textContent   = numberVal; numEl.style.color = color; }
+  if (numLblEl) numLblEl.textContent  = numberLabel;
+
+  banner.style.borderColor = color;
+  banner.style.background  = `${color}12`;
+  if (pulseEl) pulseEl.style.background = color;
+
+  // Conditions list
+  if (condsEl) condsEl.style.display = showConditions ? 'block' : 'none';
+  if (condsListEl && conditionItems.length) {
+    condsListEl.innerHTML = conditionItems.map(c => `
+      <div style="display:flex;align-items:center;justify-content:space-between;background:${c.met ? 'rgba(16,185,129,0.1)' : 'rgba(100,116,139,0.1)'};border-radius:6px;padding:6px 10px;border:1px solid ${c.met ? '#10b981' : 'var(--border)'}">
+        <span style="font-size:11px;font-weight:600;color:${c.met ? '#10b981' : 'var(--muted)'}">${c.met ? '✅' : '⬜'} ${c.label}</span>
+        <span style="font-size:11px;font-weight:700;color:${c.met ? '#10b981' : '#f59e0b'}">${c.value}</span>
+      </div>
+    `).join('');
+  }
+
+  // Update summary bar
+  const ssbBot    = document.getElementById('ssb-bot-status');
+  const ssbMarket = document.getElementById('ssb-market-state');
+  const ssbNext   = document.getElementById('ssb-next-action');
+  const ssbBar    = document.getElementById('signal-summary-bar');
+
+  if (ssbBar) ssbBar.style.display = 'grid';
+
+  const regimeColors = { bull:'#10b981', bear:'#ef4444', sideways:'#f59e0b', unknown:'var(--muted)' };
+  const regimeLabels = { bull:'🐂 BULL', bear:'🐻 BEAR', sideways:'➡️ SIDEWAYS', unknown:'— UNKNOWN' };
+
+  if (ssbBot)    { ssbBot.textContent = running ? '🟢 RUNNING' : '🔴 STOPPED'; ssbBot.style.color = running ? '#10b981' : '#ef4444'; }
+  if (ssbMarket) { ssbMarket.textContent = regimeLabels[regime] || '—'; ssbMarket.style.color = regimeColors[regime] || 'var(--muted)'; }
+  if (ssbNext)   {
+    const nextMap = {
+      bull: '🚀 Trading',
+      bear: '🛑 Pause bot',
+      sideways: btcRsi < 35 ? '👀 Watch RSI' : '⏳ Wait',
+      unknown: '⏳ Analysing',
+    };
+    ssbNext.textContent = nextMap[regime] || '⏳ Wait';
+    ssbNext.style.color = regimeColors[regime] || 'var(--muted)';
+  }
+}
+
+// Hook into pollBotStatus to update the banner automatically
+const _origPollBotStatus = pollBotStatus;
+async function pollBotStatus() {
+  const url = BOT_BACKEND();
+  if (!url) return;
+  try {
+    const r = await fetch(url + '/bot/status', { signal: AbortSignal.timeout(8000) });
+    const d = await r.json();
+    updateBotStatusUI(d);
+    if (d.trades?.length) renderTradeLog(d.trades);
+
+    // Fetch signals too for the action banner
+    try {
+      const sr = await fetch(url + '/market/signals', { signal: AbortSignal.timeout(8000) });
+      const signals = await sr.json();
+      renderCryptoSignals(signals);
+      updateActionBanner(d, signals);
+    } catch(e) {
+      updateActionBanner(d, {});
+    }
+  } catch(e) {
+    console.warn('Status poll failed:', e.message);
+  }
+}
 
 
 // ═══════════════════════════════════════════════════════════════════════════
