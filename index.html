@@ -418,7 +418,9 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 
 <!-- Tabs -->
 <nav class="tabs">
-  <button class="tab-btn active" onclick="switchTab('signals',this)">⚡ Live Signals</button>
+  <button class="tab-btn active" onclick="switchTab('dashboard',this)">📊 Dashboard</button>
+  <button class="tab-btn" onclick="switchTab('markets',this)">📈 Markets</button>
+  <button class="tab-btn" onclick="switchTab('signals',this)">⚡ Live Signals</button>
   <button class="tab-btn" onclick="switchTab('intel',this)">🧠 Intelligence</button>
   <button class="tab-btn" onclick="switchTab('earnings',this)">📅 Earnings</button>
   <button class="tab-btn" onclick="switchTab('etfplanner',this)">💰 ETF Planner</button>
@@ -432,11 +434,209 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 <!-- ═══════════════════════════════════════════════════════════
      LIVE SIGNALS TAB
 ═══════════════════════════════════════════════════════════ -->
-<div class="panel active" id="panel-signals">
+<div class="panel active" id="panel-dashboard">
+
+<!-- ═══════════════════════════════════════════════════════════
+     DASHBOARD TAB — Mission Control
+═══════════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-dashboard">
+
+  <!-- Top Stats Bar -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;border-top:3px solid #3b82f6">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Portfolio Value</div>
+      <div style="font-size:24px;font-weight:800;color:#3b82f6" id="db-total-value">$0.00</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">Paper account</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;border-top:3px solid #10b981">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total P&L</div>
+      <div style="font-size:24px;font-weight:800" id="db-total-pnl">$0.00</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px" id="db-pnl-pct">0.00%</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;border-top:3px solid #f59e0b">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Cash Available</div>
+      <div style="font-size:24px;font-weight:800;color:#f59e0b" id="db-cash">$0.00</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">Ready to deploy</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;border-top:3px solid #10b981">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Bot Status</div>
+      <div style="font-size:24px;font-weight:800" id="db-bot-status">—</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px" id="db-bot-regime">Crypto bot</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;border-top:3px solid #8b5cf6">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Open Positions</div>
+      <div style="font-size:24px;font-weight:800;color:#8b5cf6" id="db-positions">0</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px" id="db-signals-count">0 signals loaded</div>
+    </div>
+  </div>
+
+  <!-- Three Column Layout -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+
+    <!-- Column 1: Action Required -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:800;color:#10b981">🚨 Act Now</div>
+        <div style="font-size:11px;color:var(--muted)">Strong Buy signals</div>
+      </div>
+      <div id="db-action-list" style="display:flex;flex-direction:column;gap:8px">
+        <div style="text-align:center;padding:30px;color:var(--muted);font-size:12px;background:var(--surface);border-radius:10px;border:1px solid var(--border)">
+          Load signals to see opportunities
+        </div>
+      </div>
+      <button onclick="refreshAllData()" style="width:100%;margin-top:10px;padding:10px;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">
+        ⟳ Refresh Signals
+      </button>
+    </div>
+
+    <!-- Column 2: Your Positions -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:800;color:#3b82f6">👀 Your Positions</div>
+        <div style="font-size:11px;color:var(--muted)">Live P&L</div>
+      </div>
+      <div id="db-positions-list" style="display:flex;flex-direction:column;gap:8px">
+        <div style="text-align:center;padding:30px;color:var(--muted);font-size:12px;background:var(--surface);border-radius:10px;border:1px solid var(--border)">
+          No open positions yet
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 3: Bot Activity -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:800;color:#8b5cf6">🤖 Bot Activity</div>
+        <div style="font-size:11px;color:var(--muted)">Crypto auto-trades</div>
+      </div>
+      <div id="db-bot-activity" style="display:flex;flex-direction:column;gap:8px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px">
+          <div style="font-size:12px;font-weight:700;margin-bottom:8px">Crypto Bot — The Grinder</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div style="background:var(--surface2);border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:16px;font-weight:800;color:#10b981" id="db-bot-pnl">$0.00</div>
+              <div style="font-size:10px;color:var(--muted)">Bot P&L</div>
+            </div>
+            <div style="background:var(--surface2);border-radius:6px;padding:8px;text-align:center">
+              <div style="font-size:16px;font-weight:800" id="db-bot-trades">0</div>
+              <div style="font-size:10px;color:var(--muted)">Signals</div>
+            </div>
+          </div>
+          <div id="db-bot-last-trade" style="font-size:11px;color:var(--muted)">No trades yet — bot watching market</div>
+          <button onclick="switchTab('auto',document.querySelector('.tab-btn:nth-child(5)'))" 
+            style="width:100%;margin-top:10px;padding:7px;background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.3);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+            → Open Automation Tab
+          </button>
+        </div>
+
+        <!-- Strategy Advisor mini -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px" id="db-advisor-mini">
+          <div style="font-size:12px;font-weight:700;margin-bottom:6px">🎯 Strategy Advisor</div>
+          <div style="font-size:11px;color:var(--muted)" id="db-advisor-text">Click Analyse to get recommendation</div>
+          <button onclick="runStrategyAdvisor();switchTab('auto',document.querySelector('.tab-btn:nth-child(5)'))"
+            style="width:100%;margin-top:8px;padding:7px;background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.3);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+            ⚡ Analyse Strategy
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom: Quick Trade Bar -->
+  <div style="margin-top:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:12px">⚡ Quick Trade — Top Signals Today</div>
+    <div id="db-quick-trades" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+      <div style="color:var(--muted);font-size:12px">Refresh signals to see quick trade options</div>
+    </div>
+  </div>
+
+  <div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">
+    ⚠️ Paper trading only — no real money at risk. Signals are not financial advice. Always verify before live trading.
+  </div>
+</div>
+
+</div>
+
+<div class="panel" id="panel-markets">
+
+<!-- ═══════════════════════════════════════════════════════════
+     MARKETS TAB — Unified view of all instruments
+═══════════════════════════════════════════════════════════ -->
+<div class="panel" id="panel-markets">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+    <div>
+      <h2 style="font-size:18px;font-weight:800">📊 Markets</h2>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">All instruments · Live signals · Paper trade</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="addInstrument()" style="padding:8px 14px;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">+ Add</button>
+      <button onclick="refreshAllData()" class="btn btn-primary">⟳ Refresh All</button>
+    </div>
+  </div>
+
+  <!-- Category Filter Tabs -->
+  <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+    <button onclick="filterMarkets('all',this)" class="mkt-filter active" style="padding:7px 16px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:12px;font-weight:700;cursor:pointer">All</button>
+    <button onclick="filterMarkets('stocks',this)" class="mkt-filter" style="padding:7px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer">📈 Stocks (15)</button>
+    <button onclick="filterMarkets('etfs',this)" class="mkt-filter" style="padding:7px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer">💰 ETFs (15)</button>
+    <button onclick="filterMarkets('crypto',this)" class="mkt-filter" style="padding:7px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer">₿ Crypto (10)</button>
+    <button onclick="filterMarkets('other',this)" class="mkt-filter" style="padding:7px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer">🏦 Other (5)</button>
+    <button onclick="filterMarkets('strong-buy',this)" class="mkt-filter" style="padding:7px 16px;border-radius:999px;border:1px solid #10b981;background:rgba(16,185,129,0.1);color:#10b981;font-size:12px;font-weight:700;cursor:pointer">⚡ Strong Buy Only</button>
+  </div>
+
+  <!-- Markets Table -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border)">
+          <th style="text-align:left;padding:12px 16px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px;width:200px">Instrument</th>
+          <th style="text-align:right;padding:12px 16px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Price</th>
+          <th style="text-align:right;padding:12px 16px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Change</th>
+          <th style="text-align:center;padding:12px 16px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Signal</th>
+          <th style="text-align:center;padding:12px 16px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Score</th>
+          <th style="text-align:center;padding:12px 16px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">RSI</th>
+          <th style="text-align:left;padding:12px 16px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Advisor Says</th>
+          <th style="text-align:center;padding:12px 16px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Action</th>
+          <th style="text-align:center;padding:12px 8px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Remove</th>
+        </tr>
+      </thead>
+      <tbody id="markets-table-body">
+        <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted)">
+          Click "Refresh All" to load signals for all instruments
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Crypto Section (separate - from OKX) -->
+  <div style="margin-top:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div>
+        <div style="font-size:14px;font-weight:800">₿ Crypto Markets — OKX Live</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Real-time from OKX Demo API · Bot auto-trades these</div>
+      </div>
+      <button onclick="loadMarketSignals()" style="padding:6px 14px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">⟳ Refresh</button>
+    </div>
+    <div id="markets-crypto-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">
+      <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;background:var(--surface);border-radius:10px;border:1px solid var(--border);grid-column:1/-1">
+        Start the bot or click Refresh to load crypto signals
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;font-size:11px;color:var(--muted);text-align:center">
+    ⚠️ Prices 15-min delayed. Signals use RSI, SMA, momentum. Not financial advice.
+  </div>
+</div>
+
+</div>
+
+<div class="panel" id="panel-signals">
 
   <div class="stats-bar">
     <div class="stat-card">
-      <div class="stat-val" id="s-instruments">0 / 29</div>
+      <div class="stat-val" id="s-instruments">0 / 25</div>
       <div class="stat-label">Instruments Loaded</div>
       <div class="stat-sub" id="s-source">Yahoo Finance · Score 2.0</div>
     </div>
@@ -499,7 +699,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 
   <!-- Progress Bar (shown while fetching) -->
   <div id="refresh-progress">
-    <div id="progress-text">Fetching market data... 0 / 29</div>
+    <div id="progress-text">Fetching market data... 0 / 25</div>
     <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">
       ⚡ Powered by Yahoo Finance — loads in seconds, not minutes
@@ -512,7 +712,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
     <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)">
       <div style="font-size:40px;margin-bottom:12px">⚡</div>
       <div style="font-size:16px;font-weight:600;margin-bottom:8px">Click "Refresh All Data" to load signals</div>
-      <div style="font-size:12px">Powered by Yahoo Finance — all 29 instruments load in under 30 seconds</div>
+      <div style="font-size:12px">Powered by Yahoo Finance — all 25 instruments load in under 30 seconds</div>
     </div>
   </div>
 
@@ -1453,41 +1653,44 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 // ═══════════════════════════════════════════════════════════════════════════
 
 const INSTRUMENTS = [
-  // US Stocks
-  {symbol:'NVDA',name:'NVIDIA',cat:'US Stocks'},
-  {symbol:'MSFT',name:'Microsoft',cat:'US Stocks'},
-  {symbol:'AAPL',name:'Apple',cat:'US Stocks'},
-  {symbol:'AMZN',name:'Amazon',cat:'US Stocks'},
-  {symbol:'GOOGL',name:'Alphabet',cat:'US Stocks'},
-  {symbol:'META',name:'Meta',cat:'US Stocks'},
-  {symbol:'TSLA',name:'Tesla',cat:'US Stocks'},
-  {symbol:'JPM',name:'JP Morgan',cat:'US Stocks'},
-  // Core ETFs
-  {symbol:'VOO',name:'Vanguard S&P500',cat:'Core ETFs'},
-  {symbol:'QQQ',name:'Invesco Nasdaq',cat:'Core ETFs'},
-  {symbol:'SPY',name:'SPDR S&P500',cat:'Core ETFs'},
-  {symbol:'IWM',name:'Russell 2000',cat:'Core ETFs'},
-  // Sector ETFs
-  {symbol:'XLK',name:'Tech Sector',cat:'Sector ETFs'},
-  {symbol:'XLE',name:'Energy Sector',cat:'Sector ETFs'},
-  {symbol:'XLF',name:'Finance Sector',cat:'Sector ETFs'},
-  {symbol:'XLV',name:'Health Sector',cat:'Sector ETFs'},
-  {symbol:'XLI',name:'Industrial Sector',cat:'Sector ETFs'},
-  // Commodities + Crypto ETFs
-  {symbol:'IAU',name:'iShares Gold',cat:'Commodities'},
-  {symbol:'GLD',name:'SPDR Gold',cat:'Commodities'},
-  {symbol:'SLV',name:'iShares Silver',cat:'Commodities'},
-  {symbol:'IBIT',name:'iShares Bitcoin',cat:'Crypto ETFs'},
-  {symbol:'ETHA',name:'iShares Ethereum',cat:'Crypto ETFs'},
-  // Leveraged ETFs
-  {symbol:'TQQQ',name:'3x Nasdaq Bull',cat:'Leveraged ETFs'},
-  {symbol:'SOXL',name:'3x Semis Bull',cat:'Leveraged ETFs'},
-  {symbol:'UPRO',name:'3x S&P500 Bull',cat:'Leveraged ETFs'},
-  // Income ETFs — ETF Planner recommended
-  {symbol:'JEPQ',name:'JPMorgan NASDAQ Income',cat:'Income ETFs'},
-  {symbol:'JEPI',name:'JPMorgan Equity Premium Income',cat:'Income ETFs'},
-  {symbol:'SCHD',name:'Schwab U.S. Dividend Equity',cat:'Income ETFs'},
-  {symbol:'AGG',name:'iShares U.S. Aggregate Bond',cat:'Income ETFs'},
+  // ── STOCKS (15) ──────────────────────────────────────────────────────────
+  {symbol:'NVDA',name:'NVIDIA',cat:'Stocks',group:'stocks'},
+  {symbol:'AAPL',name:'Apple',cat:'Stocks',group:'stocks'},
+  {symbol:'MSFT',name:'Microsoft',cat:'Stocks',group:'stocks'},
+  {symbol:'GOOGL',name:'Alphabet',cat:'Stocks',group:'stocks'},
+  {symbol:'AMZN',name:'Amazon',cat:'Stocks',group:'stocks'},
+  {symbol:'META',name:'Meta',cat:'Stocks',group:'stocks'},
+  {symbol:'TSLA',name:'Tesla',cat:'Stocks',group:'stocks'},
+  {symbol:'JPM',name:'JP Morgan',cat:'Stocks',group:'stocks'},
+  {symbol:'BRK-B',name:'Berkshire Hathaway',cat:'Stocks',group:'stocks'},
+  {symbol:'LLY',name:'Eli Lilly',cat:'Stocks',group:'stocks'},
+  {symbol:'TSM',name:'TSMC',cat:'Stocks',group:'stocks'},
+  {symbol:'BABA',name:'Alibaba',cat:'Stocks',group:'stocks'},
+  {symbol:'D05.SI',name:'DBS Bank',cat:'SGX Stocks',group:'stocks'},
+  {symbol:'O39.SI',name:'OCBC Bank',cat:'SGX Stocks',group:'stocks'},
+  {symbol:'Z74.SI',name:'Singtel',cat:'SGX Stocks',group:'stocks'},
+  // ── ETFs (15) ─────────────────────────────────────────────────────────────
+  {symbol:'JEPQ',name:'JPMorgan NASDAQ Income',cat:'Income ETFs',group:'etfs'},
+  {symbol:'JEPI',name:'JPMorgan Equity Premium',cat:'Income ETFs',group:'etfs'},
+  {symbol:'SCHD',name:'Schwab Dividend Equity',cat:'Income ETFs',group:'etfs'},
+  {symbol:'SDIV',name:'Global X SuperDividend',cat:'Income ETFs',group:'etfs'},
+  {symbol:'O',name:'Realty Income REIT',cat:'Income ETFs',group:'etfs'},
+  {symbol:'QQQ',name:'Invesco NASDAQ-100',cat:'Growth ETFs',group:'etfs'},
+  {symbol:'TQQQ',name:'3x NASDAQ Bull',cat:'Growth ETFs',group:'etfs'},
+  {symbol:'XLK',name:'Tech Sector SPDR',cat:'Growth ETFs',group:'etfs'},
+  {symbol:'ARKK',name:'ARK Innovation',cat:'Growth ETFs',group:'etfs'},
+  {symbol:'IBIT',name:'iShares Bitcoin ETF',cat:'Growth ETFs',group:'etfs'},
+  {symbol:'VOO',name:'Vanguard S&P500',cat:'Stability ETFs',group:'etfs'},
+  {symbol:'AGG',name:'iShares US Bond',cat:'Stability ETFs',group:'etfs'},
+  {symbol:'GLD',name:'SPDR Gold',cat:'Stability ETFs',group:'etfs'},
+  {symbol:'IAU',name:'iShares Gold',cat:'Stability ETFs',group:'etfs'},
+  {symbol:'VNQ',name:'Vanguard Real Estate',cat:'Stability ETFs',group:'etfs'},
+  // ── OTHER ASSETS (5) ──────────────────────────────────────────────────────
+  {symbol:'SLV',name:'iShares Silver',cat:'Commodities',group:'other'},
+  {symbol:'USO',name:'US Oil Fund',cat:'Commodities',group:'other'},
+  {symbol:'DJP',name:'iPath Commodities',cat:'Commodities',group:'other'},
+  {symbol:'C38U.SI',name:'CapitaLand REIT',cat:'SGX REITs',group:'other'},
+  {symbol:'SPY',name:'SPDR S&P500',cat:'Core ETFs',group:'other'},
 ];
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -4569,7 +4772,7 @@ function init() {
   if (Object.keys(state.signals).length > 0) {
     renderSignals();
     updateCacheStatus();
-    document.getElementById('s-instruments').textContent = `${Object.keys(state.signals).length} / 29`;
+    document.getElementById('s-instruments').textContent = `${Object.keys(state.signals).length} / 25`;
     document.getElementById('s-updated').textContent = state.cacheTime
       ? new Date(state.cacheTime).toLocaleTimeString() : '—';
 
@@ -5022,8 +5225,322 @@ function initPaperTrading() {
 }
 
 
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DASHBOARD — Mission Control
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateDashboard() {
+  // Portfolio stats from paper trading
+  const totalValue = getPaperPortfolioValue ? getPaperPortfolioValue() : 0;
+  const totalPnl = totalValue - (paperState?.startingBalance || 10000);
+  const pnlPct = ((totalPnl / (paperState?.startingBalance || 10000)) * 100).toFixed(1);
+  const pnlColor = totalPnl >= 0 ? '#10b981' : '#ef4444';
+  const pnlSign = totalPnl >= 0 ? '+' : '';
+
+  const tvEl = document.getElementById('db-total-value');
+  const pnlEl = document.getElementById('db-total-pnl');
+  const pnlPctEl = document.getElementById('db-pnl-pct');
+  const cashEl = document.getElementById('db-cash');
+  const posEl = document.getElementById('db-positions');
+  const sigEl = document.getElementById('db-signals-count');
+
+  if (tvEl) tvEl.textContent = '$' + fmtNum(totalValue);
+  if (pnlEl) { pnlEl.textContent = pnlSign + '$' + fmtNum(Math.abs(totalPnl)); pnlEl.style.color = pnlColor; }
+  if (pnlPctEl) { pnlPctEl.textContent = pnlSign + pnlPct + '%'; pnlPctEl.style.color = pnlColor; }
+  if (cashEl) cashEl.textContent = '$' + fmtNum(paperState?.balance || 10000);
+  if (posEl) posEl.textContent = Object.keys(paperState?.positions || {}).length;
+  if (sigEl) sigEl.textContent = Object.keys(state.signals).length + ' signals loaded';
+
+  // Action Required — Strong Buy signals
+  const signals = Object.values(state.signals);
+  const strongBuys = signals.filter(s => s.signal === 'strong-buy').sort((a,b) => b.score - a.score);
+  const buys = signals.filter(s => s.signal === 'buy').sort((a,b) => b.score - a.score);
+  const actionItems = [...strongBuys, ...buys].slice(0, 6);
+
+  const actionList = document.getElementById('db-action-list');
+  if (actionList) {
+    if (!actionItems.length) {
+      actionList.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:12px;background:var(--surface);border-radius:10px;border:1px solid var(--border)">No strong signals right now — market is neutral</div>';
+    } else {
+      actionList.innerHTML = actionItems.map(s => {
+        const isStrong = s.signal === 'strong-buy';
+        const rec = getRecommendedTrade ? getRecommendedTrade(s.price, s.score, paperState?.balance || 10000) : {shares:1,amount:s.price,label:'1 share'};
+        const color = isStrong ? '#10b981' : '#3b82f6';
+        return `<div style="background:var(--surface);border:1px solid ${color}44;border-radius:10px;padding:12px;border-left:3px solid ${color}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div>
+              <span style="font-size:14px;font-weight:800">${s.symbol}</span>
+              <span style="font-size:10px;color:var(--muted);margin-left:6px">${s.name}</span>
+            </div>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:${color}22;color:${color}">${isStrong ? '⚡ STRONG BUY' : '✓ BUY'}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:16px;font-weight:700">$${fmt(s.price)}</span>
+            <span style="font-size:12px;font-weight:700;color:${color}">${s.score}/100</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:8px">${s.reasons?.[0] || ''}</div>
+          ${isStrong && rec.shares > 0 ? `
+          <button onclick="paperBuy('${s.symbol}',${rec.shares},${s.price},'${s.name}')"
+            style="width:100%;padding:7px;background:${color};color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+            ✅ Buy ${rec.label}
+          </button>` : `
+          <button onclick="paperCustomBuy('${s.symbol}','${s.name}',${s.price})"
+            style="width:100%;padding:7px;background:${color}22;color:${color};border:1px solid ${color}44;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+            📥 Buy Custom Amount
+          </button>`}
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Your Positions
+  const positions = Object.entries(paperState?.positions || {});
+  const posList = document.getElementById('db-positions-list');
+  if (posList) {
+    if (!positions.length) {
+      posList.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:12px;background:var(--surface);border-radius:10px;border:1px solid var(--border)">No open positions yet</div>';
+    } else {
+      posList.innerHTML = positions.map(([symbol, pos]) => {
+        const livePrice = state.signals[symbol]?.price || pos.avgPrice;
+        const pnl = (pos.shares * livePrice) - pos.totalInvested;
+        const pnlPct = ((pnl / pos.totalInvested) * 100).toFixed(1);
+        const col = pnl >= 0 ? '#10b981' : '#ef4444';
+        const sign = pnl >= 0 ? '+' : '';
+        const sig = state.signals[symbol];
+        const shouldSell = sig?.signal === 'sell';
+        return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;${shouldSell ? 'border-left:3px solid #ef4444' : ''}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div>
+              <span style="font-size:14px;font-weight:800">${symbol}</span>
+              <span style="font-size:10px;color:var(--muted);margin-left:6px">${pos.shares.toFixed(2)} shares</span>
+            </div>
+            <span style="font-size:13px;font-weight:800;color:${col}">${sign}$${fmtNum(pnl)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:8px">
+            <span>Avg $${fmtNum(pos.avgPrice)}</span>
+            <span style="color:${col}">${sign}${pnlPct}%</span>
+          </div>
+          ${shouldSell ? `
+          <button onclick="paperSell('${symbol}',${livePrice})"
+            style="width:100%;padding:6px;background:#ef4444;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+            🔴 Sell Signal — Exit Now
+          </button>` : `
+          <div style="display:flex;gap:4px">
+            <button onclick="paperCustomBuy('${symbol}','${pos.name}',${livePrice})"
+              style="flex:1;padding:6px;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer">+ More</button>
+            <button onclick="paperSell('${symbol}',${livePrice})"
+              style="flex:1;padding:6px;background:rgba(239,68,68,0.1);color:#fca5a5;border:1px solid rgba(239,68,68,0.2);border-radius:6px;font-size:10px;font-weight:700;cursor:pointer">Sell All</button>
+          </div>`}
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Quick Trades bar
+  const quickTrades = document.getElementById('db-quick-trades');
+  if (quickTrades && actionItems.length) {
+    quickTrades.innerHTML = actionItems.slice(0, 5).map(s => {
+      const rec = getRecommendedTrade ? getRecommendedTrade(s.price, s.score, paperState?.balance || 10000) : {shares:1,amount:s.price,label:'1 share'};
+      const isStrong = s.signal === 'strong-buy';
+      const color = isStrong ? '#10b981' : '#3b82f6';
+      return `<div style="background:var(--surface2);border-radius:8px;padding:10px;border:1px solid ${color}33;display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div>
+          <div style="font-size:13px;font-weight:800">${s.symbol}</div>
+          <div style="font-size:10px;color:${color}">${s.score}/100 · $${fmt(s.price)}</div>
+        </div>
+        <button onclick="${isStrong && rec.shares > 0 ? `paperBuy('${s.symbol}',${rec.shares},${s.price},'${s.name}')` : `paperCustomBuy('${s.symbol}','${s.name}',${s.price})`}"
+          style="padding:6px 12px;background:${color};color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">
+          ${isStrong ? '✅ Buy' : '📥 Buy'}
+        </button>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── Markets Table Renderer ─────────────────────────────────────────────────
+let marketsFilter = 'all';
+
+function filterMarkets(filter, btn) {
+  marketsFilter = filter;
+  document.querySelectorAll('.mkt-filter').forEach(b => {
+    b.style.background = 'var(--surface2)';
+    b.style.color = 'var(--muted)';
+    b.style.borderColor = 'var(--border)';
+  });
+  if (btn) {
+    btn.style.background = filter === 'strong-buy' ? 'rgba(16,185,129,0.2)' : 'var(--accent)';
+    btn.style.color = filter === 'strong-buy' ? '#10b981' : '#fff';
+    btn.style.borderColor = filter === 'strong-buy' ? '#10b981' : 'var(--accent)';
+  }
+  renderMarketsTable();
+}
+
+function renderMarketsTable() {
+  const tbody = document.getElementById('markets-table-body');
+  if (!tbody) return;
+
+  const signals = Object.values(state.signals);
+  if (!signals.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted)">Click "Refresh All" to load signals</td></tr>';
+    return;
+  }
+
+  let filtered = signals;
+  if (marketsFilter === 'stocks') filtered = signals.filter(s => s.group === 'stocks' || ['Stocks','SGX Stocks'].includes(s.cat));
+  else if (marketsFilter === 'etfs') filtered = signals.filter(s => s.group === 'etfs' || s.cat?.includes('ETF'));
+  else if (marketsFilter === 'other') filtered = signals.filter(s => s.group === 'other' || ['Commodities','SGX REITs'].includes(s.cat));
+  else if (marketsFilter === 'strong-buy') filtered = signals.filter(s => s.signal === 'strong-buy');
+  // crypto is handled separately via OKX
+
+  filtered.sort((a,b) => b.score - a.score);
+
+  const signalColors = {'strong-buy':'#10b981','buy':'#3b82f6','hold':'#f59e0b','sell':'#ef4444'};
+  const signalLabels = {'strong-buy':'⚡ Strong Buy','buy':'✓ Buy','hold':'— Hold','sell':'✗ Sell'};
+
+  tbody.innerHTML = filtered.map(s => {
+    if (s.error) return `<tr><td colspan="9" style="padding:10px 16px;color:var(--muted)">${s.symbol} — Error loading</td></tr>`;
+
+    const chgColor = (s.changePct || 0) >= 0 ? '#10b981' : '#ef4444';
+    const chgSign = (s.changePct || 0) >= 0 ? '+' : '';
+    const sigColor = signalColors[s.signal] || 'var(--muted)';
+    const pos = paperState?.positions?.[s.symbol];
+    const rec = getRecommendedTrade ? getRecommendedTrade(s.price, s.score, paperState?.balance || 10000) : {shares:1,label:'1 share'};
+
+    // Advisor text
+    let advisorText = '';
+    if (s.signal === 'strong-buy') advisorText = `<span style="color:#10b981;font-weight:700">Buy ${rec.label}</span>`;
+    else if (s.signal === 'buy') advisorText = `<span style="color:#3b82f6">Optional entry — smaller size</span>`;
+    else if (s.signal === 'hold') advisorText = `<span style="color:#f59e0b">Wait for better entry</span>`;
+    else advisorText = `<span style="color:#ef4444">${pos ? 'Consider exiting' : 'Avoid'}</span>`;
+
+    return `<tr style="border-bottom:1px solid var(--border);transition:background .15s" onmouseover="this.style.background='rgba(59,130,246,.04)'" onmouseout="this.style.background=''">
+      <td style="padding:12px 16px">
+        <div style="font-weight:800;font-size:14px">${s.symbol}</div>
+        <div style="font-size:10px;color:var(--muted)">${s.name} · ${s.cat}</div>
+        ${pos ? `<div style="font-size:10px;color:#10b981;margin-top:2px">✓ You own ${pos.shares.toFixed(2)} shares</div>` : ''}
+      </td>
+      <td style="padding:12px 16px;text-align:right;font-weight:700;font-size:14px">$${fmt(s.price)}</td>
+      <td style="padding:12px 16px;text-align:right;font-size:12px;color:${chgColor}">${chgSign}${fmt(s.changePct)}%</td>
+      <td style="padding:12px 16px;text-align:center">
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;background:${sigColor}22;color:${sigColor}">${signalLabels[s.signal]}</span>
+      </td>
+      <td style="padding:12px 16px;text-align:center">
+        <div style="font-size:13px;font-weight:800;color:${sigColor}">${s.score}</div>
+        <div style="height:3px;background:var(--surface2);border-radius:2px;margin-top:3px;width:50px;margin:3px auto 0">
+          <div style="height:3px;width:${s.score}%;background:${sigColor};border-radius:2px"></div>
+        </div>
+      </td>
+      <td style="padding:12px 16px;text-align:center">
+        <span style="font-size:13px;font-weight:700;color:${s.rsi<35?'#10b981':s.rsi>65?'#ef4444':'var(--text)'}">${s.rsi ? Math.round(s.rsi) : '—'}</span>
+      </td>
+      <td style="padding:12px 16px;font-size:11px">${advisorText}</td>
+      <td style="padding:12px 16px;text-align:center">
+        <div style="display:flex;gap:4px;justify-content:center">
+          ${s.signal === 'strong-buy' && rec.shares > 0 ? 
+            `<button onclick="paperBuy('${s.symbol}',${rec.shares},${s.price},'${s.name}')" style="padding:5px 10px;background:#10b981;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">✅ Buy ${rec.shares}sh</button>` :
+            `<button onclick="paperCustomBuy('${s.symbol}','${s.name}',${s.price})" style="padding:5px 10px;background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid rgba(59,130,246,0.2);border-radius:5px;font-size:11px;font-weight:700;cursor:pointer">📥 Buy</button>`
+          }
+          ${pos ? `<button onclick="paperSell('${s.symbol}',${s.price})" style="padding:5px 10px;background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.2);border-radius:5px;font-size:11px;font-weight:700;cursor:pointer">🔴 Sell</button>` : ''}
+        </div>
+      </td>
+      <td style="padding:12px 8px;text-align:center">
+        <button onclick="deleteInstrument('${s.symbol}')" style="padding:3px 8px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:4px;font-size:10px;cursor:pointer" title="Remove from watchlist">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Add/Delete Instrument ──────────────────────────────────────────────────
+function addInstrument() {
+  const ticker = prompt('Enter ticker symbol to add (e.g. TSLA, MSFT, BTC):');
+  if (!ticker) return;
+  const symbol = ticker.trim().toUpperCase();
+  if (INSTRUMENTS.find(i => i.symbol === symbol)) {
+    toast(`${symbol} is already in your watchlist`, 'error');
+    return;
+  }
+  const name = prompt(`Name for ${symbol}:`) || symbol;
+  const cats = ['Stocks', 'SGX Stocks', 'Income ETFs', 'Growth ETFs', 'Stability ETFs', 'Commodities', 'SGX REITs', 'Other'];
+  const cat = prompt(`Category? Options: ${cats.join(', ')}`, 'Stocks') || 'Stocks';
+  INSTRUMENTS.push({ symbol, name, cat, group: cat.toLowerCase().includes('etf') ? 'etfs' : cat.toLowerCase().includes('stock') ? 'stocks' : 'other', custom: true });
+  toast(`${symbol} added to watchlist ✓`, 'success');
+  // Save custom instruments
+  const custom = INSTRUMENTS.filter(i => i.custom);
+  localStorage.setItem('iconium_custom_instruments', JSON.stringify(custom));
+  // Fetch signal for new instrument
+  fetchSymbol(symbol).then(data => {
+    state.signals[symbol] = computeSignal({symbol, name, cat}, data);
+    renderMarketsTable();
+    renderSignals();
+  }).catch(() => {
+    state.signals[symbol] = {symbol, name, cat, error:true, signal:'hold', score:0};
+    renderMarketsTable();
+  });
+}
+
+function deleteInstrument(symbol) {
+  if (!confirm(`Remove ${symbol} from your watchlist?`)) return;
+  const idx = INSTRUMENTS.findIndex(i => i.symbol === symbol);
+  if (idx !== -1) INSTRUMENTS.splice(idx, 1);
+  delete state.signals[symbol];
+  const custom = INSTRUMENTS.filter(i => i.custom);
+  localStorage.setItem('iconium_custom_instruments', JSON.stringify(custom));
+  renderMarketsTable();
+  renderSignals();
+  toast(`${symbol} removed from watchlist`, '');
+}
+
+function loadCustomInstruments() {
+  try {
+    const custom = JSON.parse(localStorage.getItem('iconium_custom_instruments') || '[]');
+    custom.forEach(inst => {
+      if (!INSTRUMENTS.find(i => i.symbol === inst.symbol)) {
+        INSTRUMENTS.push(inst);
+      }
+    });
+  } catch(e) {}
+}
+
+// ── Patch switchTab to update dashboard ───────────────────────────────────
+const _origSwitchTab = switchTab;
+function switchTab(name, btn) {
+  _origSwitchTab(name, btn);
+  if (name === 'dashboard') {
+    updateDashboard();
+  }
+  if (name === 'markets') {
+    renderMarketsTable();
+    loadMarketSignals().then(() => {
+      const cryptoGrid = document.getElementById('markets-crypto-grid');
+      if (cryptoGrid) renderCryptoSignals_Markets();
+    });
+  }
+}
+
+function renderCryptoSignals_Markets() {
+  // Reuse the crypto signals grid from automation tab in markets tab
+  const el = document.getElementById('markets-crypto-grid');
+  if (!el) return;
+  const autoGrid = document.getElementById('crypto-signals-grid');
+  if (autoGrid && autoGrid.innerHTML && !autoGrid.innerHTML.includes('Start bot')) {
+    el.innerHTML = autoGrid.innerHTML;
+  }
+}
+
+// Auto-update dashboard every 30 seconds when on dashboard tab
+setInterval(() => {
+  const dashPanel = document.getElementById('panel-dashboard');
+  if (dashPanel && dashPanel.classList.contains('active')) {
+    updateDashboard();
+  }
+}, 30000);
+
+
 init();
 initPaperTrading();
+loadCustomInstruments();
+updateDashboard();
 </script>
 </body>
 </html>
