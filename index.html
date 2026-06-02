@@ -5233,6 +5233,11 @@ function initPaperTrading() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function updateDashboard() {
+  // Safety check
+  if (typeof paperState === 'undefined') { 
+    setTimeout(updateDashboard, 500); 
+    return; 
+  }
   // Portfolio stats from paper trading
   const totalValue = getPaperPortfolioValue ? getPaperPortfolioValue() : 0;
   const totalPnl = totalValue - (paperState?.startingBalance || 10000);
@@ -5522,9 +5527,21 @@ function renderCryptoSignals_Markets() {
 setInterval(() => {
   const dashPanel = document.getElementById('panel-dashboard');
   if (dashPanel && dashPanel.classList.contains('active')) {
-    updateDashboard();
+    try { updateDashboard(); } catch(e) { console.warn('Dashboard update error:', e); }
   }
 }, 30000);
+
+// Safe wrapper for updateDashboard
+function safeDashboardUpdate() {
+  try {
+    if (typeof paperState === 'undefined') return;
+    if (typeof state === 'undefined') return;
+    updateDashboard();
+    renderMarketsTable();
+  } catch(e) {
+    console.warn('Dashboard render error:', e.message);
+  }
+}
 
 
 init();
