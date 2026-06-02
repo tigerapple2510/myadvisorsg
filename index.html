@@ -1741,6 +1741,8 @@ function switchTab(name, btn) {
   if (name === 'intel') { loadFearGreed(); loadPoliticians(); loadWhales(); }
   if (name === 'earnings') { loadEarnings(); }
   if (name === 'etfplanner') { requestAnimationFrame(() => setTimeout(etfUpdate, 50)); }
+  if (name === 'dashboard') { setTimeout(updateDashboard, 100); }
+  if (name === 'markets') { setTimeout(renderMarketsTable, 100); }
   if (name === 'auto') { loadAccountStatus(); renderAllocationTable(); initAutomation(); loadMarketSignals(); }
   if (name === 'portfolio') { refreshPortfolio(); }
   if (name === 'history') { renderHistory(); }
@@ -2325,8 +2327,8 @@ async function executeQuickTest() {
 // ── Mode Switcher ──────────────────────────────────────────────────────────
 function selectMode(mode) {
   state.mode = mode;
-  document.getElementById('mode-paper-card').className = 'mode-card' + (mode === 'paper' ? ' active-mode' : '');
-  document.getElementById('mode-live-card').className  = 'mode-card' + (mode === 'live' ? ' active-live' : '');
+  if(document.getElementById('mode-paper-card')) document.getElementById('mode-paper-card').className = 'mode-card' + (mode === 'paper' ? ' active-mode' : '');
+  if(document.getElementById('mode-live-card')) document.getElementById('mode-live-card').className  = 'mode-card' + (mode === 'live' ? ' active-live' : '');
   document.getElementById('mode-badge').textContent = mode.toUpperCase();
   document.getElementById('mode-badge').className = 'mode-badge ' + mode;
   document.body.classList.toggle('live-mode', mode === 'live');
@@ -5502,21 +5504,9 @@ function loadCustomInstruments() {
   } catch(e) {}
 }
 
-// ── Patch switchTab to update dashboard ───────────────────────────────────
-const _origSwitchTab = switchTab;
-function switchTab(name, btn) {
-  _origSwitchTab(name, btn);
-  if (name === 'dashboard') {
-    updateDashboard();
-  }
-  if (name === 'markets') {
-    renderMarketsTable();
-    loadMarketSignals().then(() => {
-      const cryptoGrid = document.getElementById('markets-crypto-grid');
-      if (cryptoGrid) renderCryptoSignals_Markets();
-    });
-  }
-}
+// ── Dashboard/Markets hooks added to existing switchTab ──────────────────
+// These are called from the existing switchTab function via the
+// if (name === 'dashboard') block added in fix_dashboard.py
 
 function renderCryptoSignals_Markets() {
   // Reuse the crypto signals grid from automation tab in markets tab
