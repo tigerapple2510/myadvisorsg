@@ -436,7 +436,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 
   <div class="stats-bar">
     <div class="stat-card">
-      <div class="stat-val" id="s-instruments">0 / 25</div>
+      <div class="stat-val" id="s-instruments">0 / 29</div>
       <div class="stat-label">Instruments Loaded</div>
       <div class="stat-sub" id="s-source">Yahoo Finance · Score 2.0</div>
     </div>
@@ -499,7 +499,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
 
   <!-- Progress Bar (shown while fetching) -->
   <div id="refresh-progress">
-    <div id="progress-text">Fetching market data... 0 / 25</div>
+    <div id="progress-text">Fetching market data... 0 / 29</div>
     <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill"></div></div>
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">
       ⚡ Powered by Yahoo Finance — loads in seconds, not minutes
@@ -512,7 +512,7 @@ main{max-width:1400px;margin:0 auto;padding:20px}
     <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)">
       <div style="font-size:40px;margin-bottom:12px">⚡</div>
       <div style="font-size:16px;font-weight:600;margin-bottom:8px">Click "Refresh All Data" to load signals</div>
-      <div style="font-size:12px">Powered by Yahoo Finance — all 25 instruments load in under 30 seconds</div>
+      <div style="font-size:12px">Powered by Yahoo Finance — all 29 instruments load in under 30 seconds</div>
     </div>
   </div>
 
@@ -1483,6 +1483,11 @@ const INSTRUMENTS = [
   {symbol:'TQQQ',name:'3x Nasdaq Bull',cat:'Leveraged ETFs'},
   {symbol:'SOXL',name:'3x Semis Bull',cat:'Leveraged ETFs'},
   {symbol:'UPRO',name:'3x S&P500 Bull',cat:'Leveraged ETFs'},
+  // Income ETFs — ETF Planner recommended
+  {symbol:'JEPQ',name:'JPMorgan NASDAQ Income',cat:'Income ETFs'},
+  {symbol:'JEPI',name:'JPMorgan Equity Premium Income',cat:'Income ETFs'},
+  {symbol:'SCHD',name:'Schwab U.S. Dividend Equity',cat:'Income ETFs'},
+  {symbol:'AGG',name:'iShares U.S. Aggregate Bond',cat:'Income ETFs'},
 ];
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -4564,7 +4569,7 @@ function init() {
   if (Object.keys(state.signals).length > 0) {
     renderSignals();
     updateCacheStatus();
-    document.getElementById('s-instruments').textContent = `${Object.keys(state.signals).length} / 25`;
+    document.getElementById('s-instruments').textContent = `${Object.keys(state.signals).length} / 29`;
     document.getElementById('s-updated').textContent = state.cacheTime
       ? new Date(state.cacheTime).toLocaleTimeString() : '—';
 
