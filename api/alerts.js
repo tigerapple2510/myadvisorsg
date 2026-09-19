@@ -89,6 +89,23 @@ export default async function handler(req) {
         `https://myadvisorsg.vercel.app`;
     }
 
+    else if (type === 'engine_candidate') {
+      const { symbol, name, score, price, stop, tp, rr, reasons, regime, fg } = data;
+      const reasonLines = (reasons || []).map(r => `• ${r}`).join('\n');
+      message = `🎯 *ICONIUM ENGINE - TRADE CANDIDATE*\n\n` +
+        `*${symbol}* (${name || ''}) - Score *${score}/100*\n\n` +
+        `Entry: $${price}\n` +
+        `Stop: $${stop}\n` +
+        `Target: $${tp}\n` +
+        `R:R ${rr}:1\n\n` +
+        (reasonLines ? `${reasonLines}\n\n` : '') +
+        `Market: ${regime} · F&G ${fg}\n\n` +
+        `⚠️ Not executed - review and approve in the app\n` +
+        `👉 Open Engine tab → Run Scan → Approve\n` +
+        `https://myadvisorsg.vercel.app\n\n` +
+        `_Iconium Trade · Auto-Scan · Paper Mode_`;
+    }
+
     else if (type === 'test') {
       message = `✅ *Iconium Trade Connected!*\n\n` +
         `Your Telegram alerts are working.\n\n` +
