@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="build" content="20260609_142802">
-<title>Iconium — Intelligent Investing</title>
+<title>Iconium - Intelligent Investing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -773,9 +773,9 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
         <div class="live-dot" id="market-dot"></div>
         <span id="market-status">US Market</span>
       </div>
-      <div class="live-item">Au <strong id="h-gold">—</strong></div>
-      <div class="live-item">F&G <strong id="h-fg">—</strong></div>
-      <div class="live-item"><strong id="h-time">—</strong></div>
+      <div class="live-item">Au <strong id="h-gold">-</strong></div>
+      <div class="live-item">F&G <strong id="h-fg">-</strong></div>
+      <div class="live-item"><strong id="h-time">-</strong></div>
     </div>
   </div>
 
@@ -865,7 +865,7 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
     <div class="page" id="page-goals">
       <div class="page-header">
         <h1>Financial Goals</h1>
-        <p>Set your targets — we'll build a personalised strategy to get you there</p>
+        <p>Set your targets - we'll build a personalised strategy to get you there</p>
       </div>
       <!-- Goals content injected by JS -->
       <div id="goals-content"></div>
@@ -881,7 +881,7 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
         <div class="flex gap-8">
           <button class="btn btn-outline btn-sm" id="sig-filter-active" onclick="sigFilter('all',this)">All</button>
           <button class="btn btn-outline btn-sm" onclick="sigFilter('buy',this)">⚡ Buy</button>
-          <button class="btn btn-outline btn-sm" onclick="sigFilter('hold',this)">— Hold</button>
+          <button class="btn btn-outline btn-sm" onclick="sigFilter('hold',this)">- Hold</button>
           <button class="btn btn-outline btn-sm" onclick="sigFilter('sell',this)">✕ Sell</button>
           <button class="btn btn-primary btn-sm" onclick="refreshAllData(true)">⟳ Refresh</button>
         </div>
@@ -1181,7 +1181,7 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
     <div class="page" id="page-engine">
       <div class="page-header">
         <h1>AI Trading Engine</h1>
-        <p>Five-condition gate system — proposals only fire when all conditions align</p>
+        <p>Five-condition gate system - proposals only fire when all conditions align</p>
       </div>
 
       <!-- ── 30-Day Validation Tracker ───────────────────────────────── -->
@@ -1193,7 +1193,7 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
           <div id="eng-status-dot" style="width:10px;height:10px;border-radius:50%;background:var(--muted2);flex-shrink:0"></div>
           <div>
             <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Engine Status</div>
-            <div id="eng-status-text" style="font-size:14px;font-weight:600;color:var(--text);margin-top:2px">Idle — click Scan to run</div>
+            <div id="eng-status-text" style="font-size:14px;font-weight:600;color:var(--text);margin-top:2px">Idle - click Scan to run</div>
           </div>
         </div>
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px">
@@ -1206,7 +1206,7 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
         </div>
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px">
           <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Win Rate (Paper)</div>
-          <div id="eng-win-rate" style="font-size:14px;font-weight:600;color:var(--text);margin-top:2px">—</div>
+          <div id="eng-win-rate" style="font-size:14px;font-weight:600;color:var(--text);margin-top:2px">-</div>
         </div>
         <button id="eng-scan-btn" onclick="runEngineScan()" class="btn btn-gold" style="align-self:stretch;padding:0 28px;font-size:15px">
           🎯 Run Scan
@@ -1266,31 +1266,31 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
           <div class="card-header" style="background:linear-gradient(135deg,#fffbeb,#fef3c7)">
             <div>
               <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--amber);margin-bottom:4px">🎯 Trade Proposal</div>
-              <div class="card-title" id="eng-prop-title" style="font-size:18px">—</div>
+              <div class="card-title" id="eng-prop-title" style="font-size:18px">-</div>
             </div>
-            <div id="eng-prop-score-badge" style="font-size:22px;font-weight:800;color:var(--navy)">—</div>
+            <div id="eng-prop-score-badge" style="font-size:22px;font-weight:800;color:var(--navy)">-</div>
           </div>
           <div class="card-body">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-bottom:20px">
               <div>
                 <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Entry Price</div>
-                <div id="eng-prop-entry" style="font-size:18px;font-weight:700;color:var(--text);margin-top:4px">—</div>
+                <div id="eng-prop-entry" style="font-size:18px;font-weight:700;color:var(--text);margin-top:4px">-</div>
               </div>
               <div>
                 <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Stop Loss</div>
-                <div id="eng-prop-stop" style="font-size:18px;font-weight:700;color:var(--red);margin-top:4px">—</div>
+                <div id="eng-prop-stop" style="font-size:18px;font-weight:700;color:var(--red);margin-top:4px">-</div>
               </div>
               <div>
                 <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Take Profit</div>
-                <div id="eng-prop-tp" style="font-size:18px;font-weight:700;color:var(--green);margin-top:4px">—</div>
+                <div id="eng-prop-tp" style="font-size:18px;font-weight:700;color:var(--green);margin-top:4px">-</div>
               </div>
               <div>
                 <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Position Size</div>
-                <div id="eng-prop-size" style="font-size:18px;font-weight:700;color:var(--text);margin-top:4px">—</div>
+                <div id="eng-prop-size" style="font-size:18px;font-weight:700;color:var(--text);margin-top:4px">-</div>
               </div>
               <div>
                 <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Risk:Reward</div>
-                <div id="eng-prop-rr" style="font-size:18px;font-weight:700;color:var(--blue);margin-top:4px">—</div>
+                <div id="eng-prop-rr" style="font-size:18px;font-weight:700;color:var(--blue);margin-top:4px">-</div>
               </div>
               <div>
                 <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Hold Period</div>
@@ -1304,7 +1304,7 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
             <!-- Approve / Reject -->
             <div style="display:flex;gap:10px">
               <button id="eng-approve-btn" onclick="approveProposal()" class="btn btn-gold" style="flex:2;font-size:15px;padding:13px">
-                ✓ Approve — Execute Paper Trade
+                ✓ Approve - Execute Paper Trade
               </button>
               <button onclick="rejectProposal()" class="btn btn-outline" style="flex:1;font-size:14px">
                 ✗ Reject
@@ -1459,8 +1459,8 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
                 <td style="padding:8px 10px">$40,362</td>
                 <td style="padding:8px 10px">+46.8%</td>
                 <td style="padding:8px 10px">19.7%/yr</td>
-                <td style="padding:8px 10px">—</td>
-                <td style="padding:8px 10px">—</td>
+                <td style="padding:8px 10px">-</td>
+                <td style="padding:8px 10px">-</td>
               </tr>
             </tbody>
           </table>
@@ -1486,11 +1486,11 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
 
       <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--r-sm);padding:14px 18px;margin-bottom:12px">
         <div style="font-weight:700;font-size:13px;color:var(--blue);margin-bottom:6px">📊 What this backtest tells us</div>
-        <div style="font-size:12px;color:var(--text2);line-height:1.7">The baseline strategy matched SPY almost exactly (19.6% vs 19.7%/yr) over this 3-year bull market. Concentrating into the top 3 instruments with a positive-momentum filter improved returns to 27.7%/yr — an $6,276 advantage over simply holding SPY on the same capital.</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7">The baseline strategy matched SPY almost exactly (19.6% vs 19.7%/yr) over this 3-year bull market. Concentrating into the top 3 instruments with a positive-momentum filter improved returns to 27.7%/yr - an $6,276 advantage over simply holding SPY on the same capital.</div>
       </div>
       <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r-sm);padding:14px 18px;margin-bottom:12px">
         <div style="font-weight:700;font-size:13px;color:var(--amber);margin-bottom:6px">⚠️ Important caveats</div>
-        <div style="font-size:12px;color:var(--text2);line-height:1.7">This period was one of the strongest bull markets in history — the strategy has not been tested through a sustained bear market. The 47% per-trade win rate is below 50%; the edge comes from winners being larger than losers, not from picking correctly more often. Past performance never guarantees future results.</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7">This period was one of the strongest bull markets in history - the strategy has not been tested through a sustained bear market. The 47% per-trade win rate is below 50%; the edge comes from winners being larger than losers, not from picking correctly more often. Past performance never guarantees future results.</div>
       </div>
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r-sm);padding:14px 18px">
         <div style="font-weight:700;font-size:13px;color:var(--green);margin-bottom:6px">✅ Current status</div>
@@ -1573,16 +1573,16 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Risk Level — how much loss could you handle? *</label>
+        <label class="form-label">Risk Level - how much loss could you handle? *</label>
         <div style="display:flex;flex-direction:column;gap:6px">
-          <div class="risk-card" onclick="mpRisk('conservative')"    id="mr-conservative"><div style="display:flex;justify-content:space-between;align-items:center"><div><span style="font-size:15px">😰</span> <strong>Conservative</strong> — I'd lose sleep losing more than $<span class="m-loss" data-pct="0.05">500</span></div><div style="color:var(--green);font-weight:700;font-size:13px">3–6%/yr</div></div><div class="text-small text-muted" style="margin-top:3px">Like: SSBs, Fixed Deposits, AGG bonds</div></div>
-          <div class="risk-card" onclick="mpRisk('moderate')"        id="mr-moderate"><div style="display:flex;justify-content:space-between;align-items:center"><div><span style="font-size:15px">😐</span> <strong>Moderate</strong> — Could handle losing $<span class="m-loss" data-pct="0.15">1,500</span></div><div style="color:var(--green);font-weight:700;font-size:13px">7–10%/yr</div></div><div class="text-small text-muted" style="margin-top:3px">Like: VOO, SCHD, balanced ETF portfolio</div></div>
-          <div class="risk-card" onclick="mpRisk('aggressive')"      id="mr-aggressive"><div style="display:flex;justify-content:space-between;align-items:center"><div><span style="font-size:15px">😤</span> <strong>Aggressive</strong> — Could stomach losing $<span class="m-loss" data-pct="0.35">3,500</span></div><div style="color:var(--green);font-weight:700;font-size:13px">12–18%/yr</div></div><div class="text-small text-muted" style="margin-top:3px">Like: QQQ, NVDA, growth stocks</div></div>
-          <div class="risk-card" onclick="mpRisk('very-aggressive')" id="mr-very-aggressive"><div style="display:flex;justify-content:space-between;align-items:center"><div><span style="font-size:15px">🚀</span> <strong>Very Aggressive</strong> — Could handle losing $<span class="m-loss" data-pct="0.50">5,000</span></div><div style="color:var(--green);font-weight:700;font-size:13px">20–80%/yr</div></div><div class="text-small text-muted" style="margin-top:3px">Like: Bitcoin, TQQQ, crypto</div></div>
+          <div class="risk-card" onclick="mpRisk('conservative')"    id="mr-conservative"><div style="display:flex;justify-content:space-between;align-items:center"><div><span style="font-size:15px">😰</span> <strong>Conservative</strong> - I'd lose sleep losing more than $<span class="m-loss" data-pct="0.05">500</span></div><div style="color:var(--green);font-weight:700;font-size:13px">3–6%/yr</div></div><div class="text-small text-muted" style="margin-top:3px">Like: SSBs, Fixed Deposits, AGG bonds</div></div>
+          <div class="risk-card" onclick="mpRisk('moderate')"        id="mr-moderate"><div style="display:flex;justify-content:space-between;align-items:center"><div><span style="font-size:15px">😐</span> <strong>Moderate</strong> - Could handle losing $<span class="m-loss" data-pct="0.15">1,500</span></div><div style="color:var(--green);font-weight:700;font-size:13px">7–10%/yr</div></div><div class="text-small text-muted" style="margin-top:3px">Like: VOO, SCHD, balanced ETF portfolio</div></div>
+          <div class="risk-card" onclick="mpRisk('aggressive')"      id="mr-aggressive"><div style="display:flex;justify-content:space-between;align-items:center"><div><span style="font-size:15px">😤</span> <strong>Aggressive</strong> - Could stomach losing $<span class="m-loss" data-pct="0.35">3,500</span></div><div style="color:var(--green);font-weight:700;font-size:13px">12–18%/yr</div></div><div class="text-small text-muted" style="margin-top:3px">Like: QQQ, NVDA, growth stocks</div></div>
+          <div class="risk-card" onclick="mpRisk('very-aggressive')" id="mr-very-aggressive"><div style="display:flex;justify-content:space-between;align-items:center"><div><span style="font-size:15px">🚀</span> <strong>Very Aggressive</strong> - Could handle losing $<span class="m-loss" data-pct="0.50">5,000</span></div><div style="color:var(--green);font-weight:700;font-size:13px">20–80%/yr</div></div><div class="text-small text-muted" style="margin-top:3px">Like: Bitcoin, TQQQ, crypto</div></div>
         </div>
       </div>
       <div id="m-proj" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:20px">
-        <div style="font-size:11px;font-weight:600;color:var(--navy);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">📊 Live Projection — Based on Your Inputs</div>
+        <div style="font-size:11px;font-weight:600;color:var(--navy);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">📊 Live Projection - Based on Your Inputs</div>
         <div id="m-proj-content" style="font-size:13px;line-height:1.9;color:var(--text2)"></div>
       </div>
       <div style="display:flex;gap:10px">
@@ -1598,8 +1598,8 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════
-// ICONIUM v4 — Build 20260609_142802
-// Clean rebuild — light theme — professional
+// ICONIUM v4 - Build 20260609_142802
+// Clean rebuild - light theme - professional
 // ═══════════════════════════════════════════════════════════════════════
 
 'use strict';
@@ -1758,14 +1758,14 @@ function toast(msg, type) {
 
 // ── Formatting ─────────────────────────────────────────────────────────
 function fmtNum(n) {
-  if (!n && n !== 0) return '—';
+  if (!n && n !== 0) return '-';
   if (Math.abs(n) >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
   if (Math.abs(n) >= 1000)    return '$' + (n/1000).toFixed(1) + 'K';
   return '$' + n.toFixed(2);
 }
 function fmtPct(n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; }
 function fmtPrice(n) {
-  if (!n && n !== 0) return '—';
+  if (!n && n !== 0) return '-';
   return '$' + (n >= 1000 ? n.toLocaleString(undefined,{maximumFractionDigits:2}) : n.toFixed(2));
 }
 
@@ -1787,35 +1787,35 @@ function computeSignal(inst, data) {
 
   // Layer 1: RSI (0-20)
   let rsiScore = 0;
-  if      (rsi < 25) { rsiScore = 20; reasons.push(`RSI ${Math.round(rsi)} — deeply oversold`); }
-  else if (rsi < 35) { rsiScore = 16; reasons.push(`RSI ${Math.round(rsi)} — oversold`); }
+  if      (rsi < 25) { rsiScore = 20; reasons.push(`RSI ${Math.round(rsi)} - deeply oversold`); }
+  else if (rsi < 35) { rsiScore = 16; reasons.push(`RSI ${Math.round(rsi)} - oversold`); }
   else if (rsi < 50) { rsiScore = 12; }
   else if (rsi < 65) { rsiScore = 8; }
   else if (rsi < 75) { rsiScore = 4; }
-  else               { rsiScore = 1; reasons.push(`RSI ${Math.round(rsi)} — overbought`); }
+  else               { rsiScore = 1; reasons.push(`RSI ${Math.round(rsi)} - overbought`); }
   score += rsiScore;
 
   // Layer 2: Trend / SMA (0-20)
   let trendScore = 10;
   if (sma50 && sma200) {
-    if (sma50 > sma200 && price > sma50) { trendScore = 19; reasons.push('Golden cross — all SMAs bullishly aligned'); }
+    if (sma50 > sma200 && price > sma50) { trendScore = 19; reasons.push('Golden cross - all SMAs bullishly aligned'); }
     else if (sma50 > sma200)             { trendScore = 14; }
-    else if (sma50 < sma200 && price < sma50) { trendScore = 2; reasons.push('Death cross — bearish trend'); }
+    else if (sma50 < sma200 && price < sma50) { trendScore = 2; reasons.push('Death cross - bearish trend'); }
     else { trendScore = 6; }
   }
   score += trendScore;
 
   // Layer 3: Momentum 20-day (0-20)
   let momScore = 10;
-  if      (momentum > 20)  { momScore = 19; reasons.push(`Momentum +${momentum.toFixed(1)}% — strong uptrend`); }
+  if      (momentum > 20)  { momScore = 19; reasons.push(`Momentum +${momentum.toFixed(1)}% - strong uptrend`); }
   else if (momentum > 10)  { momScore = 15; }
   else if (momentum > 0)   { momScore = 12; }
   else if (momentum > -10) { momScore = 8; }
   else if (momentum > -20) { momScore = 5; }
-  else                     { momScore = 1; reasons.push(`Momentum ${momentum.toFixed(1)}% — downtrend`); }
+  else                     { momScore = 1; reasons.push(`Momentum ${momentum.toFixed(1)}% - downtrend`); }
   score += momScore;
 
-  // Layer 4: Sentiment F&G (0-20) — use cached
+  // Layer 4: Sentiment F&G (0-20) - use cached
   const fg = parseInt(document.getElementById('h-fg')?.textContent) || 50;
   let sentScore = 10;
   if      (fg < 20) { sentScore = 20; }
@@ -2023,7 +2023,7 @@ function renderLivePricesGrid() {
     const arr = p.changePct >= 0 ? '▲' : '▼';
     return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px">
       <div class="text-small text-muted mb-4">${item.icon} ${item.label}</div>
-      <div style="font-weight:700;font-size:15px;font-family:var(--font-mono)">$${p.price?.toLocaleString(undefined,{maximumFractionDigits:2})||'—'}</div>
+      <div style="font-weight:700;font-size:15px;font-family:var(--font-mono)">$${p.price?.toLocaleString(undefined,{maximumFractionDigits:2})||'-'}</div>
       <div style="font-size:12px;color:${col};font-family:var(--font-mono)">${arr} ${Math.abs(p.changePct||0).toFixed(2)}%</div>
     </div>`;
   }).join('');
@@ -2073,14 +2073,14 @@ function renderSignalsPage() {
       const cap = paperState.balance;
       const riskPct = {conservative:.05,moderate:.08,aggressive:.12,'very-aggressive':.15}[profile.risk] || .08;
       const size = Math.round(cap * riskPct);
-      forYou = `For you (${profile.risk}): Buy $${size.toLocaleString()}${s.signal==='strong-buy'?' — strong conviction':''}. Set stop-loss at -8%.`;
+      forYou = `For you (${profile.risk}): Buy $${size.toLocaleString()}${s.signal==='strong-buy'?' - strong conviction':''}. Set stop-loss at -8%.`;
     } else if (s.signal === 'hold' && held) {
       const lp = s.price || held.avgPrice;
       const pnlPct = ((lp - held.avgPrice)/held.avgPrice*100).toFixed(1);
-      forYou = `You hold this (${pnlPct >= 0 ? '+' : ''}${pnlPct}% P&L). Signal intact — hold and trail stop-loss up.`;
+      forYou = `You hold this (${pnlPct >= 0 ? '+' : ''}${pnlPct}% P&L). Signal intact - hold and trail stop-loss up.`;
     } else if (s.signal === 'hold') {
       const gap = 65 - s.score;
-      forYou = gap <= 5 ? `Only ${gap} pts from a Buy signal — watch closely.` : `${gap} pts below Buy threshold. Not yet.`;
+      forYou = gap <= 5 ? `Only ${gap} pts from a Buy signal - watch closely.` : `${gap} pts below Buy threshold. Not yet.`;
     } else if (s.signal === 'sell' && held) {
       forYou = `⚠️ Signal has turned bearish. Consider closing position.`;
     }
@@ -2112,7 +2112,7 @@ function renderSignalsPage() {
       <div class="signal-actions">
         ${isBuy ? `<button class="btn btn-green btn-sm" style="flex:1" onclick="openTradeDrawer('${s.symbol}','buy')">▶ Buy ${s.symbol}</button>` : ''}
         ${(s.signal==='sell' && held) ? `<button class="btn btn-red btn-sm" style="flex:1" onclick="openTradeDrawer('${s.symbol}','sell')">✕ Close Position</button>` : ''}
-        ${(!isBuy && !(s.signal==='sell' && held)) ? `<button class="btn btn-outline btn-sm" style="flex:1;cursor:default" disabled>— Monitor</button>` : ''}
+        ${(!isBuy && !(s.signal==='sell' && held)) ? `<button class="btn btn-outline btn-sm" style="flex:1;cursor:default" disabled>- Monitor</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -2139,7 +2139,7 @@ function renderPositionsTable() {
     const pnl = (lp - pos.avgPrice) * pos.shares;
     const pnlPct = ((lp - pos.avgPrice) / pos.avgPrice * 100);
     const pnlCol = pnl >= 0 ? 'var(--green)' : 'var(--red)';
-    const sigBadge = sig ? `<span class="badge ${signalColor(sig.signal)==='green'?'badge-green':signalColor(sig.signal)==='red'?'badge-red':'badge-amber'}">${signalLabel(sig.signal)}</span>` : '—';
+    const sigBadge = sig ? `<span class="badge ${signalColor(sig.signal)==='green'?'badge-green':signalColor(sig.signal)==='red'?'badge-red':'badge-amber'}">${signalLabel(sig.signal)}</span>` : '-';
     return `<tr>
       <td><div class="td-main">${sym}</div><div class="text-small text-muted">${pos.name||''}</div></td>
       <td class="text-mono">${pos.shares}</td>
@@ -2147,7 +2147,7 @@ function renderPositionsTable() {
       <td class="text-mono">${fmtPrice(lp)}</td>
       <td class="text-mono fw-600">${fmtPrice(lp * pos.shares)}</td>
       <td class="text-mono" style="color:${pnlCol}">${pnl>=0?'+':''}${fmtNum(Math.abs(pnl))} (${pnlPct>=0?'+':''}${pnlPct.toFixed(1)}%)</td>
-      <td class="text-mono text-red" style="font-size:12px">${pos.stopLoss ? fmtPrice(pos.stopLoss) : '—'}</td>
+      <td class="text-mono text-red" style="font-size:12px">${pos.stopLoss ? fmtPrice(pos.stopLoss) : '-'}</td>
       <td>${sigBadge}</td>
       <td><button class="btn btn-outline btn-sm" onclick="openTradeDrawer('${sym}','sell')">Close</button></td>
     </tr>`;
@@ -2209,7 +2209,7 @@ function openTradeDrawer(symbol, action) {
   const stopLoss  = (price * 0.92).toFixed(2);
   const takeProfit = (price * 1.20).toFixed(2);
 
-  // For sell — use existing position
+  // For sell - use existing position
   const held = paperState.positions[symbol];
   const sellShares = held?.shares || 0;
   const sellValue  = (sellShares * price).toFixed(2);
@@ -2248,13 +2248,13 @@ function openTradeDrawer(symbol, action) {
     </div>` : `
     <div style="background:var(--bg);border-radius:var(--r-xs);padding:10px 12px;margin-bottom:16px;font-size:13px">
       <div class="flex-between mb-4"><span class="text-muted">Shares held</span><span class="text-mono fw-600">${sellShares}</span></div>
-      <div class="flex-between mb-4"><span class="text-muted">Entry price</span><span class="text-mono">${held ? fmtPrice(held.avgPrice) : '—'}</span></div>
+      <div class="flex-between mb-4"><span class="text-muted">Entry price</span><span class="text-mono">${held ? fmtPrice(held.avgPrice) : '-'}</span></div>
       <div class="flex-between mb-4"><span class="text-muted">Current value</span><span class="text-mono">${fmtPrice(+sellValue)}</span></div>
-      <div class="flex-between"><span class="text-muted">P&L</span><span class="text-mono ${held && price > held.avgPrice ? 'text-green' : 'text-red'}">${held ? fmtNum((price - held.avgPrice) * held.shares) : '—'}</span></div>
+      <div class="flex-between"><span class="text-muted">P&L</span><span class="text-mono ${held && price > held.avgPrice ? 'text-green' : 'text-red'}">${held ? fmtNum((price - held.avgPrice) * held.shares) : '-'}</span></div>
     </div>`}
 
     <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:var(--r-xs);padding:10px 12px;margin-bottom:16px;font-size:12px;color:#92400e">
-      📄 Paper Trading Mode — no real money involved
+      📄 Paper Trading Mode - no real money involved
     </div>
 
     <div class="flex gap-8">
@@ -2556,13 +2556,13 @@ function renderGoalCard(g, PRIORITY_COLORS, PRIORITY_TEXT) {
           </button>
         </div>
         <div style="font-size:12px;color:var(--text2);line-height:1.7">
-          You need <strong>$${monthlyNeeded.toLocaleString()}/mo</strong> but contributing <strong>$${monthly.toLocaleString()}/mo</strong> — shortfall of <strong style="color:var(--red)">$${shortfall.toLocaleString()}/mo</strong><br>
+          You need <strong>$${monthlyNeeded.toLocaleString()}/mo</strong> but contributing <strong>$${monthly.toLocaleString()}/mo</strong> - shortfall of <strong style="color:var(--red)">$${shortfall.toLocaleString()}/mo</strong><br>
           At current rate, goal reached in <strong>~${monthsAtCurrent} months</strong> instead.
         </div>
         <div id="advice-${g.id}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid #fde68a"></div>
       </div>` : `
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r-sm);padding:8px 12px;margin:12px 0;font-size:12px;color:var(--green);display:flex;align-items:center;gap:6px">
-        ✅ On track — keep it up!
+        ✅ On track - keep it up!
       </div>`}
 
       <!-- Footer stats -->
@@ -2902,7 +2902,7 @@ function saveSettings() {
   toast('Profile saved', 'success');
 }
 
-function saveAlpacaKeys() { toast('API keys saved (coming soon — connect live trading)', 'success'); }
+function saveAlpacaKeys() { toast('API keys saved (coming soon - connect live trading)', 'success'); }
 
 // ── Live prices ────────────────────────────────────────────────────────
 async function fetchLivePrices() {
@@ -3028,7 +3028,7 @@ async function discoverAIpick() {
   aiEl.innerHTML='<div class="card"><div class="card-body text-center text-muted" style="padding:24px">Finding best investments for your goals...</div></div>';
   var top=Object.values(state.signals).filter(function(s){return s.price&&s.score;}).sort(function(a,b){return b.score-a.score;}).slice(0,15);
   var gc=userGoals.map(function(g){return g.name+': $'+g.target+' in '+g.years+'yr risk '+g.risk;}).join('\n');
-  var sc=top.length?top.map(function(s){return s.symbol+' '+signalLabel(s.signal)+' '+s.score+'/100 $'+(s.price?s.price.toFixed(2):'?');}).join(', '):'No signals loaded — go to Signals tab and click Refresh first';
+  var sc=top.length?top.map(function(s){return s.symbol+' '+signalLabel(s.signal)+' '+s.score+'/100 $'+(s.price?s.price.toFixed(2):'?');}).join(', '):'No signals loaded - go to Signals tab and click Refresh first';
   try{
     var r=await fetch('/api/market-data?type=ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,messages:[{role:'user',content:'Singapore investor. TOP 5 investments TODAY.\nGoals:\n'+gc+'\nSignals: '+sc+'\nCash available: $'+(paperState.balance||10000)+'\nFor each: symbol, why it fits goal, amount to invest, buy now or DCA, stop-loss.'}]})});
     var d=await r.json();var t=d.content&&d.content[0]?d.content[0].text:'No response';
@@ -3049,7 +3049,7 @@ async function discoverAIpick() {
 
 
 // ══════════════════════════════════════════════════════════════════════
-// AI TRADING ENGINE — Five-Condition Gate System
+// AI TRADING ENGINE - Five-Condition Gate System
 // ══════════════════════════════════════════════════════════════════════
 
 var ENGINE_KEY   = 'iconium_engine_v1';
@@ -3102,9 +3102,9 @@ function renderNearMiss(topScorers, gate1passed, gate2passed) {
   html += '<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--r-sm);padding:14px 16px">';
   html += '<div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--blue)">💡 What needs to happen for a trade to fire</div>';
   html += '<div style="font-size:12px;color:var(--text2);line-height:1.9">';
-  if (!gate1passed) html += '• At least one instrument needs to score <strong>≥ 72/100</strong> — refresh signals when US market is open<br>';
-  if (!gate2passed) html += '• Market regime needs to improve — VOO/SPY score ≥ 65 or F&G not in extreme greed<br>';
-  html += '• All 5 gates must pass simultaneously — scores update live during market hours (9:30pm–4am SGT)';
+  if (!gate1passed) html += '• At least one instrument needs to score <strong>≥ 72/100</strong> - refresh signals when US market is open<br>';
+  if (!gate2passed) html += '• Market regime needs to improve - VOO/SPY score ≥ 65 or F&G not in extreme greed<br>';
+  html += '• All 5 gates must pass simultaneously - scores update live during market hours (9:30pm–4am SGT)';
   html += '</div></div>';
   html += '</div>';
 
@@ -3128,7 +3128,7 @@ function updateEngineStats() {
   var closed = engineState.history.filter(function(t){ return t.result; });
   var wins   = closed.filter(function(t){ return t.result === 'win'; }).length;
   var wrEl   = document.getElementById('eng-win-rate');
-  if (wrEl) wrEl.textContent = closed.length ? Math.round(wins/closed.length*100)+'% ('+closed.length+')' : '—';
+  if (wrEl) wrEl.textContent = closed.length ? Math.round(wins/closed.length*100)+'% ('+closed.length+')' : '-';
 
   var today = new Date().toDateString();
   var todayCount = engineState.history.filter(function(t){
@@ -3147,7 +3147,7 @@ async function runEngineScan() {
 
   // Ensure signals are loaded
   if (!state.signals || Object.keys(state.signals).length === 0) {
-    setEngineStatus('idle', 'No signal data — go to Signals tab and Refresh first');
+    setEngineStatus('idle', 'No signal data - go to Signals tab and Refresh first');
     if (btn) { btn.disabled = false; btn.textContent = '🎯 Run Scan'; }
     toast('Load signals first (Signals tab → Refresh)', 'error');
     return;
@@ -3155,7 +3155,7 @@ async function runEngineScan() {
 
   // ── Backtested strategy: Top 3, min score 65, positive momentum ──────
   // 3-year backtest (Oct 2023–Sep 2026): this configuration returned 27.7%/yr
-  // vs SPY buy-and-hold 19.7%/yr — see Backtest tab for full report.
+  // vs SPY buy-and-hold 19.7%/yr - see Backtest tab for full report.
   var MIN_SCORE = 65;
   var TOP_N     = 3;
   var held = Object.keys(paperState.positions || {});
@@ -3163,7 +3163,7 @@ async function runEngineScan() {
   var candidates = sigs
     .filter(function(s) {
       return s.score >= MIN_SCORE
-        && (s.momentum || 0) > 0          // momentum filter — backtested edge
+        && (s.momentum || 0) > 0          // momentum filter - backtested edge
         && held.indexOf(s.symbol) === -1;
     })
     .sort(function(a,b) { return b.score - a.score; })
@@ -3173,7 +3173,7 @@ async function runEngineScan() {
   var topScorers = sigs.slice().sort(function(a,b){return b.score-a.score;}).slice(0,5);
   var topStr = topScorers.map(function(s){return s.symbol+' '+s.score;}).join(', ');
 
-  // Gate 1: Backtested filter — score ≥ 65 AND positive momentum, top 3
+  // Gate 1: Backtested filter - score ≥ 65 AND positive momentum, top 3
   var gate1 = candidates.length > 0;
   setGate('score', gate1,
     gate1
@@ -3228,15 +3228,15 @@ async function runEngineScan() {
   var drawdown   = totalValue < startBal ? (startBal - totalValue) / startBal : 0;
   var gate5 = sameGroup < 3 && drawdown < 0.08;
   setGate('exposure', gate5,
-    held.length + ' open positions · ' + (best ? best.group : '—') + ': ' + sameGroup + '/3 max · Drawdown ' + (drawdown * 100).toFixed(1) + '%');
+    held.length + ' open positions · ' + (best ? best.group : '-') + ': ' + sameGroup + '/3 max · Drawdown ' + (drawdown * 100).toFixed(1) + '%');
 
-  // All gates evaluated — determine outcome
+  // All gates evaluated - determine outcome
   var allPassed = gate1 && regimePassed && gate3 && gate4 && gate5;
-  var failedGate = !gate1        ? 'Gate 1 failed — no high-conviction signals (need score ≥ 72)'
-    : !regimePassed              ? 'Gate 2 failed — unfavourable market regime (' + regime + ')'
-    : !gate3                     ? 'Gate 3 failed — smart money confirmation (' + smCount + '/2)'
-    : !gate4                     ? 'Gate 4 failed — R:R below 2.5:1 (got ' + rrRatio + ':1)'
-    : !gate5                     ? 'Gate 5 failed — portfolio overexposure or drawdown > 8%'
+  var failedGate = !gate1        ? 'Gate 1 failed - no high-conviction signals (need score ≥ 72)'
+    : !regimePassed              ? 'Gate 2 failed - unfavourable market regime (' + regime + ')'
+    : !gate3                     ? 'Gate 3 failed - smart money confirmation (' + smCount + '/2)'
+    : !gate4                     ? 'Gate 4 failed - R:R below 2.5:1 (got ' + rrRatio + ':1)'
+    : !gate5                     ? 'Gate 5 failed - portfolio overexposure or drawdown > 8%'
     : null;
 
   if (!allPassed) {
@@ -3246,7 +3246,7 @@ async function runEngineScan() {
     return;
   }
 
-  // ── ALL 5 GATES PASSED — build proposal ──────────────────────────────
+  // ── ALL 5 GATES PASSED - build proposal ──────────────────────────────
   var posSize = best.score >= 90 ? 0.03 : best.score >= 80 ? 0.02 : 0.01;
   var dollars = Math.floor(paperState.balance * posSize);
   var shares  = entry > 0 ? Math.max(1, Math.floor(dollars / entry)) : 0;
@@ -3269,7 +3269,7 @@ async function runEngineScan() {
   engineState.scannedAt = Date.now();
   saveEngineState();
 
-  setEngineStatus('proposal', 'Proposal ready — review below');
+  setEngineStatus('proposal', 'Proposal ready - review below');
   showProposal(_activeProp);
   sendTelegramAlert(_activeProp);
 
@@ -3415,9 +3415,9 @@ function renderEngineHistory() {
     return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">'
       + '<div style="width:52px;font-weight:700;color:var(--navy)">' + t.symbol + '</div>'
       + '<div style="flex:1;color:var(--muted)">' + date + '</div>'
-      + '<div style="width:70px">$' + (t.entry ? t.entry.toFixed(2) : '—') + '</div>'
-      + '<div style="width:70px;color:var(--red)">$' + (t.stop ? t.stop : '—') + '</div>'
-      + '<div style="width:70px;color:var(--green)">$' + (t.tp ? t.tp : '—') + '</div>'
+      + '<div style="width:70px">$' + (t.entry ? t.entry.toFixed(2) : '-') + '</div>'
+      + '<div style="width:70px;color:var(--red)">$' + (t.stop ? t.stop : '-') + '</div>'
+      + '<div style="width:70px;color:var(--green)">$' + (t.tp ? t.tp : '-') + '</div>'
       + '<div style="width:50px;text-align:center;font-weight:600;font-size:11px;color:' + statusCol + '">' + statusTxt + '</div>'
       + '</div>';
   }).join('');
@@ -3434,7 +3434,7 @@ function renderEngineHistory() {
 // ── Send Telegram alert ───────────────────────────────────────────────
 async function sendTelegramAlert(p) {
   var msg = '🎯 *ICONIUM ENGINE PROPOSAL*\n\n'
-    + '*' + p.name + ' (' + p.symbol + ')* — Score ' + p.score + '/100\n\n'
+    + '*' + p.name + ' (' + p.symbol + ')* - Score ' + p.score + '/100\n\n'
     + '📥 Entry: $' + p.entry.toFixed(2) + '\n'
     + '🛑 Stop: $' + p.stop + '\n'
     + '🎯 Target: $' + p.tp + '\n'
@@ -3600,7 +3600,7 @@ function renderMarketsTable() {
     var emptyTd  = document.createElement('td');
     emptyTd.colSpan = 8;
     emptyTd.style.cssText = 'padding:30px;text-align:center;color:var(--muted)';
-    emptyTd.textContent = 'No instruments match this filter — try Refresh All';
+    emptyTd.textContent = 'No instruments match this filter - try Refresh All';
     emptyRow.appendChild(emptyTd);
     tbody.appendChild(emptyRow);
     return;
@@ -3640,7 +3640,7 @@ async function refreshMarketsData() {
   saveState();
   renderMarketsTable();
   if (btn) { btn.textContent = 'Refresh All'; btn.disabled = false; }
-  toast('Markets updated — ' + loaded + ' instruments loaded', 'success');
+  toast('Markets updated - ' + loaded + ' instruments loaded', 'success');
 }
 
 
@@ -3801,7 +3801,7 @@ function startValidation() {
   };
   saveEngineState();
   renderValidationCard();
-  toast('30-day validation started — tracking from today', 'success');
+  toast('30-day validation started - tracking from today', 'success');
 }
 
 function resetValidation() {
@@ -3857,7 +3857,7 @@ function renderValidationCard() {
     + '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px">'
       + '<div>'
         + '<div style="font-weight:700;font-size:14px">🧪 30-Day Paper Validation ' + (done ? '<span class="badge badge-green" style="margin-left:6px">Complete</span>' : '') + '</div>'
-        + '<div class="text-small text-muted">Day ' + Math.min(daysElapsed,30) + ' of 30' + (done ? ' — review results below' : ' · ' + daysLeft + ' days remaining') + '</div>'
+        + '<div class="text-small text-muted">Day ' + Math.min(daysElapsed,30) + ' of 30' + (done ? ' - review results below' : ' · ' + daysLeft + ' days remaining') + '</div>'
       + '</div>'
       + '<button class="btn btn-outline btn-sm" onclick="resetValidation()">Reset</button>'
     + '</div>'
@@ -3866,11 +3866,11 @@ function renderValidationCard() {
       + '<div><div class="text-small text-muted" style="margin-bottom:4px">Portfolio P&L</div><div style="font-weight:700;font-family:var(--font-mono);color:' + gainCol + '">' + (gain>=0?'+':'') + '$' + Math.abs(Math.round(gain)).toLocaleString() + ' (' + (gainPct>=0?'+':'') + gainPct.toFixed(1) + '%)</div></div>'
       + '<div><div class="text-small text-muted" style="margin-bottom:4px">vs Backtest Target</div><div style="font-weight:700;font-family:var(--font-mono);color:' + vsIconiumCol + '">' + (vsIconium>=0?'+':'') + vsIconium.toFixed(1) + 'pp</div></div>'
       + '<div><div class="text-small text-muted" style="margin-bottom:4px">Trades Logged</div><div style="font-weight:700;font-family:var(--font-mono)">' + tradesInPeriod.length + '</div></div>'
-      + '<div><div class="text-small text-muted" style="margin-bottom:4px">Win Rate (closed)</div><div style="font-weight:700;font-family:var(--font-mono)">' + (winRate===null?'—':winRate+'% ('+closedInPeriod.length+')') + '</div></div>'
+      + '<div><div class="text-small text-muted" style="margin-bottom:4px">Win Rate (closed)</div><div style="font-weight:700;font-family:var(--font-mono)">' + (winRate===null?'-':winRate+'% ('+closedInPeriod.length+')') + '</div></div>'
     + '</div>'
     + '<div class="text-small text-muted" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">'
       + 'Pace check at day ' + daysElapsed + ': backtest target ≈ ' + iconiumExpectedPct.toFixed(1) + '% · SPY pace ≈ ' + spyExpectedPct.toFixed(1) + '%'
-      + (done ? '<br><strong style="color:var(--text)">Validation period complete.</strong> ' + (gainPct >= spyExpectedPct ? 'Live results are tracking at or above the SPY benchmark pace — reasonable to consider a small real-money deployment.' : 'Live results are below the SPY benchmark pace — recommend another validation cycle before deploying real capital.') : '')
+      + (done ? '<br><strong style="color:var(--text)">Validation period complete.</strong> ' + (gainPct >= spyExpectedPct ? 'Live results are tracking at or above the SPY benchmark pace - reasonable to consider a small real-money deployment.' : 'Live results are below the SPY benchmark pace - recommend another validation cycle before deploying real capital.') : '')
     + '</div>'
   + '</div>';
 }
@@ -3893,7 +3893,7 @@ if (Object.keys(state.signals).length > 0) {
   setTimeout(renderAll, 100);
 }
 
-// First visit — go to goals if none set
+// First visit - go to goals if none set
 setTimeout(() => {
   if (!userGoals.length) {
     navTo('goals', document.querySelector('[onclick*=goals]'));
