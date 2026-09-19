@@ -128,11 +128,11 @@ body {
 .nav-icon { font-size: 16px; width: 20px; text-align: center; opacity: .7; }
 .nav-badge {
   margin-left: auto;
-  background: var(--red);
-  color: #fff;
+  background: var(--gold);
+  color: var(--navy);
   font-size: 10px;
-  font-weight: 600;
-  padding: 1px 6px;
+  font-weight: 700;
+  padding: 1px 7px;
   border-radius: 99px;
 }
 
@@ -1959,10 +1959,16 @@ async function refreshAllData(force) {
   state.cacheTime = Date.now();
   saveState();
 
-  // Update buy signal badge
+  // Update buy signal badge — a LIVE COUNT of instruments currently rated
+  // Buy/Strong Buy, not an unread-alert counter. It changes with the market,
+  // not when you place a trade.
   const buys = Object.values(state.signals).filter(s => s.signal === 'strong-buy' || s.signal === 'buy').length;
   const badge = document.getElementById('nav-buy-count');
-  if (badge) { badge.textContent = buys; badge.style.display = buys ? '' : 'none'; }
+  if (badge) {
+    badge.textContent = buys;
+    badge.title = buys + ' instrument' + (buys===1?'':'s') + ' currently rated Buy - updates with the market, not with your trades';
+    badge.style.display = buys ? '' : 'none';
+  }
 
   if (btn) { btn.disabled = false; btn.textContent = '⟳ Refresh'; }
   toast(total + ' instruments loaded ⚡', 'success');
@@ -2286,10 +2292,11 @@ function openTradeDrawer(symbol, action) {
   const stopLoss  = (price * 0.92).toFixed(2);
   const takeProfit = (price * 1.20).toFixed(2);
 
-  // For sell - use existing position
+  // Existing position (used for sell math AND to warn on buy if already held)
   const held = paperState.positions[symbol];
   const sellShares = held?.shares || 0;
   const sellValue  = (sellShares * price).toFixed(2);
+  const heldPL = held ? (price - held.avgPrice) * held.shares : 0;
 
   content.innerHTML = `
     <div style="background:var(--bg);border-radius:var(--r-sm);padding:12px;margin-bottom:16px">
@@ -2307,6 +2314,9 @@ function openTradeDrawer(symbol, action) {
     </div>
 
     ${isBuy ? `
+    ${held ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:var(--r-xs);padding:10px 12px;margin-bottom:14px;font-size:12px;color:#1e40af">
+      📌 You already hold <strong>${held.shares}</strong> shares of ${symbol} (avg $${held.avgPrice.toFixed(2)}) - current P&L <strong style="color:${heldPL>=0?'#16a34a':'#dc2626'}">${heldPL>=0?'+':''}$${Math.abs(heldPL).toFixed(2)}</strong>. This will add to that position.
+    </div>` : ''}
     <div class="form-group">
       <label class="form-label">Amount to invest ($)</label>
       <input class="form-input form-input-lg" id="trade-amount" type="number" value="${suggestedAmt}" min="1" oninput="updateTradeShares()">
