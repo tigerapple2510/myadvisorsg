@@ -726,6 +726,9 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
       <span class="nav-icon">⚡</span> Signals
       <span class="nav-badge" id="nav-buy-count" style="display:none">0</span>
     </button>
+    <button class="nav-btn" onclick="navTo('markets',this)">
+      <span class="nav-icon">📈</span> Markets
+    </button>
     <button class="nav-btn" onclick="navTo('discover',this)">
       <span class="nav-icon">🔍</span> Discover
     </button>
@@ -1329,6 +1332,58 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
 
     </div><!-- end page-engine -->
 
+
+    <div class="page" id="page-markets">
+      <div class="page-header">
+        <h1>Markets</h1>
+        <p>All instruments · Live signals · One-click buy execution</p>
+      </div>
+      <div class="card mb-16">
+        <div class="card-body" style="padding:12px 16px">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div style="display:flex;gap:6px" id="markets-filter-btns">
+              <button class="btn btn-primary btn-sm" onclick="marketsFilter('all',this)">All</button>
+              <button class="btn btn-outline btn-sm" onclick="marketsFilter('buy',this)">Buy</button>
+              <button class="btn btn-outline btn-sm" onclick="marketsFilter('hold',this)">Hold</button>
+              <button class="btn btn-outline btn-sm" onclick="marketsFilter('sell',this)">Sell</button>
+            </div>
+            <div style="display:flex;gap:6px;margin-left:auto">
+              <select id="markets-sort" class="form-input" style="padding:4px 8px;font-size:12px;height:32px" onchange="renderMarketsTable()">
+                <option value="score">Score</option>
+                <option value="change">Change %</option>
+                <option value="rsi">RSI</option>
+                <option value="symbol">Symbol</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="refreshMarketsData()">Refresh All</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px" id="markets-table">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border)">
+                <th style="padding:10px 14px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;text-align:left">Symbol</th>
+                <th style="padding:10px 8px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;text-align:left">Price</th>
+                <th style="padding:10px 8px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;text-align:left">Chg%</th>
+                <th style="padding:10px 8px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;text-align:left">Score</th>
+                <th style="padding:10px 8px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;text-align:left">Signal</th>
+                <th style="padding:10px 8px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;text-align:left">RSI</th>
+                <th style="padding:10px 8px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;text-align:left">Mom</th>
+                <th style="padding:10px 8px;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;text-align:left">Action</th>
+              </tr>
+            </thead>
+            <tbody id="markets-tbody">
+              <tr><td colspan="8" style="padding:40px;text-align:center;color:var(--muted)">
+                Click <strong>Refresh All</strong> to load live signals for all instruments
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div><!-- end page-content -->
 </div><!-- end main -->
 
@@ -1572,6 +1627,7 @@ function navTo(page, btn) {
   if (page === 'portfolio')  renderPortfolio();
   if (page === 'advisor')    {}
   if (page === 'discover')   { loadWatchlist(); setTimeout(function(){ if(typeof renderWatchlistPage==='function') renderWatchlistPage(); }, 0); }
+  if (page === 'markets')    setTimeout(function(){ if(typeof renderMarketsTable==='function') renderMarketsTable(); }, 0);
   if (page === 'settings')   loadSettingsForm();
   if (page === 'engine')     renderEnginePage();
 }
@@ -3271,6 +3327,195 @@ async function sendTelegramAlert(p) {
 
 // Initialise engine state on load
 loadEngineState();
+
+
+
+var _marketsFilter = 'all';
+
+function marketsFilter(f, btn) {
+  _marketsFilter = f;
+  document.querySelectorAll('#markets-filter-btns button').forEach(function(b) {
+    b.className = 'btn btn-outline btn-sm';
+  });
+  if (btn) btn.className = 'btn btn-primary btn-sm';
+  renderMarketsTable();
+}
+
+function buildMarketRow(inst, sig) {
+  var chg    = sig.changePct || 0;
+  var isBuy  = sig.signal === 'buy' || sig.signal === 'strong-buy';
+  var isSell = sig.signal === 'sell';
+  var sc     = sig.score >= 65 ? '#16a34a' : sig.score >= 40 ? '#d97706' : '#dc2626';
+  var chgCol = chg >= 0 ? '#16a34a' : '#dc2626';
+  var rsiCol = (sig.rsi||50) < 30 ? '#16a34a' : (sig.rsi||50) > 70 ? '#dc2626' : '#374151';
+  var momCol = (sig.momentum||0) > 0 ? '#16a34a' : '#dc2626';
+  var rowBg  = isBuy ? '#f0fdf4' : isSell ? '#fff1f2' : '';
+
+  var tr = document.createElement('tr');
+  tr.style.borderBottom = '1px solid var(--border)';
+  if (rowBg) tr.style.background = rowBg;
+
+  // Symbol cell
+  var td1 = document.createElement('td');
+  td1.style.cssText = 'padding:10px 14px';
+  td1.innerHTML = '<div style="font-weight:700;font-size:13px">' + inst.symbol + '</div>'
+    + '<div style="font-size:10px;color:var(--muted)">' + (inst.name||'').slice(0,18) + '</div>';
+  tr.appendChild(td1);
+
+  // Price
+  var td2 = document.createElement('td');
+  td2.style.cssText = 'padding:10px 8px;font-family:var(--font-mono);font-weight:600';
+  td2.textContent = '$' + (sig.price||0).toFixed(2);
+  tr.appendChild(td2);
+
+  // Change
+  var td3 = document.createElement('td');
+  td3.style.cssText = 'padding:10px 8px;font-weight:600;color:' + chgCol;
+  td3.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
+  tr.appendChild(td3);
+
+  // Score
+  var td4 = document.createElement('td');
+  td4.style.cssText = 'padding:10px 8px';
+  td4.innerHTML = '<div style="display:flex;align-items:center;gap:5px">'
+    + '<div style="width:32px;height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:4px;background:' + sc + ';width:' + Math.min(100,sig.score||0) + '%"></div></div>'
+    + '<span style="font-weight:700;color:' + sc + ';font-size:12px">' + (sig.score||0) + '</span></div>';
+  tr.appendChild(td4);
+
+  // Signal badge
+  var td5 = document.createElement('td');
+  td5.style.cssText = 'padding:10px 8px';
+  var badge = document.createElement('span');
+  badge.className = 'badge ' + (isBuy ? 'badge-green' : isSell ? 'badge-red' : 'badge-amber');
+  badge.textContent = signalLabel(sig.signal);
+  td5.appendChild(badge);
+  tr.appendChild(td5);
+
+  // RSI
+  var td6 = document.createElement('td');
+  td6.style.cssText = 'padding:10px 8px;font-weight:600;color:' + rsiCol;
+  td6.textContent = sig.rsi ? Math.round(sig.rsi) : '--';
+  tr.appendChild(td6);
+
+  // Momentum
+  var td7 = document.createElement('td');
+  td7.style.cssText = 'padding:10px 8px;font-weight:600;color:' + momCol;
+  td7.textContent = sig.momentum ? (sig.momentum > 0 ? '+' : '') + sig.momentum.toFixed(1) + '%' : '--';
+  tr.appendChild(td7);
+
+  // Actions
+  var td8 = document.createElement('td');
+  td8.style.cssText = 'padding:10px 8px';
+  var btnWrap = document.createElement('div');
+  btnWrap.style.cssText = 'display:flex;gap:5px';
+  if (isBuy) {
+    var buyBtn = document.createElement('button');
+    buyBtn.className = 'btn btn-green btn-sm';
+    buyBtn.style.fontSize = '11px';
+    buyBtn.textContent = 'Buy';
+    buyBtn.dataset.sym = inst.symbol;
+    buyBtn.onclick = function() { openTradeDrawer(this.dataset.sym, 'buy'); };
+    btnWrap.appendChild(buyBtn);
+  }
+  var analyseBtn = document.createElement('button');
+  analyseBtn.className = 'btn btn-ghost btn-sm';
+  analyseBtn.style.fontSize = '11px';
+  analyseBtn.textContent = 'Info';
+  analyseBtn.dataset.sym = inst.symbol;
+  analyseBtn.onclick = function() {
+    var s = this.dataset.sym;
+    navTo('discover', null);
+    setTimeout(function(){ if(typeof discoverQuick === 'function') discoverQuick(s); }, 250);
+  };
+  btnWrap.appendChild(analyseBtn);
+  td8.appendChild(btnWrap);
+  tr.appendChild(td8);
+
+  return tr;
+}
+
+function renderMarketsTable() {
+  var tbody = document.getElementById('markets-tbody');
+  if (!tbody) return;
+
+  var sortBy = document.getElementById('markets-sort') ? document.getElementById('markets-sort').value : 'score';
+
+  var rows = INSTRUMENTS.map(function(inst) {
+    return { inst: inst, sig: state.signals[inst.symbol] };
+  }).filter(function(r) { return r.sig && r.sig.price; });
+
+  // Add custom watchlist items
+  if (typeof watchlist !== 'undefined') {
+    watchlist.forEach(function(w) {
+      if (w.added !== 'default') {
+        var sig = state.signals[w.symbol];
+        if (sig && sig.price && !rows.find(function(r){ return r.inst.symbol === w.symbol; })) {
+          rows.push({ inst: { symbol: w.symbol, name: w.name, cat: w.cat, group: 'other' }, sig: sig });
+        }
+      }
+    });
+  }
+
+  if (_marketsFilter === 'buy')  rows = rows.filter(function(r){ return r.sig.signal === 'buy' || r.sig.signal === 'strong-buy'; });
+  if (_marketsFilter === 'hold') rows = rows.filter(function(r){ return r.sig.signal === 'hold'; });
+  if (_marketsFilter === 'sell') rows = rows.filter(function(r){ return r.sig.signal === 'sell'; });
+
+  rows.sort(function(a, b) {
+    if (sortBy === 'score')  return (b.sig.score||0) - (a.sig.score||0);
+    if (sortBy === 'change') return Math.abs(b.sig.changePct||0) - Math.abs(a.sig.changePct||0);
+    if (sortBy === 'rsi')    return (a.sig.rsi||50) - (b.sig.rsi||50);
+    if (sortBy === 'symbol') return a.inst.symbol.localeCompare(b.inst.symbol);
+    return 0;
+  });
+
+  tbody.innerHTML = '';
+  if (!rows.length) {
+    var emptyRow = document.createElement('tr');
+    var emptyTd  = document.createElement('td');
+    emptyTd.colSpan = 8;
+    emptyTd.style.cssText = 'padding:30px;text-align:center;color:var(--muted)';
+    emptyTd.textContent = 'No instruments match this filter — try Refresh All';
+    emptyRow.appendChild(emptyTd);
+    tbody.appendChild(emptyRow);
+    return;
+  }
+
+  rows.forEach(function(r) {
+    tbody.appendChild(buildMarketRow(r.inst, r.sig));
+  });
+}
+
+async function refreshMarketsData() {
+  var btn = document.querySelector('[onclick="refreshMarketsData()"]');
+  if (btn) { btn.textContent = 'Loading...'; btn.disabled = true; }
+
+  var tbody = document.getElementById('markets-tbody');
+  if (tbody) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:30px;text-align:center;color:var(--muted)">Fetching live data for all instruments...</td></tr>';
+  }
+
+  var allInsts = INSTRUMENTS.slice();
+  var loaded = 0;
+
+  for (var i = 0; i < allInsts.length; i += 5) {
+    var batch = allInsts.slice(i, i + 5);
+    await Promise.all(batch.map(async function(inst) {
+      try {
+        var data = await fetchSymbol(inst.symbol, inst.liveTicker);
+        state.signals[inst.symbol] = computeSignal(inst, data);
+        loaded++;
+      } catch(e) {}
+    }));
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="8" style="padding:30px;text-align:center;color:var(--muted)">Loading... ' + loaded + '/' + allInsts.length + '</td></tr>';
+    }
+  }
+
+  saveState();
+  renderMarketsTable();
+  if (btn) { btn.textContent = 'Refresh All'; btn.disabled = false; }
+  toast('Markets updated — ' + loaded + ' instruments loaded', 'success');
+}
 
 
 // ── Init ───────────────────────────────────────────────────────────────
