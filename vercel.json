@@ -1,20 +1,12 @@
 {
   "functions": {
-    "api/market-data.js": {
-      "memory": 128,
-      "maxDuration": 10
-    },
-    "api/trade.js": {
-      "memory": 128,
-      "maxDuration": 10
-    },
-    "api/alerts.js": {
-      "memory": 128,
-      "maxDuration": 10
-    },
-    "api/ai.js": {
-      "memory": 128,
-      "maxDuration": 30
-    }
-  }
+    "api/market-data.js": { "memory": 128, "maxDuration": 10 },
+    "api/trade.js":       { "memory": 128, "maxDuration": 10 },
+    "api/alerts.js":      { "memory": 128, "maxDuration": 10 },
+    "api/ai.js":          { "memory": 128, "maxDuration": 30 },
+    "api/auto-scan.js":   { "memory": 128, "maxDuration": 30 }
+  },
+  "crons": [
+    { "path": "/api/auto-scan", "schedule": "30 21 * * *" }
+  ]
 }
