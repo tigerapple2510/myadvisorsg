@@ -2168,7 +2168,17 @@ function renderSignalsPage() {
       forYou = `You hold this (${pnlPct >= 0 ? '+' : ''}${pnlPct}% P&L). Signal intact - hold and trail stop-loss up.`;
     } else if (s.signal === 'hold') {
       const gap = 65 - s.score;
-      forYou = gap <= 5 ? `Only ${gap} pts from a Buy signal - watch closely.` : `${gap} pts below Buy threshold. Not yet.`;
+      const momOk = (s.momentum || 0) > 0;
+      if (gap <= 0) {
+        // Score already qualifies - momentum is the only thing holding it back
+        forYou = `Score already qualifies - waiting on momentum to turn positive (currently ${(s.momentum||0).toFixed(1)}%).`;
+      } else if (gap <= 5 && momOk) {
+        forYou = `Only ${gap} pts from a Buy signal - watch closely.`;
+      } else if (gap <= 5 && !momOk) {
+        forYou = `${gap} pts from score threshold, but momentum is negative (${(s.momentum||0).toFixed(1)}%) - needs both to turn.`;
+      } else {
+        forYou = `${gap} pts below Buy threshold. Not yet.`;
+      }
     } else if (s.signal === 'sell' && held) {
       forYou = `⚠️ Signal has turned bearish. Consider closing position.`;
     }
