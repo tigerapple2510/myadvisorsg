@@ -1484,13 +1484,90 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
         </div>
       </div>
 
+
+      <div class="card mb-16">
+        <div class="card-header">
+          <div class="card-title">🔬 Out-of-Sample Validation</div>
+          <div class="text-small text-muted">Same fixed rules, tested on data never used to select them</div>
+        </div>
+        <div class="card-body">
+          <div style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:16px">
+            The 27.7%/yr result above was found by testing several parameter combinations on the same 36 months and picking the best performer - a real risk of overfitting. To check honestly, the exact same fixed rules (Top 3, score ≥ 65, positive momentum required) were then run against <strong>Oct 2021 - Sep 2023</strong>, a period never used to choose those rules, and which includes the 2022 bear market.
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px">
+            <thead><tr style="border-bottom:2px solid var(--border);text-align:left">
+              <th style="padding:8px 10px;font-size:11px;text-transform:uppercase;color:var(--muted)">Period</th>
+              <th style="padding:8px 10px;font-size:11px;text-transform:uppercase;color:var(--muted)">Iconium IRR</th>
+              <th style="padding:8px 10px;font-size:11px;text-transform:uppercase;color:var(--muted)">SPY IRR</th>
+              <th style="padding:8px 10px;font-size:11px;text-transform:uppercase;color:var(--muted)">Alpha</th>
+            </tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:8px 10px">Tuning period (2023-10 → 2026-09) <span class="badge badge-amber" style="margin-left:4px">Parameters chosen here</span></td>
+                <td style="padding:8px 10px;font-weight:700">27.7%/yr</td>
+                <td style="padding:8px 10px">19.7%/yr</td>
+                <td style="padding:8px 10px;color:var(--green)">+8.0pp</td>
+              </tr>
+              <tr style="background:#f0fdf4;border-bottom:1px solid var(--border)">
+                <td style="padding:8px 10px"><strong>Out-of-sample (2021-10 → 2023-09)</strong> <span class="badge badge-green" style="margin-left:4px">Never tuned on</span></td>
+                <td style="padding:8px 10px;font-weight:700">20.2%/yr</td>
+                <td style="padding:8px 10px">-1.3%/yr</td>
+                <td style="padding:8px 10px;color:var(--green);font-weight:700">+21.5pp</td>
+              </tr>
+              <tr>
+                <td style="padding:8px 10px">Full combined (2021-10 → 2026-09, 60 months)</td>
+                <td style="padding:8px 10px;font-weight:700">28.7%/yr</td>
+                <td style="padding:8px 10px">13.9%/yr</td>
+                <td style="padding:8px 10px;color:var(--green)">+14.8pp</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:16px">
+            <div style="font-weight:700;font-size:13px;margin-bottom:10px">🐻 2022 Bear Market Stress Test <span class="text-small text-muted" style="font-weight:400">(lump sum, no monthly DCA)</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+              <div style="text-align:center;padding:10px;background:#f0fdf4;border-radius:var(--r-xs);border:1px solid #bbf7d0">
+                <div class="text-small text-muted" style="margin-bottom:4px">Iconium Strategy</div>
+                <div style="font-size:18px;font-weight:700;color:var(--green)">+1.3%</div>
+                <div class="text-small text-muted">Max drawdown -2.9%</div>
+              </div>
+              <div style="text-align:center;padding:10px;background:#fef2f2;border-radius:var(--r-xs);border:1px solid #fecaca">
+                <div class="text-small text-muted" style="margin-bottom:4px">SPY Buy-and-Hold</div>
+                <div style="font-size:18px;font-weight:700;color:var(--red)">-15.0%</div>
+                <div class="text-small text-muted">Max drawdown -20.9%</div>
+              </div>
+              <div style="text-align:center;padding:10px;background:#fef2f2;border-radius:var(--r-xs);border:1px solid #fecaca">
+                <div class="text-small text-muted" style="margin-bottom:4px">QQQ Buy-and-Hold</div>
+                <div style="font-size:18px;font-weight:700;color:var(--red)">-26.7%</div>
+              </div>
+            </div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.7">
+              The strategy sat in <strong>100% cash for 9 of the 12 months</strong> of 2022, because nothing in the universe had both score ≥ 65 and positive momentum during the crash. This is a mechanical, explainable effect - a momentum filter naturally avoids falling assets - not a lucky guess. See the month-by-month holdings below.
+            </div>
+          </div>
+
+          <details style="margin-bottom:4px">
+            <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--blue);padding:6px 0">Show 2022 month-by-month holdings ▾</summary>
+            <div style="max-height:280px;overflow-y:auto;margin-top:8px">
+              <table style="width:100%;border-collapse:collapse;font-size:12px">
+                <thead><tr style="border-bottom:2px solid var(--border);text-align:left;position:sticky;top:0;background:#fff">
+                  <th style="padding:6px 10px;font-size:10px;text-transform:uppercase;color:var(--muted)">Month</th>
+                  <th style="padding:6px 10px;font-size:10px;text-transform:uppercase;color:var(--muted)">Holdings (score)</th>
+                </tr></thead>
+                <tbody><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-01</td><td style="padding:6px 10px;color:var(--muted);font-style:italic">100% Cash</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-02</td><td style="padding:6px 10px;color:var(--muted);font-style:italic">100% Cash</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-03</td><td style="padding:6px 10px;color:var(--muted);font-style:italic">100% Cash</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-04</td><td style="padding:6px 10px;color:var(--muted);font-style:italic">100% Cash</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-05</td><td style="padding:6px 10px;color:var(--muted);font-style:italic">100% Cash</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-06</td><td style="padding:6px 10px;color:var(--muted);font-style:italic">100% Cash</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-07</td><td style="padding:6px 10px;color:var(--muted);font-style:italic">100% Cash</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-08</td><td style="padding:6px 10px;color:var(--muted);font-style:italic">100% Cash</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-09</td><td style="padding:6px 10px;color:var(--muted);font-style:italic">100% Cash</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-10</td><td style="padding:6px 10px">SCHD (78), JPM (76), AAPL (74)</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-11</td><td style="padding:6px 10px">NVDA (80), JPM (80), SLV (80)</td></tr><tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px">2022-12</td><td style="padding:6px 10px">SLV (83), GLD (76), META (75)</td></tr></tbody>
+              </table>
+            </div>
+          </details>
+        </div>
+      </div>
+
       <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--r-sm);padding:14px 18px;margin-bottom:12px">
         <div style="font-weight:700;font-size:13px;color:var(--blue);margin-bottom:6px">📊 What this backtest tells us</div>
         <div style="font-size:12px;color:var(--text2);line-height:1.7">The baseline strategy matched SPY almost exactly (19.6% vs 19.7%/yr) over this 3-year bull market. Concentrating into the top 3 instruments with a positive-momentum filter improved returns to 27.7%/yr - an $6,276 advantage over simply holding SPY on the same capital.</div>
       </div>
       <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r-sm);padding:14px 18px;margin-bottom:12px">
         <div style="font-weight:700;font-size:13px;color:var(--amber);margin-bottom:6px">⚠️ Important caveats</div>
-        <div style="font-size:12px;color:var(--text2);line-height:1.7">This period was one of the strongest bull markets in history - the strategy has not been tested through a sustained bear market. The 47% per-trade win rate is below 50%; the edge comes from winners being larger than losers, not from picking correctly more often. Past performance never guarantees future results.</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7">The tuning-period parameters were chosen by testing several variants on the same data and picking the best - a known overfitting risk, which the out-of-sample test above was built specifically to check. Two independent periods now show positive alpha, which is reassuring, but two periods is still a small sample. This system has not been tested through every kind of market stress (e.g. a slow multi-year bear market, a sudden liquidity crisis). Win rates around 47-54% mean the edge comes from sizing of wins vs losses, not from being right most of the time. Past performance, backtested or live, never guarantees future results.</div>
       </div>
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r-sm);padding:14px 18px">
         <div style="font-weight:700;font-size:13px;color:var(--green);margin-bottom:6px">✅ Current status</div>
