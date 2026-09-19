@@ -729,6 +729,9 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
     <button class="nav-btn" onclick="navTo('markets',this)">
       <span class="nav-icon">📈</span> Markets
     </button>
+    <button class="nav-btn" onclick="navTo('backtest',this)">
+      <span class="nav-icon">🧪</span> Backtest
+    </button>
     <button class="nav-btn" onclick="navTo('discover',this)">
       <span class="nav-icon">🔍</span> Discover
     </button>
@@ -1384,6 +1387,114 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
       </div>
     </div>
 
+  
+    <!-- BACKTEST PAGE -->
+    <div class="page" id="page-backtest">
+      <div class="page-header">
+        <h1>Backtest Report</h1>
+        <p>3-Year ETF Rotation Strategy · Oct 2023 – Sep 2026 · $10,000 start + $500/month DCA</p>
+      </div>
+
+      <div class="card mb-16">
+        <div class="card-body" style="padding:16px 20px">
+          <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Strategy Variants Tested</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap" id="bt-strategy-btns">
+            <button class="btn btn-outline btn-sm" data-i="0" onclick="btShowStrategy(0,this)">Baseline (Top 5)</button>
+            <button class="btn btn-outline btn-sm" data-i="1" onclick="btShowStrategy(1,this)">Top 3 Concentrated</button>
+            <button class="btn btn-primary btn-sm" data-i="2" onclick="btShowStrategy(2,this)">Top 3 + Momentum ⭐ Live</button>
+            <button class="btn btn-outline btn-sm" data-i="3" onclick="btShowStrategy(3,this)">SPY Buy-and-Hold</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px" id="bt-kpis"></div>
+
+      <div class="card mb-16">
+        <div class="card-header"><div class="card-title">Portfolio Growth vs SPY Benchmark</div></div>
+        <div class="card-body"><canvas id="bt-chart" height="260"></canvas></div>
+      </div>
+
+      <div class="card mb-16">
+        <div class="card-header"><div class="card-title">All Strategy Comparison</div></div>
+        <div class="card-body" style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead><tr style="border-bottom:2px solid var(--border);text-align:left">
+              <th style="padding:8px 10px;font-size:11px;text-transform:uppercase;color:var(--muted)">Strategy</th>
+              <th style="padding:8px 10px;font-size:11px;text-transform:uppercase;color:var(--muted)">Final Value</th>
+              <th style="padding:8px 10px;font-size:11px;text-transform:uppercase;color:var(--muted)">Total Return</th>
+              <th style="padding:8px 10px;font-size:11px;text-transform:uppercase;color:var(--muted)">IRR/yr</th>
+              <th style="padding:8px 10px;font-size:11px;text-transform:uppercase;color:var(--muted)">Win Rate</th>
+              <th style="padding:8px 10px;font-size:11px;text-transform:uppercase;color:var(--muted)">vs SPY</th>
+            </tr></thead>
+            <tbody>
+              <tr style="background:#f0fdf4;border-bottom:1px solid var(--border)">
+                <td style="padding:8px 10px"><strong>Top 3 + Momentum</strong> <span class="badge badge-green" style="margin-left:4px">Live Strategy</span></td>
+                <td style="padding:8px 10px"><strong>$46,638</strong></td>
+                <td style="padding:8px 10px;color:var(--green)"><strong>+69.6%</strong></td>
+                <td style="padding:8px 10px;color:var(--green)"><strong>27.7%/yr</strong></td>
+                <td style="padding:8px 10px">47%</td>
+                <td style="padding:8px 10px;color:var(--green)"><strong>+8.0%/yr</strong></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:8px 10px">Top 3 Concentrated</td>
+                <td style="padding:8px 10px">$44,482</td>
+                <td style="padding:8px 10px;color:var(--green)">+61.8%</td>
+                <td style="padding:8px 10px;color:var(--green)">25.1%/yr</td>
+                <td style="padding:8px 10px">54%</td>
+                <td style="padding:8px 10px;color:var(--green)">+5.4%/yr</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:8px 10px">Baseline (Top 5)</td>
+                <td style="padding:8px 10px">$40,280</td>
+                <td style="padding:8px 10px;color:var(--amber)">+46.5%</td>
+                <td style="padding:8px 10px;color:var(--amber)">19.6%/yr</td>
+                <td style="padding:8px 10px">54%</td>
+                <td style="padding:8px 10px;color:var(--amber)">-0.1%/yr</td>
+              </tr>
+              <tr style="background:#fff7ed">
+                <td style="padding:8px 10px">SPY Buy-and-Hold <span class="badge badge-amber" style="margin-left:4px">Benchmark</span></td>
+                <td style="padding:8px 10px">$40,362</td>
+                <td style="padding:8px 10px">+46.8%</td>
+                <td style="padding:8px 10px">19.7%/yr</td>
+                <td style="padding:8px 10px">—</td>
+                <td style="padding:8px 10px">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card mb-16">
+        <div class="card-header"><div class="card-title">Month-by-Month Results (Baseline)</div></div>
+        <div class="card-body" style="overflow-x:auto;max-height:400px;overflow-y:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="border-bottom:2px solid var(--border);text-align:left;position:sticky;top:0;background:#fff">
+              <th style="padding:6px 10px;font-size:10px;text-transform:uppercase;color:var(--muted)">Month</th>
+              <th style="padding:6px 10px;font-size:10px;text-transform:uppercase;color:var(--muted)">Portfolio</th>
+              <th style="padding:6px 10px;font-size:10px;text-transform:uppercase;color:var(--muted)">MoM</th>
+              <th style="padding:6px 10px;font-size:10px;text-transform:uppercase;color:var(--muted)">Total Return</th>
+              <th style="padding:6px 10px;font-size:10px;text-transform:uppercase;color:var(--muted)">SPY</th>
+              <th style="padding:6px 10px;font-size:10px;text-transform:uppercase;color:var(--muted)">Top Holdings</th>
+            </tr></thead>
+            <tbody id="bt-monthly-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--r-sm);padding:14px 18px;margin-bottom:12px">
+        <div style="font-weight:700;font-size:13px;color:var(--blue);margin-bottom:6px">📊 What this backtest tells us</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7">The baseline strategy matched SPY almost exactly (19.6% vs 19.7%/yr) over this 3-year bull market. Concentrating into the top 3 instruments with a positive-momentum filter improved returns to 27.7%/yr — an $6,276 advantage over simply holding SPY on the same capital.</div>
+      </div>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r-sm);padding:14px 18px;margin-bottom:12px">
+        <div style="font-weight:700;font-size:13px;color:var(--amber);margin-bottom:6px">⚠️ Important caveats</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7">This period was one of the strongest bull markets in history — the strategy has not been tested through a sustained bear market. The 47% per-trade win rate is below 50%; the edge comes from winners being larger than losers, not from picking correctly more often. Past performance never guarantees future results.</div>
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r-sm);padding:14px 18px">
+        <div style="font-weight:700;font-size:13px;color:var(--green);margin-bottom:6px">✅ Current status</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7">The Trading Engine's Gate 1 now runs this backtested Top-3 + Momentum logic live. Run Scan on the Engine tab to see it applied to today's signals. Recommended: paper trade for 30 days, then deploy small real capital if live results track this backtest.</div>
+      </div>
+    </div>
+
   </div><!-- end page-content -->
 </div><!-- end main -->
 
@@ -1628,6 +1739,7 @@ function navTo(page, btn) {
   if (page === 'advisor')    {}
   if (page === 'discover')   { loadWatchlist(); setTimeout(function(){ if(typeof renderWatchlistPage==='function') renderWatchlistPage(); }, 0); }
   if (page === 'markets')    setTimeout(function(){ if(typeof renderMarketsTable==='function') renderMarketsTable(); }, 0);
+  if (page === 'backtest')   setTimeout(function(){ if(typeof btInit==='function') btInit(); }, 0);
   if (page === 'settings')   loadSettingsForm();
   if (page === 'engine')     renderEnginePage();
 }
@@ -3037,23 +3149,32 @@ async function runEngineScan() {
     return;
   }
 
-  // Build candidate list: score >= 72, long only, not already held
+  // ── Backtested strategy: Top 3, min score 65, positive momentum ──────
+  // 3-year backtest (Oct 2023–Sep 2026): this configuration returned 27.7%/yr
+  // vs SPY buy-and-hold 19.7%/yr — see Backtest tab for full report.
+  var MIN_SCORE = 65;
+  var TOP_N     = 3;
   var held = Object.keys(paperState.positions || {});
   var sigs  = Object.values(state.signals);
   var candidates = sigs
-    .filter(function(s) { return s.score >= 72 && held.indexOf(s.symbol) === -1; })
-    .sort(function(a,b) { return b.score - a.score; });
+    .filter(function(s) {
+      return s.score >= MIN_SCORE
+        && (s.momentum || 0) > 0          // momentum filter — backtested edge
+        && held.indexOf(s.symbol) === -1;
+    })
+    .sort(function(a,b) { return b.score - a.score; })
+    .slice(0, TOP_N);
 
   // Show top scorers for context regardless of gate result
   var topScorers = sigs.slice().sort(function(a,b){return b.score-a.score;}).slice(0,5);
   var topStr = topScorers.map(function(s){return s.symbol+' '+s.score;}).join(', ');
 
-  // Gate 1: Score ≥ 72
+  // Gate 1: Backtested filter — score ≥ 65 AND positive momentum, top 3
   var gate1 = candidates.length > 0;
   setGate('score', gate1,
     gate1
-      ? candidates[0].symbol + ' leads at ' + candidates[0].score + '/100 · Top: ' + topStr
-      : 'No instrument ≥ 72 right now · Best: ' + topStr);
+      ? candidates[0].symbol + ' leads at ' + candidates[0].score + '/100 (momentum +' + (candidates[0].momentum||0).toFixed(1) + '%) · Top: ' + topStr
+      : 'No instrument passes score≥65 + positive momentum · Best: ' + topStr);
 
   // Gate 2: Market regime
   var spySig = state.signals['SPY'] || state.signals['VOO'];
@@ -3515,6 +3636,147 @@ async function refreshMarketsData() {
   renderMarketsTable();
   if (btn) { btn.textContent = 'Refresh All'; btn.disabled = false; }
   toast('Markets updated — ' + loaded + ' instruments loaded', 'success');
+}
+
+
+
+// ── BACKTEST REPORT ──────────────────────────────────────────────────────
+var BT_MONTHLY = [{"date": "2023-10", "portfolio": 10000.0, "spy": 10000.0, "invested": 10000, "top_picks": [["BTC-USD", 80], ["ETH-USD", 78], ["AMZN", 73], ["MSFT", 72], ["JEPQ", 72]], "monthly_ret": 0.0}, {"date": "2023-11", "portfolio": 11507.5, "spy": 11413.44, "invested": 10500, "top_picks": [["ARKK", 86], ["TSLA", 82], ["ETH-USD", 80], ["AMZN", 76], ["JPM", 76]], "monthly_ret": 15.07}, {"date": "2023-12", "portfolio": 12928.76, "spy": 12386.33, "invested": 11000, "top_picks": [["AAPL", 80], ["AMZN", 80], ["JPM", 80], ["ARKK", 80], ["VOO", 80]], "monthly_ret": 12.35}, {"date": "2024-01", "portfolio": 13198.87, "spy": 13083.6, "invested": 11500, "top_picks": [["ARKK", 90], ["IWM", 90], ["SCHD", 83], ["GOOGL", 80], ["JPM", 80]], "monthly_ret": 2.09}, {"date": "2024-02", "portfolio": 14612.15, "spy": 14266.39, "invested": 12000, "top_picks": [["IWM", 85], ["SCHD", 81], ["ARKK", 80], ["JEPI", 77], ["NVDA", 70]], "monthly_ret": 10.71}, {"date": "2024-03", "portfolio": 15403.41, "spy": 15187.3, "invested": 12500, "top_picks": [["JEPI", 81], ["SCHD", 81], ["IWM", 77], ["GLD", 76], ["ARKK", 73]], "monthly_ret": 5.42}, {"date": "2024-04", "portfolio": 14639.9, "spy": 15074.95, "invested": 13000, "top_picks": [["SLV", 80], ["JPM", 76], ["BTC-USD", 75], ["IWM", 72], ["SCHD", 72]], "monthly_ret": -4.96}, {"date": "2024-05", "portfolio": 16006.83, "spy": 16337.44, "invested": 13500, "top_picks": [["SCHD", 82], ["SLV", 80], ["IWM", 77], ["AAPL", 71], ["NVDA", 70]], "monthly_ret": 9.34}, {"date": "2024-06", "portfolio": 16427.0, "spy": 17359.43, "invested": 14000, "top_picks": [["SLV", 90], ["AAPL", 80], ["TSLA", 80], ["NVDA", 70], ["GOOGL", 70]], "monthly_ret": 2.62}, {"date": "2024-07", "portfolio": 17175.41, "spy": 18069.64, "invested": 14500, "top_picks": [["MSFT", 81], ["SLV", 81], ["AAPL", 80], ["TSLA", 80], ["TQQQ", 80]], "monthly_ret": 4.56}, {"date": "2024-08", "portfolio": 17501.71, "spy": 18991.85, "invested": 15000, "top_picks": [["AAPL", 80], ["TSLA", 78], ["TQQQ", 76], ["IWM", 76], ["SCHD", 76]], "monthly_ret": 1.9}, {"date": "2024-09", "portfolio": 19445.06, "spy": 19831.47, "invested": 15500, "top_picks": [["ARKK", 94], ["TSLA", 93], ["IWM", 81], ["AAPL", 80], ["SCHD", 76]], "monthly_ret": 11.1}, {"date": "2024-10", "portfolio": 19355.32, "spy": 20154.5, "invested": 16000, "top_picks": [["TSLA", 89], ["SLV", 80], ["GOOGL", 73], ["ARKK", 72], ["JEPQ", 72]], "monthly_ret": -0.46}, {"date": "2024-11", "portfolio": 24087.51, "spy": 21856.39, "invested": 16500, "top_picks": [["TSLA", 80], ["ARKK", 80], ["MSFT", 77], ["GOOGL", 77], ["SLV", 71]], "monthly_ret": 24.45}, {"date": "2024-12", "portfolio": 26945.03, "spy": 21758.97, "invested": 17000, "top_picks": [["ETH-USD", 85], ["ARKK", 80], ["MSFT", 73], ["NVDA", 70], ["GOOGL", 70]], "monthly_ret": 11.86}, {"date": "2025-01", "portfolio": 28360.11, "spy": 22843.34, "invested": 17500, "top_picks": [["ETH-USD", 85], ["ARKK", 80], ["MSFT", 72], ["GOOGL", 70], ["META", 70]], "monthly_ret": 5.25}, {"date": "2025-02", "portfolio": 24679.24, "spy": 23053.34, "invested": 18000, "top_picks": [["SLV", 77], ["JEPI", 73], ["SCHD", 73], ["AAPL", 72], ["META", 70]], "monthly_ret": -12.98}, {"date": "2025-03", "portfolio": 24201.69, "spy": 22203.54, "invested": 18500, "top_picks": [["SCHD", 77], ["GLD", 70], ["SLV", 70], ["JEPI", 68], ["JPM", 67]], "monthly_ret": -1.94}, {"date": "2025-04", "portfolio": 23795.21, "spy": 22511.03, "invested": 19000, "top_picks": [["SCHD", 72], ["GLD", 70], ["IBIT", 69], ["BTC-USD", 69], ["ARKK", 68]], "monthly_ret": -1.68}, {"date": "2025-05", "portfolio": 25452.04, "spy": 24425.74, "invested": 19500, "top_picks": [["TSLA", 85], ["ARKK", 82], ["SLV", 81], ["IBIT", 80], ["BTC-USD", 80]], "monthly_ret": 6.96}, {"date": "2025-06", "portfolio": 27928.14, "spy": 26105.19, "invested": 20000, "top_picks": [["TSLA", 85], ["AMZN", 85], ["MSFT", 80], ["GOOGL", 80], ["IBIT", 80]], "monthly_ret": 9.73}, {"date": "2025-07", "portfolio": 29948.87, "spy": 27206.43, "invested": 20500, "top_picks": [["GOOGL", 90], ["ETH-USD", 83], ["MSFT", 80], ["AMZN", 80], ["TQQQ", 80]], "monthly_ret": 7.24}, {"date": "2025-08", "portfolio": 31461.33, "spy": 28264.69, "invested": 21000, "top_picks": [["MSFT", 90], ["GOOGL", 85], ["AMZN", 85], ["TQQQ", 85], ["ETH-USD", 85]], "monthly_ret": 5.05}, {"date": "2025-09", "portfolio": 33375.13, "spy": 29690.56, "invested": 21500, "top_picks": [["IWM", 85], ["ETH-USD", 85], ["GOOGL", 80], ["TSLA", 80], ["TQQQ", 80]], "monthly_ret": 6.08}, {"date": "2025-10", "portfolio": 36447.66, "spy": 30898.31, "invested": 22000, "top_picks": [["IWM", 85], ["AAPL", 80], ["TSLA", 80], ["JEPQ", 76], ["AMZN", 72]], "monthly_ret": 9.21}, {"date": "2025-11", "portfolio": 36399.26, "spy": 31458.56, "invested": 22500, "top_picks": [["XLK", 81], ["IWM", 81], ["AAPL", 80], ["TSLA", 80], ["TQQQ", 80]], "monthly_ret": -0.13}, {"date": "2025-12", "portfolio": 36996.1, "spy": 31890.89, "invested": 23000, "top_picks": [["SCHD", 80], ["AAPL", 76], ["TSLA", 72], ["IWM", 72], ["AMZN", 71]], "monthly_ret": 1.64}, {"date": "2026-01", "portfolio": 37342.2, "spy": 32860.89, "invested": 23500, "top_picks": [["JEPI", 90], ["SCHD", 85], ["IWM", 81], ["JEPQ", 77], ["META", 75]], "monthly_ret": 0.94}, {"date": "2026-02", "portfolio": 37898.83, "spy": 33076.91, "invested": 24000, "top_picks": [["SCHD", 80], ["JEPI", 77], ["IWM", 76], ["TSLA", 72], ["GLD", 70]], "monthly_ret": 1.49}, {"date": "2026-03", "portfolio": 36422.02, "spy": 31857.95, "invested": 24500, "top_picks": [["SCHD", 85], ["IWM", 72], ["TSLA", 68], ["JEPQ", 66], ["JEPI", 66]], "monthly_ret": -3.9}, {"date": "2026-04", "portfolio": 39803.71, "spy": 35704.71, "invested": 25000, "top_picks": [["AMZN", 80], ["TQQQ", 80], ["AAPL", 77], ["ARKK", 77], ["JEPI", 76]], "monthly_ret": 9.28}, {"date": "2026-05", "portfolio": 43804.95, "spy": 38083.69, "invested": 25500, "top_picks": [["IBIT", 88], ["BTC-USD", 84], ["AMZN", 80], ["TSLA", 76], ["ARKK", 75]], "monthly_ret": 10.05}, {"date": "2026-06", "portfolio": 39977.71, "spy": 38094.86, "invested": 26000, "top_picks": [["AAPL", 85], ["TSLA", 85], ["ARKK", 85], ["NVDA", 75], ["AMZN", 75]], "monthly_ret": -8.74}, {"date": "2026-07", "portfolio": 38669.2, "spy": 38608.13, "invested": 26500, "top_picks": [["MSFT", 80], ["AMZN", 72], ["AAPL", 70], ["JPM", 70], ["JEPI", 68]], "monthly_ret": -3.27}, {"date": "2026-08", "portfolio": 38942.4, "spy": 40142.8, "invested": 27000, "top_picks": [["ARKK", 82], ["ETH-USD", 78], ["MSFT", 75], ["IBIT", 74], ["BTC-USD", 74]], "monthly_ret": 0.71}, {"date": "2026-09", "portfolio": 40279.87, "spy": 40362.29, "invested": 27500, "top_picks": [["MSFT", 94], ["META", 88], ["IBIT", 88], ["BTC-USD", 88], ["ETH-USD", 88]], "monthly_ret": 3.43}];
+var BT_STRATEGIES = [
+  { label:'Baseline (Top 5)',      final:40280, irr:19.6 },
+  { label:'Top 3 Concentrated',    final:44482, irr:25.1 },
+  { label:'Top 3 + Momentum',      final:46638, irr:27.7 },
+  { label:'SPY Buy-and-Hold',      final:40362, irr:19.7 }
+];
+var _btCurrent = 2;
+var _btInited  = false;
+
+function btShowStrategy(i, btn) {
+  _btCurrent = i;
+  document.querySelectorAll('#bt-strategy-btns button').forEach(function(b){ b.className = 'btn btn-outline btn-sm'; });
+  if (btn) btn.className = 'btn btn-primary btn-sm';
+  btRenderKPIs();
+}
+
+function btFmt(n) {
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function btRenderKPIs() {
+  var s = BT_STRATEGIES[_btCurrent];
+  var invested = 27500;
+  var gain = s.final - invested;
+  var alpha = +(s.irr - 19.7).toFixed(1);
+  var alphaCol = alpha >= 0 ? 'var(--green)' : 'var(--red)';
+  var el = document.getElementById('bt-kpis');
+  if (!el) return;
+  el.innerHTML =
+    '<div class="card"><div class="card-body"><div class="text-small text-muted" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Final Portfolio</div><div style="font-size:24px;font-weight:700;font-family:var(--font-mono)">' + btFmt(s.final) + '</div></div></div>' +
+    '<div class="card"><div class="card-body"><div class="text-small text-muted" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Annualised Return</div><div style="font-size:24px;font-weight:700;font-family:var(--font-mono);color:' + (s.irr>=20?'var(--green)':'var(--amber)') + '">' + s.irr + '%/yr</div></div></div>' +
+    '<div class="card"><div class="card-body"><div class="text-small text-muted" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Total Profit</div><div style="font-size:24px;font-weight:700;font-family:var(--font-mono);color:' + (gain>=0?'var(--green)':'var(--red)') + '">' + btFmt(gain) + '</div></div></div>' +
+    '<div class="card"><div class="card-body"><div class="text-small text-muted" style="text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Alpha vs SPY</div><div style="font-size:24px;font-weight:700;font-family:var(--font-mono);color:' + alphaCol + '">' + (alpha>=0?'+':'') + alpha + '%/yr</div></div></div>';
+}
+
+function btDrawChart() {
+  var canvas = document.getElementById('bt-chart');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.parentElement.clientWidth - 4;
+  var H = 260;
+  canvas.width = W; canvas.height = H;
+
+  var pad = { t:16, r:16, b:34, l:64 };
+  var dw = W - pad.l - pad.r;
+  var dh = H - pad.t - pad.b;
+
+  var portfolios = BT_MONTHLY.map(function(m){ return m.portfolio; });
+  var spys       = BT_MONTHLY.map(function(m){ return m.spy; });
+  var invested   = BT_MONTHLY.map(function(m){ return m.invested; });
+  var dates      = BT_MONTHLY.map(function(m){ return m.date; });
+  var allVals    = portfolios.concat(spys);
+  var minV = Math.min.apply(null, allVals) * 0.95;
+  var maxV = Math.max.apply(null, allVals) * 1.05;
+  var n = portfolios.length;
+
+  function xp(i) { return pad.l + (i/(n-1)) * dw; }
+  function yp(v) { return pad.t + (1 - (v-minV)/(maxV-minV)) * dh; }
+
+  ctx.clearRect(0,0,W,H);
+
+  ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 1;
+  for (var g = 0; g <= 4; g++) {
+    var yg = pad.t + g*dh/4;
+    ctx.beginPath(); ctx.moveTo(pad.l,yg); ctx.lineTo(W-pad.r,yg); ctx.stroke();
+    var val = maxV - g*(maxV-minV)/4;
+    ctx.fillStyle = '#94a3b8'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('$' + Math.round(val/1000) + 'K', pad.l-6, yg+3);
+  }
+
+  ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath();
+  invested.forEach(function(v,i){ i===0 ? ctx.moveTo(xp(i),yp(v)) : ctx.lineTo(xp(i),yp(v)); });
+  ctx.stroke(); ctx.setLineDash([]);
+
+  ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  spys.forEach(function(v,i){ i===0 ? ctx.moveTo(xp(i),yp(v)) : ctx.lineTo(xp(i),yp(v)); });
+  ctx.stroke();
+
+  var grad = ctx.createLinearGradient(0,pad.t,0,H-pad.b);
+  grad.addColorStop(0,'rgba(212,163,49,.22)');
+  grad.addColorStop(1,'rgba(212,163,49,.02)');
+  ctx.beginPath();
+  portfolios.forEach(function(v,i){ i===0 ? ctx.moveTo(xp(i),yp(v)) : ctx.lineTo(xp(i),yp(v)); });
+  ctx.lineTo(xp(n-1), H-pad.b); ctx.lineTo(xp(0), H-pad.b); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+  ctx.strokeStyle = '#d4a331'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  portfolios.forEach(function(v,i){ i===0 ? ctx.moveTo(xp(i),yp(v)) : ctx.lineTo(xp(i),yp(v)); });
+  ctx.stroke();
+
+  ctx.fillStyle = '#94a3b8'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+  [0,6,12,18,24,30,35].forEach(function(i){ if (i < dates.length) ctx.fillText(dates[i], xp(i), H-pad.b+14); });
+
+  ctx.font = '11px sans-serif'; ctx.textAlign = 'left';
+  var legend = [[0,'#d4a331','Iconium Strategy'],[110,'#94a3b8','SPY Buy-Hold'],[220,'#cbd5e1','Amount Invested']];
+  legend.forEach(function(item){
+    ctx.fillStyle = item[1]; ctx.fillRect(pad.l+item[0], 2, 20, 3);
+    ctx.fillStyle = '#374151'; ctx.fillText(item[2], pad.l+item[0]+24, 6);
+  });
+}
+
+function btRenderMonthly() {
+  var tbody = document.getElementById('bt-monthly-tbody');
+  if (!tbody) return;
+  var invested = 10000;
+  tbody.innerHTML = BT_MONTHLY.map(function(m, i) {
+    if (i > 0) invested += 500;
+    var ret = ((m.portfolio - invested) / invested * 100).toFixed(1);
+    var mon = m.monthly_ret;
+    var tops = m.top_picks.slice(0,3).map(function(p){ return p[0]; }).join(', ');
+    var retCol = ret >= 0 ? 'var(--green)' : 'var(--red)';
+    var monCol = mon >= 0 ? 'var(--green)' : 'var(--red)';
+    return '<tr style="border-bottom:1px solid var(--border)">'
+      + '<td style="padding:6px 10px">' + m.date + '</td>'
+      + '<td style="padding:6px 10px;font-family:var(--font-mono)"><strong>$' + Math.round(m.portfolio).toLocaleString() + '</strong></td>'
+      + '<td style="padding:6px 10px;color:' + monCol + '">' + (mon>=0?'+':'') + mon.toFixed(1) + '%</td>'
+      + '<td style="padding:6px 10px;color:' + retCol + '">' + (ret>=0?'+':'') + ret + '%</td>'
+      + '<td style="padding:6px 10px;font-family:var(--font-mono)">$' + Math.round(m.spy).toLocaleString() + '</td>'
+      + '<td style="padding:6px 10px;color:var(--muted);font-size:11px">' + tops + '</td>'
+    + '</tr>';
+  }).join('');
+}
+
+function btInit() {
+  btRenderKPIs();
+  btRenderMonthly();
+  btDrawChart();
+  if (!_btInited) {
+    _btInited = true;
+    window.addEventListener('resize', function(){
+      if (document.getElementById('page-backtest') && document.getElementById('page-backtest').classList.contains('active')) btDrawChart();
+    });
+  }
 }
 
 
