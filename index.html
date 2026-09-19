@@ -2896,6 +2896,50 @@ function saveEngineState() {
 }
 
 // ── Render the Engine page ────────────────────────────────────────────
+
+function renderNearMiss(topScorers, gate1passed, gate2passed) {
+  var el = document.getElementById('eng-proposal-area');
+  if (!el || !topScorers || !topScorers.length) return;
+
+  var html = '<div style="padding:24px">';
+  html += '<div style="font-family:var(--font-serif);font-size:20px;margin-bottom:6px">📊 Nearest to Buy Signal</div>';
+  html += '<div style="color:var(--muted);font-size:13px;margin-bottom:20px">These instruments are closest to triggering all 5 gates. Load signals and run scan again when market opens.</div>';
+
+  // Scoreboard
+  html += '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">';
+  topScorers.forEach(function(s, i) {
+    var needed  = Math.max(0, 72 - s.score);
+    var pct     = Math.min(100, Math.round(s.score / 72 * 100));
+    var col     = s.score >= 65 ? 'var(--green)' : s.score >= 50 ? 'var(--amber)' : 'var(--muted)';
+    var isBuy   = s.signal === 'buy' || s.signal === 'strong-buy';
+    html += '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg);border-radius:var(--r-sm);border:1px solid ' + (i===0 ? 'var(--gold)' : 'var(--border)') + '">';
+    html += '<div style="font-size:16px;font-weight:700;color:var(--muted);min-width:20px;text-align:center">' + (i+1) + '</div>';
+    html += '<div style="min-width:64px"><div style="font-weight:700;font-size:14px">' + s.symbol + '</div><div style="font-size:10px;color:var(--muted)">' + (s.name || '').slice(0,16) + '</div></div>';
+    html += '<div style="flex:1">';
+    html += '<div style="display:flex;justify-content:space-between;margin-bottom:5px">';
+    html += '<span style="font-size:13px;font-weight:700;color:' + col + '">' + s.score + '/100</span>';
+    html += '<span style="font-size:11px;color:var(--muted)">' + (needed > 0 ? needed + ' pts to gate' : '✅ Clears gate 1') + '</span>';
+    html += '</div>';
+    html += '<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:5px;background:' + col + ';width:' + pct + '%"></div></div>';
+    html += '</div>';
+    html += '<span class="badge ' + (isBuy ? 'badge-green' : s.signal === 'sell' ? 'badge-red' : 'badge-amber') + '">' + signalLabel(s.signal) + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // What needs to happen
+  html += '<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--r-sm);padding:14px 16px">';
+  html += '<div style="font-weight:600;font-size:13px;margin-bottom:8px;color:var(--blue)">💡 What needs to happen for a trade to fire</div>';
+  html += '<div style="font-size:12px;color:var(--text2);line-height:1.9">';
+  if (!gate1passed) html += '• At least one instrument needs to score <strong>≥ 72/100</strong> — refresh signals when US market is open<br>';
+  if (!gate2passed) html += '• Market regime needs to improve — VOO/SPY score ≥ 65 or F&G not in extreme greed<br>';
+  html += '• All 5 gates must pass simultaneously — scores update live during market hours (9:30pm–4am SGT)';
+  html += '</div></div>';
+  html += '</div>';
+
+  el.innerHTML = html;
+}
+
 function renderEnginePage() {
   loadEngineState();
   updateEngineStats();
@@ -2944,92 +2988,79 @@ async function runEngineScan() {
     .filter(function(s) { return s.score >= 72 && held.indexOf(s.symbol) === -1; })
     .sort(function(a,b) { return b.score - a.score; });
 
+  // Show top scorers for context regardless of gate result
+  var topScorers = sigs.slice().sort(function(a,b){return b.score-a.score;}).slice(0,5);
+  var topStr = topScorers.map(function(s){return s.symbol+' '+s.score;}).join(', ');
+
   // Gate 1: Score ≥ 72
   var gate1 = candidates.length > 0;
   setGate('score', gate1,
-    gate1 ? candidates[0].symbol + ' leads at ' + candidates[0].score + '/100' : 'No instrument scores ≥ 72 right now');
+    gate1
+      ? candidates[0].symbol + ' leads at ' + candidates[0].score + '/100 · Top: ' + topStr
+      : 'No instrument ≥ 72 right now · Best: ' + topStr);
 
-  if (!gate1) {
-    setEngineStatus('idle', 'Gate 1 failed — no high-conviction signals today');
-    if (btn) { btn.disabled = false; btn.textContent = '🎯 Run Scan'; }
-    return;
-  }
-
-  // Gate 2: Market regime (use SPY trend as proxy)
-  var spySig  = state.signals['SPY'] || state.signals['VOO'];
-  var regime  = 'unknown';
-  var regimePassed = false;
+  // Gate 2: Market regime
+  var spySig = state.signals['SPY'] || state.signals['VOO'];
+  var regime = 'No market data'; var regimePassed = false;
   if (spySig) {
-    if      (spySig.score >= 65) { regime = 'Bull market'; regimePassed = true; }
-    else if (spySig.score >= 42) { regime = 'Sideways'; regimePassed = candidates[0].score >= 80; }
-    else                         { regime = 'Bear market'; regimePassed = false; }
+    if      (spySig.score >= 65) { regime = 'Bull market';  regimePassed = true; }
+    else if (spySig.score >= 42) { regime = 'Sideways';     regimePassed = gate1 && candidates.length && candidates[0].score >= 80; }
+    else                         { regime = 'Bear market';  regimePassed = false; }
   }
-  var fgNow = parseInt(document.getElementById('h-fg')?.textContent) || 50;
+  var fgNow = parseInt(document.getElementById('h-fg') ? document.getElementById('h-fg').textContent : '50') || 50;
   if (fgNow > 80) { regimePassed = false; regime += ' · Extreme Greed'; }
   setGate('regime', regimePassed,
-    regime + (spySig ? ' · SPY score ' + spySig.score : '') + ' · F&G ' + fgNow);
+    regime + (spySig ? ' · VOO score ' + spySig.score : '') + ' · F&G ' + fgNow);
 
-  if (!regimePassed) {
-    setEngineStatus('idle', 'Gate 2 failed — unfavourable market regime');
-    if (btn) { btn.disabled = false; btn.textContent = '🎯 Run Scan'; }
-    return;
-  }
+  // Pick best candidate (use gate1 winner, or best overall if gate1 failed)
+  var best = gate1 ? candidates[0] : topScorers[0];
 
-  // Pick best candidate
-  var best = candidates[0];
-
-  // Gate 3: Smart money (simulated from available data)
-  // Proxy: (a) F&G < 40 = fear zone, (b) whale tracker buy signals, (c) politician buys
-  // We score what we can from existing state; real integration = future phase
-  var smCount = 0;
-  var smReasons = [];
-  if (fgNow < 40)          { smCount++; smReasons.push('Fear zone (F&G ' + fgNow + ')'); }
-  if (best.score >= 85)    { smCount++; smReasons.push('Iconium conviction ≥ 85'); }
-  if (best.rsi && best.rsi < 40) { smCount++; smReasons.push('RSI oversold (' + Math.round(best.rsi) + ')'); }
+  // Gate 3: Smart money signals
+  var smCount = 0; var smReasons = [];
+  if (fgNow < 40)                        { smCount++; smReasons.push('Fear zone F&G ' + fgNow); }
+  if (best && best.score >= 85)          { smCount++; smReasons.push('Conviction ≥ 85'); }
+  if (best && best.rsi && best.rsi < 40) { smCount++; smReasons.push('RSI oversold ' + Math.round(best.rsi)); }
   var gate3 = smCount >= 2;
   setGate('smartmoney', gate3,
-    gate3 ? smReasons.join(' · ') : smReasons.join(' · ') + ' — need ≥ 2 (' + smCount + ' met)');
-
-  if (!gate3) {
-    setEngineStatus('idle', 'Gate 3 failed — not enough smart money confirmation');
-    if (btn) { btn.disabled = false; btn.textContent = '🎯 Run Scan'; }
-    return;
-  }
+    smReasons.length
+      ? smReasons.join(' · ') + (gate3 ? '' : ' · need ≥ 2 (' + smCount + ' met)')
+      : 'F&G ' + fgNow + ' · No oversold signals (' + smCount + '/2)');
 
   // Gate 4: Risk:Reward ≥ 2.5:1
-  // Stop = 5% below entry (ATR proxy); Target = entry × (1 + 2.5 × 0.05)
-  var entry     = best.price || 0;
-  var stopPct   = best.group === 'crypto' ? 0.08 : 0.05;
+  var entry     = best ? (best.price || 0) : 0;
+  var stopPct   = best && best.group === 'crypto' ? 0.08 : 0.05;
   var stopPrice = +(entry * (1 - stopPct)).toFixed(2);
   var risk      = entry - stopPrice;
   var tpPrice   = +(entry + risk * 2.5).toFixed(2);
-  var rrRatio   = (tpPrice - entry) / (entry - stopPrice);
+  var rrRatio   = risk > 0 ? +((tpPrice - entry) / (entry - stopPrice)).toFixed(2) : 0;
   var gate4     = rrRatio >= 2.5;
   setGate('rr', gate4,
-    'Entry $' + entry.toFixed(2) + ' · Stop $' + stopPrice + ' · Target $' + tpPrice + ' · R:R ' + rrRatio.toFixed(1) + ':1');
-
-  if (!gate4) {
-    setEngineStatus('idle', 'Gate 4 failed — risk:reward below 2.5:1');
-    if (btn) { btn.disabled = false; btn.textContent = '🎯 Run Scan'; }
-    return;
-  }
+    entry > 0
+      ? 'Entry $' + entry.toFixed(2) + ' · Stop $' + stopPrice + ' · Target $' + tpPrice + ' · R:R ' + rrRatio + ':1'
+      : 'No price data available');
 
   // Gate 5: No overexposure
-  // Count held instruments per group; check portfolio drawdown
-  var heldSigs    = held.map(function(sym){ return state.signals[sym]; }).filter(Boolean);
-  var sameGroup   = heldSigs.filter(function(s){ return s.group === best.group; }).length;
-  var totalValue  = getPaperPortfolioValue ? getPaperPortfolioValue() : paperState.balance;
-  var drawdown    = totalValue < paperState.startingBalance
-                    ? (paperState.startingBalance - totalValue) / paperState.startingBalance
-                    : 0;
+  var heldSigs  = held.map(function(sym){ return state.signals[sym]; }).filter(Boolean);
+  var sameGroup = best ? heldSigs.filter(function(s){ return s.group === best.group; }).length : 0;
+  var totalValue = (typeof getPaperPortfolioValue === 'function') ? getPaperPortfolioValue() : paperState.balance;
+  var startBal   = paperState.startingBalance || paperState.balance || 10000;
+  var drawdown   = totalValue < startBal ? (startBal - totalValue) / startBal : 0;
   var gate5 = sameGroup < 3 && drawdown < 0.08;
   setGate('exposure', gate5,
-    gate5
-      ? held.length + ' open positions · ' + sameGroup + ' in same group · Drawdown ' + (drawdown*100).toFixed(1) + '%'
-      : (sameGroup >= 3 ? '3+ positions in same group' : 'Portfolio drawdown ' + (drawdown*100).toFixed(1) + '% > 8%'));
+    held.length + ' open positions · ' + (best ? best.group : '—') + ': ' + sameGroup + '/3 max · Drawdown ' + (drawdown * 100).toFixed(1) + '%');
 
-  if (!gate5) {
-    setEngineStatus('idle', 'Gate 5 failed — overexposure or drawdown too high');
+  // All gates evaluated — determine outcome
+  var allPassed = gate1 && regimePassed && gate3 && gate4 && gate5;
+  var failedGate = !gate1        ? 'Gate 1 failed — no high-conviction signals (need score ≥ 72)'
+    : !regimePassed              ? 'Gate 2 failed — unfavourable market regime (' + regime + ')'
+    : !gate3                     ? 'Gate 3 failed — smart money confirmation (' + smCount + '/2)'
+    : !gate4                     ? 'Gate 4 failed — R:R below 2.5:1 (got ' + rrRatio + ':1)'
+    : !gate5                     ? 'Gate 5 failed — portfolio overexposure or drawdown > 8%'
+    : null;
+
+  if (!allPassed) {
+    setEngineStatus('idle', failedGate);
+    renderNearMiss(topScorers, gate1, regimePassed);
     if (btn) { btn.disabled = false; btn.textContent = '🎯 Run Scan'; }
     return;
   }
