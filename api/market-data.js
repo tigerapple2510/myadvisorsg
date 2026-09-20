@@ -66,8 +66,19 @@ export default async function handler(req) {
       });
     }
     try {
-      const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${fsym}?modules=defaultKeyStatistics,financialData,summaryDetail,price`;
-      const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+      // Yahoo's quoteSummary now requires a crumb+cookie handshake (no-auth calls get 401).
+      // Get a fresh cookie + crumb first, then use both on the real request.
+      const cookieRes = await fetch('https://fc.yahoo.com', { headers: { 'User-Agent': 'Mozilla/5.0' } });
+      const setCookie = cookieRes.headers.get('set-cookie') || '';
+      const cookie = setCookie.split(';')[0];
+
+      const crumbRes = await fetch('https://query1.finance.yahoo.com/v1/test/getcrumb', {
+        headers: { 'User-Agent': 'Mozilla/5.0', 'Cookie': cookie },
+      });
+      const crumb = (await crumbRes.text()).trim();
+
+      const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${fsym}?modules=defaultKeyStatistics,financialData,summaryDetail,price&crumb=${encodeURIComponent(crumb)}`;
+      const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0', 'Cookie': cookie } });
       if (!res.ok) throw new Error(`Yahoo quoteSummary returned ${res.status}`);
       const json = await res.json();
       const result = json?.quoteSummary?.result?.[0];
