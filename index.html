@@ -1974,6 +1974,7 @@ async function refreshAllData(force) {
 
   state.cacheTime = Date.now();
   saveState();
+  checkStopLosses();
 
   // Update buy signal badge — a LIVE COUNT of instruments currently rated
   // Buy/Strong Buy, not an unread-alert counter. It changes with the market,
@@ -2440,8 +2441,15 @@ function confirmTrade() {
   renderSignalsPage();
 }
 
-// Auto stop-loss check
+// Auto stop-loss check — closes any paper position whose current price has
+// dropped to or below its stored stop-loss level. This is the ONLY thing that
+// actually limits downside once a trade is open (Gates 1-6 only govern entry).
+// Runs after every price refresh and on a periodic background timer while the
+// app tab is open. NOTE: this cannot run while the browser tab is closed —
+// there is no server-side position monitoring, so a stop can only be honoured
+// the next time you have the app open after the price crosses it.
 function checkStopLosses() {
+  let closedCount = 0;
   Object.entries(paperState.positions).forEach(([sym, pos]) => {
     if (!pos.stopLoss) return;
     const lp = state.signals[sym]?.price;
@@ -2451,9 +2459,37 @@ function checkStopLosses() {
     paperState.balance += proceeds;
     paperState.trades.push({ symbol:sym, name:pos.name, entryPrice:pos.avgPrice, exitPrice:lp, shares:pos.shares, pnl, date:new Date().toISOString(), closedBy:'stop-loss' });
     delete paperState.positions[sym];
-    toast(`🛑 Stop-loss: ${sym} closed @ ${fmtPrice(lp)}`, 'error');
+    toast(`🛑 Stop-loss triggered: ${sym} closed @ ${fmtPrice(lp)} (${pnl>=0?'+':''}${fmtNum(pnl)})`, 'error');
+    closedCount++;
   });
-  savePaperState();
+  if (closedCount > 0) {
+    savePaperState();
+    if (typeof updateStats === 'function') updateStats();
+    if (typeof renderPortfolio === 'function') renderPortfolio();
+    if (typeof renderSignalsPage === 'function') renderSignalsPage();
+  }
+  return closedCount;
+}
+
+// Lightweight background check: re-fetches prices for HELD positions only
+// (cheap - just those symbols, not all 35 instruments) so stop-losses get
+// honoured even if you haven't clicked Refresh recently.
+async function backgroundStopLossCheck() {
+  const heldSymbols = Object.keys(paperState.positions || {});
+  if (!heldSymbols.length) return;
+  try {
+    await Promise.all(heldSymbols.map(async sym => {
+      const inst = INSTRUMENTS.find(i => i.symbol === sym) || { symbol: sym, name: sym, group: 'other' };
+      try {
+        const data = await fetchSymbol(sym, inst.liveTicker);
+        if (data && data.price) {
+          state.signals[sym] = computeSignal(inst, data);
+        }
+      } catch(e) {}
+    }));
+    saveState();
+    checkStopLosses();
+  } catch(e) {}
 }
 
 // Paper account management
@@ -4167,6 +4203,8 @@ loadGoals();
 
 updateClock();
 setInterval(updateClock, 30000);
+setInterval(backgroundStopLossCheck, 3 * 60 * 1000); // check held positions every 3 min
+setTimeout(backgroundStopLossCheck, 5000); // and once shortly after the app loads
 
 setTimeout(loadFearGreed, 800);
 setTimeout(fetchLivePrices, 1200);
