@@ -1216,8 +1216,8 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
       <!-- ── Five Gate Checklist ──────────────────────────────────────── -->
       <div class="card" style="margin-bottom:24px">
         <div class="card-header">
-          <div class="card-title">Five-Condition Gate</div>
-          <div style="font-size:12px;color:var(--muted)">All 5 must pass for a trade proposal to fire</div>
+          <div class="card-title">Six-Condition Gate</div>
+          <div style="font-size:12px;color:var(--muted)">All 6 must pass for a trade proposal to fire</div>
         </div>
         <div class="card-body" style="padding:16px 20px">
           <div id="eng-gate-checks" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px">
@@ -1254,6 +1254,13 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
               <div class="eng-gate-info">
                 <div class="eng-gate-label">No Overexposure</div>
                 <div class="eng-gate-sub" id="gate-exposure-sub">Waiting for scan...</div>
+              </div>
+            </div>
+            <div class="eng-gate-item" id="gate-fundamental">
+              <span class="eng-gate-icon">○</span>
+              <div class="eng-gate-info">
+                <div class="eng-gate-label">Fundamental Quality (AI, stocks only)</div>
+                <div class="eng-gate-sub" id="gate-fundamental-sub">Waiting for scan...</div>
               </div>
             </div>
           </div>
@@ -1299,7 +1306,10 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
             </div>
 
             <!-- Reasons why this passed -->
-            <div id="eng-prop-reasons" style="background:var(--bg);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:20px;font-size:13px;line-height:1.8;color:var(--text2)"></div>
+            <div id="eng-prop-reasons" style="background:var(--bg);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.8;color:var(--text2)"></div>
+
+            <!-- AI Fundamental verdict (stocks only, hidden otherwise) -->
+            <div id="eng-prop-fundamental" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--r-sm);padding:14px 16px;margin-bottom:20px"></div>
 
             <!-- Approve / Reject -->
             <div style="display:flex;gap:10px">
@@ -3332,13 +3342,44 @@ async function runEngineScan() {
   setGate('exposure', gate5,
     held.length + ' open positions · ' + (best ? best.group : '-') + ': ' + sameGroup + '/3 max · Drawdown ' + (drawdown * 100).toFixed(1) + '%');
 
+  // Gate 6: AI Fundamental Quality Check - stocks only, only runs if gates 1-5 already
+  // passed (keeps API cost/time bounded to at most one call per scan).
+  var gate6 = true; // default pass (N/A) unless we actually run and fail the check
+  var fundamentalVerdict = null;
+  var gates1to5Passed = gate1 && regimePassed && gate3 && gate4 && gate5;
+
+  if (gates1to5Passed && best && best.group === 'stocks') {
+    setGate('fundamental', null, 'Running AI fundamental check on ' + best.symbol + '...');
+    try {
+      fundamentalVerdict = await getFundamentalVerdict(best.symbol, best.name, { score: best.score, price: entry, momentum: best.momentum });
+      if (fundamentalVerdict.error) {
+        // If the check itself fails (data/parsing issue), don't silently pass -
+        // but don't block trading on an infra hiccup either. Treat as GrayZone/pass-with-warning.
+        gate6 = true;
+        setGate('fundamental', true, 'Check unavailable (' + fundamentalVerdict.error + ') - proceeding on technical signal alone');
+      } else {
+        gate6 = fundamentalVerdict.verdict !== 'Fail' && !fundamentalVerdict.killFlag;
+        setGate('fundamental', gate6,
+          '[' + fundamentalVerdict.verdict + '] ' + fundamentalVerdict.oneLiner + (fundamentalVerdict.killFlag ? ' ⚠️ KILL FLAG' : ''));
+      }
+    } catch(e) {
+      gate6 = true;
+      setGate('fundamental', true, 'Check failed to run (' + e.message + ') - proceeding on technical signal alone');
+    }
+  } else if (gates1to5Passed) {
+    setGate('fundamental', true, 'N/A - fundamentals don\'t apply to ' + (best ? best.group : 'this instrument type'));
+  } else {
+    setGate('fundamental', null, 'Not evaluated - earlier gate failed');
+  }
+
   // All gates evaluated - determine outcome
-  var allPassed = gate1 && regimePassed && gate3 && gate4 && gate5;
+  var allPassed = gates1to5Passed && gate6;
   var failedGate = !gate1        ? 'Gate 1 failed - no high-conviction signals (need score ≥ 72)'
     : !regimePassed              ? 'Gate 2 failed - unfavourable market regime (' + regime + ')'
     : !gate3                     ? 'Gate 3 failed - smart money confirmation (' + smCount + '/2)'
     : !gate4                     ? 'Gate 4 failed - R:R below 2.5:1 (got ' + rrRatio + ':1)'
     : !gate5                     ? 'Gate 5 failed - portfolio overexposure or drawdown > 8%'
+    : !gate6                     ? 'Gate 6 failed - fundamental veto on ' + (best?best.symbol:'') + (fundamentalVerdict ? ': ' + fundamentalVerdict.oneLiner : '')
     : null;
 
   if (!allPassed) {
@@ -3365,6 +3406,7 @@ async function runEngineScan() {
     shares:   shares,
     posSize:  posSize,
     reasons:  best.reasons || [],
+    fundamental: fundamentalVerdict,
     ts:       Date.now()
   };
 
@@ -3385,7 +3427,7 @@ async function runEngineScan() {
 
 // ── Gate UI helpers ───────────────────────────────────────────────────
 function resetGateUI() {
-  ['score','regime','smartmoney','rr','exposure'].forEach(function(id) {
+  ['score','regime','smartmoney','rr','exposure','fundamental'].forEach(function(id) {
     var el = document.getElementById('gate-' + id);
     if (!el) return;
     el.className = 'eng-gate-item';
@@ -3399,8 +3441,10 @@ function setGate(id, passed, detail) {
   var el  = document.getElementById('gate-' + id);
   var sub = document.getElementById('gate-' + id + '-sub');
   if (!el) return;
-  el.className = 'eng-gate-item ' + (passed ? 'pass' : 'fail');
-  el.querySelector('.eng-gate-icon').textContent = passed ? '✓' : '✗';
+  // passed: true = pass, false = fail, null/undefined = pending/neutral (in progress or not yet evaluated)
+  var state = passed === true ? 'pass' : passed === false ? 'fail' : 'pending';
+  el.className = 'eng-gate-item ' + state;
+  el.querySelector('.eng-gate-icon').textContent = state === 'pass' ? '✓' : state === 'fail' ? '✗' : '○';
   if (sub) sub.textContent = detail || '';
 }
 
@@ -3431,12 +3475,37 @@ function showProposal(p) {
 
   var reasonsEl = document.getElementById('eng-prop-reasons');
   if (reasonsEl) {
-    var lines = ['<strong>Why this passed all 5 gates:</strong>'];
+    var lines = ['<strong>Why this passed all 6 gates:</strong>'];
     if (p.reasons && p.reasons.length) {
       p.reasons.forEach(function(r){ lines.push('→ ' + r); });
     }
     lines.push('→ Position size: ' + (p.posSize*100).toFixed(0) + '% of balance (score-based)');
     reasonsEl.innerHTML = lines.join('<br>');
+  }
+
+  // Fundamental verdict panel (only present for individual stocks that ran Gate 6)
+  var fundEl = document.getElementById('eng-prop-fundamental');
+  if (fundEl) {
+    if (p.fundamental && !p.fundamental.error && p.fundamental.personas) {
+      var fv = p.fundamental;
+      var vCol = fv.verdict === 'Pass' ? 'var(--green)' : fv.verdict === 'Fail' ? 'var(--red)' : 'var(--amber)';
+      var html = '<div style="font-weight:700;font-size:13px;margin-bottom:8px">🔬 AI Fundamental Check <span style="color:' + vCol + '">[' + fv.verdict + ']</span> <span class="text-small text-muted">confidence ' + fv.confidence + '</span></div>';
+      html += '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">' + fv.oneLiner + '</div>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">';
+      fv.personas.forEach(function(per) {
+        html += '<div style="background:var(--bg);border-radius:var(--r-xs);padding:8px 10px">'
+          + '<div style="font-size:11px;font-weight:700;margin-bottom:3px">' + per.name + ' <span style="color:var(--muted)">' + per.score + '/5</span></div>'
+          + '<div style="font-size:11px;color:var(--text2)">' + per.view + '</div></div>';
+      });
+      html += '</div>';
+      if (fv.priceRanges) {
+        html += '<div style="font-size:11px;color:var(--muted)">Price guidance - Aggressive: ' + (fv.priceRanges.aggressive||'-') + ' · Moderate: ' + (fv.priceRanges.moderate||'-') + ' · Conservative: ' + (fv.priceRanges.conservative||'-') + '</div>';
+      }
+      fundEl.innerHTML = html;
+      fundEl.style.display = '';
+    } else {
+      fundEl.style.display = 'none';
+    }
   }
 }
 
@@ -3975,6 +4044,63 @@ function renderValidationCard() {
       + (done ? '<br><strong style="color:var(--text)">Validation period complete.</strong> ' + (gainPct >= spyExpectedPct ? 'Live results are tracking at or above the SPY benchmark pace - reasonable to consider a small real-money deployment.' : 'Live results are below the SPY benchmark pace - recommend another validation cycle before deploying real capital.') : '')
     + '</div>'
   + '</div>';
+}
+
+
+
+// ── GATE 6: AI FUNDAMENTAL QUALITY CHECK (stocks only) ──────────────────────
+// This layer CANNOT be backtested the way the technical strategy was - it is
+// a live, forward-only hypothesis from the day it's enabled. It only applies
+// to individual stocks; ETFs, crypto and commodities auto-pass as N/A since
+// business-quality analysis doesn't apply to them.
+async function fetchFundamentals(symbol) {
+  const res = await fetch('/api/market-data?type=fundamentals&symbol=' + encodeURIComponent(symbol));
+  if (!res.ok) throw new Error('Fundamentals fetch failed (' + res.status + ')');
+  return res.json();
+}
+
+function buildFundamentalPrompt(symbol, name, f, signalCtx) {
+  return 'You are running a fundamental quality check on ' + symbol + ' (' + (name||symbol) + ') for a Singapore investor. '
+  + 'A technical signal already flagged this stock as a live trade candidate: score ' + signalCtx.score + '/100, price $' + signalCtx.price + ', momentum ' + (signalCtx.momentum||0).toFixed(1) + '%.\n\n'
+  + 'VERIFIED FUNDAMENTAL DATA (computed deterministically, not estimated - treat these numbers as ground truth):\n'
+  + 'Market cap: $' + (f.marketCap ? (f.marketCap/1e9).toFixed(1)+'B' : 'unknown') + '\n'
+  + 'Trailing P/E: ' + (f.trailingPE ?? 'unknown') + ' | Forward P/E: ' + (f.forwardPE ?? 'unknown') + '\n'
+  + 'Price/Book: ' + (f.priceToBook ?? 'unknown') + ' | ROE: ' + (f.returnOnEquity ?? 'unknown') + '%\n'
+  + 'Debt/Equity: ' + (f.debtToEquity ?? 'unknown') + ' | Current ratio: ' + (f.currentRatio ?? 'unknown') + '\n'
+  + 'Profit margin: ' + (f.profitMargins ?? 'unknown') + '% | Revenue growth: ' + (f.revenueGrowth ?? 'unknown') + '% | Earnings growth: ' + (f.earningsGrowth ?? 'unknown') + '%\n'
+  + 'Free cash flow: $' + (f.freeCashflow ? (f.freeCashflow/1e9).toFixed(2)+'B' : 'unknown') + ' | Cash: $' + (f.totalCash ? (f.totalCash/1e9).toFixed(1)+'B' : 'unknown') + ' | Debt: $' + (f.totalDebt ? (f.totalDebt/1e9).toFixed(1)+'B' : 'unknown') + '\n\n'
+  + 'Run FOUR independent perspectives that must genuinely disagree where the evidence supports it - do not let them politely converge:\n'
+  + '1. BUSINESS QUALITY - is this a good business? Moat, competitive position, unit economics.\n'
+  + '2. VALUATION - is the price fair given the verified numbers above? Is it cheap, expensive, or fair - and why.\n'
+  + '3. CONTRARIAN RISK - actively hunt for what could kill this thesis. What would make a smart person short this instead?\n'
+  + '4. LONG-TERM DURABILITY - will this business still be dominant in 10 years, or does the picture look fragile?\n\n'
+  + 'Then force a single verdict - no hedging allowed. Respond with ONLY valid JSON, no markdown fences, no prose outside the JSON, in exactly this shape:\n'
+  + '{"verdict":"Pass|Fail|GrayZone","oneLiner":"one sentence summary","confidence":"A|B|C","killFlag":false,"personas":[{"name":"Business Quality","view":"2-3 sentences","score":1-5},{"name":"Valuation","view":"2-3 sentences","score":1-5},{"name":"Contrarian Risk","view":"2-3 sentences","score":1-5},{"name":"Long-Term Durability","view":"2-3 sentences","score":1-5}],"priceRanges":{"aggressive":"$X-$Y or notes","moderate":"$X-$Y or notes","conservative":"$X-$Y or notes"}}\n\n'
+  + 'Set killFlag true only for a genuine red line (fraud, accounting concerns, existential regulatory risk) that should override any bullish technical signal. verdict must be "Fail" if killFlag is true or if the picture is clearly poor; "GrayZone" if genuinely mixed/uncertain; "Pass" only if the case is solid across most personas.';
+}
+
+function parseFundamentalJSON(text) {
+  try {
+    const cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+    return JSON.parse(cleaned);
+  } catch(e) {
+    return null;
+  }
+}
+
+async function getFundamentalVerdict(symbol, name, signalCtx) {
+  const f = await fetchFundamentals(symbol);
+  if (f.error) return { error: f.error, fundamentals: null };
+  const prompt = buildFundamentalPrompt(symbol, name, f, signalCtx);
+  const res = await fetch('/api/market-data?type=ai', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 900, messages: [{ role: 'user', content: prompt }] })
+  });
+  const data = await res.json();
+  const text = data.content && data.content[0] ? data.content[0].text : '';
+  const parsed = parseFundamentalJSON(text);
+  if (!parsed) return { error: 'Could not parse AI verdict', fundamentals: f, raw: text };
+  return { ...parsed, fundamentals: f };
 }
 
 
