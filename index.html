@@ -4075,8 +4075,8 @@ function buildFundamentalPrompt(symbol, name, f, signalCtx) {
   + '3. CONTRARIAN RISK - actively hunt for what could kill this thesis. What would make a smart person short this instead?\n'
   + '4. LONG-TERM DURABILITY - will this business still be dominant in 10 years, or does the picture look fragile?\n\n'
   + 'Then force a single verdict - no hedging allowed. Respond with ONLY valid JSON, no markdown fences, no prose outside the JSON, in exactly this shape:\n'
-  + '{"verdict":"Pass|Fail|GrayZone","oneLiner":"one sentence summary","confidence":"A|B|C","killFlag":false,"personas":[{"name":"Business Quality","view":"2-3 sentences","score":1-5},{"name":"Valuation","view":"2-3 sentences","score":1-5},{"name":"Contrarian Risk","view":"2-3 sentences","score":1-5},{"name":"Long-Term Durability","view":"2-3 sentences","score":1-5}],"priceRanges":{"aggressive":"$X-$Y or notes","moderate":"$X-$Y or notes","conservative":"$X-$Y or notes"}}\n\n'
-  + 'Set killFlag true only for a genuine red line (fraud, accounting concerns, existential regulatory risk) that should override any bullish technical signal. verdict must be "Fail" if killFlag is true or if the picture is clearly poor; "GrayZone" if genuinely mixed/uncertain; "Pass" only if the case is solid across most personas.';
+  + '{"verdict":"Pass|Fail|GrayZone","oneLiner":"ONE short sentence max 20 words","confidence":"A|B|C","killFlag":false,"personas":[{"name":"Business Quality","view":"max 2 short sentences, under 30 words total","score":1-5},{"name":"Valuation","view":"max 2 short sentences, under 30 words total","score":1-5},{"name":"Contrarian Risk","view":"max 2 short sentences, under 30 words total","score":1-5},{"name":"Long-Term Durability","view":"max 2 short sentences, under 30 words total","score":1-5}],"priceRanges":{"aggressive":"$X-$Y","moderate":"$X-$Y","conservative":"$X-$Y or short note"}}\n\n'
+  + 'CRITICAL: Every view field MUST be under 30 words. Do not write long paragraphs - a truncated, unparseable response is worse than a short one. ' + 'Set killFlag true only for a genuine red line (fraud, accounting concerns, existential regulatory risk) that should override any bullish technical signal. verdict must be "Fail" if killFlag is true or if the picture is clearly poor; "GrayZone" if genuinely mixed/uncertain; "Pass" only if the case is solid across most personas.';
 }
 
 function parseFundamentalJSON(text) {
@@ -4094,7 +4094,7 @@ async function getFundamentalVerdict(symbol, name, signalCtx) {
   const prompt = buildFundamentalPrompt(symbol, name, f, signalCtx);
   const res = await fetch('/api/market-data?type=ai', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 900, messages: [{ role: 'user', content: prompt }] })
+    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1400, messages: [{ role: 'user', content: prompt }] })
   });
   const data = await res.json();
   const text = data.content && data.content[0] ? data.content[0].text : '';
