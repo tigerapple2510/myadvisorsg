@@ -1216,8 +1216,8 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
       <!-- ── Five Gate Checklist ──────────────────────────────────────── -->
       <div class="card" style="margin-bottom:24px">
         <div class="card-header">
-          <div class="card-title">Six-Condition Gate</div>
-          <div style="font-size:12px;color:var(--muted)">All 6 must pass for a trade proposal to fire</div>
+          <div class="card-title">Six-Condition Gate <span class="badge badge-amber" style="margin-left:6px;font-size:10px">Gate 6 = Shadow Mode</span></div>
+          <div style="font-size:12px;color:var(--muted)">Gates 1-5 fire the trade (backtested & validated) · Gate 6 runs and logs, but doesn't block yet</div>
         </div>
         <div class="card-body" style="padding:16px 20px">
           <div id="eng-gate-checks" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px">
@@ -1259,11 +1259,12 @@ tbody td { padding: 12px 16px; font-size: 13px; color: var(--text2); }
             <div class="eng-gate-item" id="gate-fundamental">
               <span class="eng-gate-icon">○</span>
               <div class="eng-gate-info">
-                <div class="eng-gate-label">Fundamental Quality (AI, stocks only)</div>
+                <div class="eng-gate-label">Fundamental Quality (AI, stocks only) - Shadow</div>
                 <div class="eng-gate-sub" id="gate-fundamental-sub">Waiting for scan...</div>
               </div>
             </div>
           </div>
+          <div id="eng-shadow-summary" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"></div>
         </div>
       </div>
 
@@ -3228,6 +3229,7 @@ function renderEnginePage() {
   updateEngineStats();
   renderEngineHistory();
   renderValidationCard();
+  renderShadowSummary();
   // restore gate UI to last-scanned state if available
   if (engineState.scannedAt) {
     document.getElementById('eng-last-scan').textContent =
@@ -3342,29 +3344,32 @@ async function runEngineScan() {
   setGate('exposure', gate5,
     held.length + ' open positions · ' + (best ? best.group : '-') + ': ' + sameGroup + '/3 max · Drawdown ' + (drawdown * 100).toFixed(1) + '%');
 
-  // Gate 6: AI Fundamental Quality Check - stocks only, only runs if gates 1-5 already
-  // passed (keeps API cost/time bounded to at most one call per scan).
-  var gate6 = true; // default pass (N/A) unless we actually run and fail the check
+  // Gate 6: AI Fundamental Quality Check - SHADOW MODE.
+  // Runs and logs its verdict on stocks that clear gates 1-5, but does NOT
+  // block a trade from firing. This keeps the 30-day validation clean: we
+  // measure the backtested technical strategy (gates 1-5) exactly as tested,
+  // while separately collecting evidence on whether Gate 6 would have helped.
+  // Once we have enough shadow data to judge it, we can switch SHADOW_MODE
+  // to false to make Gate 6 a real veto.
+  var SHADOW_MODE = true;
+  var gate6 = true; // shadow mode: never actually blocks
   var fundamentalVerdict = null;
   var gates1to5Passed = gate1 && regimePassed && gate3 && gate4 && gate5;
 
   if (gates1to5Passed && best && best.group === 'stocks') {
-    setGate('fundamental', null, 'Running AI fundamental check on ' + best.symbol + '...');
+    setGate('fundamental', null, 'Running AI fundamental check on ' + best.symbol + '... (shadow mode)');
     try {
       fundamentalVerdict = await getFundamentalVerdict(best.symbol, best.name, { score: best.score, price: entry, momentum: best.momentum });
       if (fundamentalVerdict.error) {
-        // If the check itself fails (data/parsing issue), don't silently pass -
-        // but don't block trading on an infra hiccup either. Treat as GrayZone/pass-with-warning.
-        gate6 = true;
-        setGate('fundamental', true, 'Check unavailable (' + fundamentalVerdict.error + ') - proceeding on technical signal alone');
+        setGate('fundamental', null, 'Check unavailable (' + fundamentalVerdict.error + ') - shadow mode, no impact on trade');
       } else {
-        gate6 = fundamentalVerdict.verdict !== 'Fail' && !fundamentalVerdict.killFlag;
-        setGate('fundamental', gate6,
-          '[' + fundamentalVerdict.verdict + '] ' + fundamentalVerdict.oneLiner + (fundamentalVerdict.killFlag ? ' ⚠️ KILL FLAG' : ''));
+        var wouldBlock = fundamentalVerdict.verdict === 'Fail' || fundamentalVerdict.killFlag;
+        setGate('fundamental', !wouldBlock,
+          '[SHADOW] [' + fundamentalVerdict.verdict + '] ' + fundamentalVerdict.oneLiner + (fundamentalVerdict.killFlag ? ' ⚠️ KILL FLAG' : '') + ' - logged only, not blocking');
+        logShadowVerdict(best.symbol, best.name, entry, best.score, fundamentalVerdict, wouldBlock);
       }
     } catch(e) {
-      gate6 = true;
-      setGate('fundamental', true, 'Check failed to run (' + e.message + ') - proceeding on technical signal alone');
+      setGate('fundamental', null, 'Check failed to run (' + e.message + ') - shadow mode, no impact on trade');
     }
   } else if (gates1to5Passed) {
     setGate('fundamental', true, 'N/A - fundamentals don\'t apply to ' + (best ? best.group : 'this instrument type'));
@@ -3372,14 +3377,14 @@ async function runEngineScan() {
     setGate('fundamental', null, 'Not evaluated - earlier gate failed');
   }
 
-  // All gates evaluated - determine outcome
-  var allPassed = gates1to5Passed && gate6;
+  // All gates evaluated - determine outcome. Gate 6 is shadow-only: it never
+  // affects whether the trade fires while SHADOW_MODE is true.
+  var allPassed = gates1to5Passed;
   var failedGate = !gate1        ? 'Gate 1 failed - no high-conviction signals (need score ≥ 72)'
     : !regimePassed              ? 'Gate 2 failed - unfavourable market regime (' + regime + ')'
     : !gate3                     ? 'Gate 3 failed - smart money confirmation (' + smCount + '/2)'
     : !gate4                     ? 'Gate 4 failed - R:R below 2.5:1 (got ' + rrRatio + ':1)'
     : !gate5                     ? 'Gate 5 failed - portfolio overexposure or drawdown > 8%'
-    : !gate6                     ? 'Gate 6 failed - fundamental veto on ' + (best?best.symbol:'') + (fundamentalVerdict ? ': ' + fundamentalVerdict.oneLiner : '')
     : null;
 
   if (!allPassed) {
@@ -3489,7 +3494,7 @@ function showProposal(p) {
     if (p.fundamental && !p.fundamental.error && p.fundamental.personas) {
       var fv = p.fundamental;
       var vCol = fv.verdict === 'Pass' ? 'var(--green)' : fv.verdict === 'Fail' ? 'var(--red)' : 'var(--amber)';
-      var html = '<div style="font-weight:700;font-size:13px;margin-bottom:8px">🔬 AI Fundamental Check <span style="color:' + vCol + '">[' + fv.verdict + ']</span> <span class="text-small text-muted">confidence ' + fv.confidence + '</span></div>';
+      var html = '<div style="font-weight:700;font-size:13px;margin-bottom:8px">🔬 AI Fundamental Check <span style="color:' + vCol + '">[' + fv.verdict + ']</span> <span class="text-small text-muted">confidence ' + fv.confidence + '</span> <span class="badge badge-amber" style="font-size:10px;margin-left:4px">Shadow - logged only</span></div>';
       html += '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">' + fv.oneLiner + '</div>';
       html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">';
       fv.personas.forEach(function(per) {
@@ -4101,6 +4106,56 @@ async function getFundamentalVerdict(symbol, name, signalCtx) {
   const parsed = parseFundamentalJSON(text);
   if (!parsed) return { error: 'Could not parse AI verdict', fundamentals: f, raw: text };
   return { ...parsed, fundamentals: f };
+}
+
+// ── Shadow verdict log — the record we'll use at the end of the 30 days ────
+// to decide whether Gate 6 should become a real veto (SHADOW_MODE = false).
+var SHADOW_LOG_KEY = 'iconium_shadow_gate6_v1';
+
+function loadShadowLog() {
+  try { return JSON.parse(localStorage.getItem(SHADOW_LOG_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveShadowLog(log) {
+  try { localStorage.setItem(SHADOW_LOG_KEY, JSON.stringify(log)); } catch(e) {}
+}
+function logShadowVerdict(symbol, name, entryPrice, techScore, verdict, wouldBlock) {
+  var log = loadShadowLog();
+  log.push({
+    ts: Date.now(),
+    date: new Date().toISOString().slice(0,10),
+    symbol: symbol, name: name,
+    entryPrice: entryPrice, techScore: techScore,
+    verdict: verdict.verdict, oneLiner: verdict.oneLiner,
+    confidence: verdict.confidence, killFlag: !!verdict.killFlag,
+    wouldBlock: wouldBlock,
+    priceNow: null, priceCheckedAt: null // filled in later when we review outcomes
+  });
+  saveShadowLog(log);
+  renderShadowSummary();
+}
+
+function renderShadowSummary() {
+  var el = document.getElementById('eng-shadow-summary');
+  if (!el) return;
+  var log = loadShadowLog();
+  if (!log.length) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  var blocked = log.filter(function(l){ return l.wouldBlock; }).length;
+  var passed  = log.length - blocked;
+  var recent = log.slice(-5).reverse();
+  var html = '<div style="font-weight:700;font-size:13px;margin-bottom:6px">🔬 Gate 6 Shadow Log (not affecting trades yet)</div>';
+  html += '<div style="font-size:12px;color:var(--text2);margin-bottom:10px">' + log.length + ' checks run · ' + passed + ' would Pass/GrayZone · ' + blocked + ' would have blocked</div>';
+  html += '<div style="display:flex;flex-direction:column;gap:4px">';
+  recent.forEach(function(l) {
+    var col = l.wouldBlock ? 'var(--red)' : 'var(--green)';
+    html += '<div style="display:flex;justify-content:space-between;gap:8px;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border)">'
+      + '<span><strong>' + l.symbol + '</strong> ' + l.date + '</span>'
+      + '<span style="color:' + col + '">[' + l.verdict + ']</span>'
+      + '<span style="color:var(--muted);flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + l.oneLiner + '</span>'
+      + '</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
 }
 
 
